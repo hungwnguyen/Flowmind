@@ -1,33 +1,41 @@
-# Particles & Textures
-
-> Build Unity particle systems from an **offline library of original textures** and bundled effect prefabs — with optional AI for missing artwork.
-
-![A sample of the DefaultGameFX textures, one per category](images/textures-default.png)
+<div class="vg-particle-intro">
+  <h1>Particles &amp; Textures</h1>
+  <p>From texture to motion. Explore the effects, tune them in your browser, then build your own in Unity.</p>
+  <div class="vg-particle-facts"><span><strong>403</strong> offline textures</span><span><strong>78</strong> effect prefabs</span><span>Built-in / URP / HDRP</span></div>
+</div>
 
 ## Try it in your browser
 
-These effects ship in `Samples/GeneratedParticles/Standards`. They run here in the toolkit's own prebuilt WebGL player (Built-in pipeline), loaded from native WebGL AssetBundles exported by the toolkit. Pick an effect, then use the panel to restart, slow down, recolor or move the emitter.
+Pick an effect and explore it in motion. Use **Restart** to replay it, or lower **Time scale** to inspect each layer.
 
 <div class="vg-fx">
+  <div class="vg-fx-heading"><span>Effect collection</span><span class="vg-fx-badge">8 interactive demos</span></div>
   <div class="vg-fx-picker" role="group" aria-label="Effect">
-    <button type="button" data-fx="toon_explosion" aria-pressed="true">Explosion</button>
-    <button type="button" data-fx="toon_fire_missile" aria-pressed="false">Fire missile</button>
-    <button type="button" data-fx="lightning_strike" aria-pressed="false">Lightning</button>
-    <button type="button" data-fx="portal" aria-pressed="false">Portal</button>
-    <button type="button" data-fx="toon_heal_burst" aria-pressed="false">Heal</button>
-    <button type="button" data-fx="toon_slash" aria-pressed="false">Slash</button>
-    <button type="button" data-fx="toon_impact" aria-pressed="false">Impact</button>
-    <button type="button" data-fx="toon_shield_hit" aria-pressed="false">Shield hit</button>
-    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false">Smoke</button>
-    <button type="button" data-fx="rain_2d" aria-pressed="false">Rain</button>
+    <button type="button" data-fx="toon_explosion" aria-pressed="true"><span>Explosion</span><small>Burst &amp; sparks</small></button>
+    <button type="button" data-fx="lightning_strike" aria-pressed="false"><span>Lightning</span><small>Electric strike</small></button>
+    <button type="button" data-fx="portal" aria-pressed="false"><span>Portal</span><small>Magic loop</small></button>
+    <button type="button" data-fx="toon_heal_burst" aria-pressed="false"><span>Heal</span><small>Recovery burst</small></button>
+    <button type="button" data-fx="toon_slash" aria-pressed="false"><span>Slash</span><small>Blade trail</small></button>
+    <button type="button" data-fx="toon_shield_hit" aria-pressed="false"><span>Shield hit</span><small>Defense flash</small></button>
+    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false"><span>Smoke</span><small>Soft particles</small></button>
+    <button type="button" data-fx="rain_2d" aria-pressed="false"><span>Rain</span><small>Weather loop</small></button>
   </div>
-  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1" title="VinaGen particle playground" loading="lazy" allow="fullscreen"></iframe>
-  <p class="vg-fx-note">The player is about 11 MB and loads when this section scrolls into view. One-shot effects replay automatically. <a data-fx-open href="playground/?fx=toon_explosion&replay=1" target="_blank" rel="noopener">Open full screen</a></p>
+  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1&lang=en" title="VinaGen particle playground" loading="lazy" allow="fullscreen"></iframe>
+  <div class="vg-fx-footer"><span data-fx-selected aria-live="polite">Explosion — Burst &amp; sparks</span><a data-fx-open href="playground/?fx=toon_explosion&replay=1&lang=en" target="_blank" rel="noopener">Open full screen ↗</a></div>
+  <p class="vg-fx-note">11 MB WebGL player. One-shot effects replay automatically. These demos use the Built-in render pipeline.</p>
 </div>
+
+<ol class="vg-fx-guide">
+  <li><strong>Choose an effect</strong><span>Switch between the eight demos above.</span></li>
+  <li><strong>Explore the layers</strong><span>Pause, slow down or select a particle system.</span></li>
+  <li><strong>Make it yours</strong><span>Adjust size and color, then apply your changes.</span></li>
+</ol>
 
 ## Offline texture library
 
 Five packs ship **403 textures**, all rendered by Unity C# from VinaGen-authored recipes, with no third-party artwork inputs and no imaging runtime. The complete particle release has 474 PNGs (audit of 2026-10-11).
+
+<figure class="vg-texture-sheet"><img src="images/textures-default.png" alt="DefaultGameFX texture samples arranged by category" loading="lazy"><figcaption>DefaultGameFX: original artwork for particles, trails and gameplay effects.</figcaption></figure>
 
 | Pack | Textures | Categories |
 | --- | --- | --- |

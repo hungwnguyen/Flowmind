@@ -581,6 +581,41 @@
           // Invoked on each page load after new HTML has been appended to the DOM
           hook.doneEach(function () {
 
+            // Compact navigation with recognizable tools and an optional page outline.
+            var navIcons = {
+              introduction: '<path d="m3 9 9-7 9 7v11H3Z"/><path d="M9 20v-7h6v7"/>',
+              'getting-started': '<path d="m13 2-8 12h7l-1 8 8-12h-7Z"/>',
+              graphs: '<rect x="2" y="3" width="7" height="5" rx="1"/><rect x="15" y="16" width="7" height="5" rx="1"/><path d="M5 8v10h10M9 5h9v11"/>',
+              'web-editor': '<rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M6 5.5h1M10 5.5h1M7 12h10M7 16h6"/>',
+              'ui-designer': '<path d="m12 2 10 6-10 6L2 8Zm-10 11 10 6 10-6M2 18l10 6 10-6"/>',
+              'vinagen-text': '<path d="M3 7V3h18v4M12 3v18M8 21h8"/>',
+              particles: '<path d="m12 3 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/><circle cx="20" cy="3" r="1"/><circle cx="3" cy="20" r="1"/>',
+              'webgl-preview': '<rect x="2" y="3" width="20" height="15" rx="2"/><path d="m10 7 6 4-6 4ZM8 22h8M12 18v4"/>',
+              'ai-chat': '<path d="M21 11a8 8 0 0 1-8 8H8l-5 3v-7a8 8 0 1 1 18-4Z"/><path d="M7 10h10M7 14h6"/>',
+              'create-from-chat': '<path d="m3 21 12-12 3 3L6 24ZM18 2v4M16 4h4M6 3v4M4 5h4M20 16v4M18 18h4"/>',
+              'mcp-bridge': '<rect x="8" y="2" width="8" height="6" rx="1"/><rect x="1" y="16" width="8" height="6" rx="1"/><rect x="15" y="16" width="8" height="6" rx="1"/><path d="M12 8v4H5v4M12 12h7v4"/>',
+              settings: '<path d="M4 3v5M4 12v9M12 3v9M12 16v5M20 3v2M20 9v12"/><path d="M1 8h6M9 16h6M17 5h6"/>',
+              'folder-layout': '<path d="M2 7V4h7l3 3h10v14H2Z"/>',
+              faq: '<circle cx="12" cy="12" r="10"/><path d="M9 8a3 3 0 0 1 6 1c0 2-3 2-3 4M12 17h.01"/>'
+            };
+            document.querySelectorAll('.sidebar-nav > ul > li > ul > li > a').forEach(function (link) {
+              if (link.querySelector('.vg-nav-icon')) return;
+              var page = link.getAttribute('href').replace(/^#\//, '').replace(/^vi(?:\/|$)/, '').split('?')[0] || 'introduction';
+              if (page === 'README') page = 'introduction';
+              if (!navIcons[page]) return;
+              link.insertAdjacentHTML('afterbegin', '<svg class="vg-nav-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + navIcons[page] + '</svg>');
+            });
+            document.querySelectorAll('.sidebar-nav .app-sub-sidebar').forEach(function (list) {
+              if (list.parentElement.classList.contains('vg-nav-toc')) return;
+              var details = document.createElement('details');
+              details.className = 'vg-nav-toc';
+              var summary = document.createElement('summary');
+              summary.textContent = /^#\/vi(?:\/|\?|$)/.test(location.hash) ? 'Trong trang này' : 'On this page';
+              list.parentNode.insertBefore(details, list);
+              details.appendChild(summary);
+              details.appendChild(list);
+            });
+
             // Short settle on each route change (disabled by prefers-reduced-motion in vinagen.css)
             var section = document.querySelector('.markdown-section');
             if (section) {

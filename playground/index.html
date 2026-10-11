@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>VinaGen Particle Preview | Vina Gen</title>
   <link rel="icon" type="image/png" href="robot.png">
   <style>
-    :root { color-scheme: dark; --panel:#10141e; --panel2:#181e2b; --line:#2a3346; --text:#eef3ff; --muted:#96a4bc; --accent:#7c9cff; --good:#61d9a5; --bad:#ff6b7d; }
+    :root { color-scheme: dark; --panel:#111522; --panel2:#191e2d; --line:#2e3550; --text:#e8ebf4; --muted:#9aa3b8; --accent:#8f7ff5; --good:#61d9a5; --bad:#ff6b7d; }
     * { box-sizing:border-box; }
     html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#080b12; color:var(--text); font:13px/1.4 Inter,Segoe UI,Arial,sans-serif; }
     #app { display:grid; grid-template-columns:minmax(0,1fr) clamp(260px,32vw,340px); width:100%; height:100%; }
@@ -42,6 +42,17 @@
     #state { margin:0; max-height:210px; overflow:auto; white-space:pre-wrap; color:#b8c5d9; font:11px/1.4 Consolas,monospace; }
     #shot { width:100%; margin-top:8px; border:1px solid var(--line); border-radius:7px; display:none; }
     #error { min-height:18px; color:var(--bad); }
+    #error:empty { display:none; }
+    details { border-top:1px solid var(--line); margin-top:8px; }
+    summary { cursor:pointer; padding:14px 0; color:var(--muted); font-weight:600; }
+    summary:hover { color:var(--text); }
+    details section:first-of-type { border-top:0; }
+    input[type=checkbox] { width:16px; height:16px; margin:0 6px 0 0; vertical-align:middle; }
+    input[type=range] { accent-color:var(--accent); }
+    :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+    .primary { background:#5b4ba3; border-color:#8f7ff5; }
+    .brand h1 { font-size:15px; }
+    .sub { font-size:12px; line-height:1.6; }
     @media (max-width:640px) { #app { grid-template-columns:1fr; grid-template-rows:minmax(45vh,1fr) minmax(280px,45vh); } #panel { border-left:0; border-top:1px solid var(--line); } }
   </style>
 </head>
@@ -52,9 +63,10 @@
     <div id="loading"><div id="loading-card"><div id="loading-title"><span>Loading particle playground</span><span id="loading-pct">0%</span></div><div id="loading-track"><div id="loading-fill"></div></div></div></div>
   </main>
   <aside id="panel">
-    <div class="brand"><img src="robot.png" alt="" width="28" height="28"><h1>VinaGen Particle Playground</h1></div>
-    <p class="sub">Live-edit the running Particle System and capture a frame for an AI agent.</p>
+    <div class="brand"><img src="robot.png" alt="" width="28" height="28"><h1>Particle controls</h1></div>
+    <p class="sub">Pause, replay and fine-tune the effect.</p>
     <div class="status"><span id="ready-chip" class="chip">connecting</span><span id="pipeline-chip" class="chip">pipeline: —</span></div>
+    <div id="error" role="status"></div>
 
     <section>
       <label for="target">Particle target</label>
@@ -74,6 +86,8 @@
       <div class="grid2" style="margin-top:8px"><button id="apply-basics" class="primary">Apply basics</button><button id="request-state">Refresh state</button></div>
     </section>
 
+    <details>
+      <summary>Motion &amp; rendering</summary>
     <section>
       <label for="render-mode">Renderer mode</label>
       <div class="grid2"><select id="render-mode"><option>Billboard</option><option value="Stretch">Stretched Billboard</option><option>HorizontalBillboard</option><option>VerticalBillboard</option><option>Mesh</option></select><input id="mesh-index" type="number" min="0" max="5" step="1" value="0" title="Mesh palette index"></div>
@@ -88,12 +102,14 @@
       <label><input id="motion-loop" type="checkbox"> Loop motion</label>
       <button id="apply-motion">Apply path</button>
     </section>
+    </details>
 
+    <details>
+      <summary>Import &amp; developer tools</summary>
     <section>
       <label for="json-command">Raw command JSON</label>
       <textarea id="json-command">{"command":"set","target":"*","path":"noise.strength","number":0.4}</textarea>
       <button id="send-json" style="margin-top:8px">Send command</button>
-      <div id="error"></div>
     </section>
 
     <section>
@@ -110,10 +126,44 @@
     </section>
 
     <section><label>Live state</label><pre id="state">Waiting for the preview player…</pre></section>
+    </details>
   </aside>
 </div>
 
 <script>
+  const vietnamese = new URLSearchParams(window.location.search).get('lang') === 'vi';
+  const uiCopy = vietnamese ? {
+    'Particle controls': 'Điều khiển particle',
+    'Pause, replay and fine-tune the effect.': 'Tạm dừng, phát lại và tinh chỉnh hiệu ứng.',
+    'Loading particle playground': 'Đang tải demo particle',
+    'connecting': 'đang kết nối', 'ready': 'sẵn sàng',
+    'Particle target': 'Particle system', 'All systems': 'Tất cả hệ thống',
+    'Play': 'Phát', 'Pause': 'Tạm dừng', 'Restart': 'Phát lại',
+    'Time scale': 'Tốc độ', 'Lifetime': 'Thời gian sống', 'Start size': 'Kích thước',
+    'Emission / sec': 'Particle / giây', 'Start color': 'Màu sắc',
+    'Apply basics': 'Áp dụng', 'Refresh state': 'Cập nhật',
+    'Motion & rendering': 'Chuyển động & hiển thị',
+    'Import & developer tools': 'Import & công cụ kỹ thuật',
+    'Renderer mode': 'Chế độ render', 'Camera distance': 'Khoảng cách camera',
+    'Emitter motion': 'Chuyển động emitter', 'Off': 'Tắt',
+    'A: viewport X,Y': 'A: tọa độ X,Y', 'B: viewport X,Y': 'B: tọa độ X,Y',
+    'Duration (s)': 'Thời lượng (s)', 'Amplitude': 'Biên độ',
+    'Loop motion': 'Lặp chuyển động', 'Apply path': 'Áp dụng đường đi',
+    'Raw command JSON': 'Lệnh JSON', 'Send command': 'Gửi lệnh',
+    'Import FX file': 'Import file FX', 'FX manifest URL': 'URL manifest FX',
+    'Sync FX': 'Đồng bộ FX', 'Capture frame': 'Chụp khung hình',
+    'Download PNG': 'Tải PNG', 'Live state': 'Trạng thái hiện tại',
+    'Waiting for the preview player…': 'Đang chờ player…'
+  } : {};
+  function copy(text) { return uiCopy[text] || text; }
+  document.documentElement.lang = vietnamese ? 'vi' : 'en';
+  if (vietnamese) {
+    document.querySelectorAll('h1, .sub, label, button, summary, option, #loading-title span, #ready-chip, #state').forEach(element => {
+      Array.from(element.childNodes).forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE && uiCopy[node.textContent.trim()]) node.textContent = copy(node.textContent.trim());
+      });
+    });
+  }
   // Avoid a browser favicon request failing an otherwise clean automated review.
   const favicon = document.createElement('link'); favicon.rel = 'icon'; favicon.href = 'data:,'; document.head.appendChild(favicon);
   const canvas = document.querySelector('#unity-canvas');
@@ -142,7 +192,7 @@
       errorElement.textContent = state.lastError || '';
       const selected = targetElement.value;
       const systems = Array.isArray(state.systems) ? state.systems : [];
-      targetElement.innerHTML = '<option value="*">All systems</option>' + systems.map((system, index) => {
+      targetElement.innerHTML = '<option value="*">' + copy('All systems') + '</option>' + systems.map((system, index) => {
         const value = system.path || String(index);
         return '<option value="' + value.replace(/"/g, '&quot;') + '">' + (system.path || system.name) + '</option>';
       }).join('');
@@ -177,7 +227,7 @@
 
   window.addEventListener('vinagen-particle-ready', event => {
     bridgeObjectName = event.detail.bridgeObjectName || bridgeObjectName;
-    readyChip.textContent = 'ready';
+    readyChip.textContent = copy('ready');
     readyChip.classList.add('ready');
     acceptStateJson(event.detail.stateJson);
   });
@@ -380,7 +430,11 @@
       startManifestSync();
     }
     loading.style.display = 'none';
-  }).catch(message => { errorElement.textContent = String(message); loadingPct.textContent = 'error'; });
+  }).catch(message => {
+    errorElement.textContent = String(message);
+    document.querySelector('#loading-title span').textContent = vietnamese ? 'Không tải được demo. Thử tải lại trang.' : 'Could not load the demo. Try reloading the page.';
+    loadingPct.textContent = '!';
+  });
   document.body.appendChild(loaderScript);
 </script>
 </body>

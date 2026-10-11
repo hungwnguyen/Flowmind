@@ -4,7 +4,8 @@
   'use strict';
 
   function playerUrl(name) {
-    return 'playground/?fx=' + encodeURIComponent(name) + '&replay=1';
+    var lang = /^#\/vi(?:\/|\?|$)/.test(location.hash) ? 'vi' : 'en';
+    return 'playground/?fx=' + encodeURIComponent(name) + '&replay=1&lang=' + lang;
   }
 
   function show(root, name) {
@@ -15,6 +16,11 @@
     }
     var open = root.querySelector('a[data-fx-open]');
     if (open) open.href = playerUrl(name);
+    var selected = root.querySelector('[data-fx-selected]');
+    var active = root.querySelector('button[data-fx="' + name + '"]');
+    if (selected && active) {
+      selected.textContent = active.querySelector('span').textContent + ' — ' + active.querySelector('small').textContent;
+    }
 
     var api = null;
     try { api = frame.contentWindow && frame.contentWindow.vinagenParticlePreview; } catch (e) { api = null; }

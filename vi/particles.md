@@ -1,33 +1,41 @@
-# Particle & Texture
-
-> Dựng particle system trong Unity từ **thư viện texture gốc chạy offline** và prefab hiệu ứng đi kèm, có thể dùng thêm AI khi thiếu artwork.
-
-![Mẫu texture DefaultGameFX, mỗi nhóm một texture](../images/textures-default.png)
+<div class="vg-particle-intro">
+  <h1>Particle &amp; Texture</h1>
+  <p>Từ texture đến chuyển động. Khám phá hiệu ứng, tinh chỉnh ngay trên trình duyệt rồi dựng hiệu ứng của bạn trong Unity.</p>
+  <div class="vg-particle-facts"><span><strong>403</strong> texture offline</span><span><strong>78</strong> prefab hiệu ứng</span><span>Built-in / URP / HDRP</span></div>
+</div>
 
 ## Thử ngay trên trình duyệt
 
-Các hiệu ứng này có sẵn trong `Samples/GeneratedParticles/Standards`. Chúng chạy ngay tại đây bằng chính player WebGL dựng sẵn của toolkit (pipeline Built-in), nạp từ AssetBundle WebGL gốc do toolkit xuất ra. Chọn một hiệu ứng, rồi dùng bảng bên cạnh để phát lại, làm chậm, đổi màu hoặc cho emitter di chuyển.
+Chọn một hiệu ứng để xem chuyển động. Dùng **Phát lại** để xem lại từ đầu hoặc giảm **Tốc độ** để quan sát từng lớp particle.
 
 <div class="vg-fx">
+  <div class="vg-fx-heading"><span>Bộ sưu tập hiệu ứng</span><span class="vg-fx-badge">8 demo tương tác</span></div>
   <div class="vg-fx-picker" role="group" aria-label="Hiệu ứng">
-    <button type="button" data-fx="toon_explosion" aria-pressed="true">Vụ nổ</button>
-    <button type="button" data-fx="toon_fire_missile" aria-pressed="false">Cầu lửa</button>
-    <button type="button" data-fx="lightning_strike" aria-pressed="false">Sét đánh</button>
-    <button type="button" data-fx="portal" aria-pressed="false">Cổng dịch chuyển</button>
-    <button type="button" data-fx="toon_heal_burst" aria-pressed="false">Hồi máu</button>
-    <button type="button" data-fx="toon_slash" aria-pressed="false">Chém</button>
-    <button type="button" data-fx="toon_impact" aria-pressed="false">Va chạm</button>
-    <button type="button" data-fx="toon_shield_hit" aria-pressed="false">Đỡ bằng khiên</button>
-    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false">Khói</button>
-    <button type="button" data-fx="rain_2d" aria-pressed="false">Mưa</button>
+    <button type="button" data-fx="toon_explosion" aria-pressed="true"><span>Vụ nổ</span><small>Bùng nổ &amp; tia lửa</small></button>
+    <button type="button" data-fx="lightning_strike" aria-pressed="false"><span>Sét đánh</span><small>Phóng điện</small></button>
+    <button type="button" data-fx="portal" aria-pressed="false"><span>Cổng dịch chuyển</span><small>Vòng phép thuật</small></button>
+    <button type="button" data-fx="toon_heal_burst" aria-pressed="false"><span>Hồi máu</span><small>Hiệu ứng hồi phục</small></button>
+    <button type="button" data-fx="toon_slash" aria-pressed="false"><span>Chém</span><small>Vệt lưỡi kiếm</small></button>
+    <button type="button" data-fx="toon_shield_hit" aria-pressed="false"><span>Đỡ bằng khiên</span><small>Ánh sáng phòng thủ</small></button>
+    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false"><span>Khói</span><small>Particle mềm</small></button>
+    <button type="button" data-fx="rain_2d" aria-pressed="false"><span>Mưa</span><small>Hiệu ứng thời tiết</small></button>
   </div>
-  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1" title="Sân chơi particle VinaGen" loading="lazy" allow="fullscreen"></iframe>
-  <p class="vg-fx-note">Player nặng khoảng 11 MB và chỉ tải khi bạn cuộn tới phần này. Hiệu ứng phát một lần sẽ tự phát lại. <a data-fx-open href="playground/?fx=toon_explosion&replay=1" target="_blank" rel="noopener">Mở toàn màn hình</a></p>
+  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1&lang=vi" title="Sân chơi particle VinaGen" loading="lazy" allow="fullscreen"></iframe>
+  <div class="vg-fx-footer"><span data-fx-selected aria-live="polite">Vụ nổ — Bùng nổ &amp; tia lửa</span><a data-fx-open href="playground/?fx=toon_explosion&replay=1&lang=vi" target="_blank" rel="noopener">Mở toàn màn hình ↗</a></div>
+  <p class="vg-fx-note">Player WebGL khoảng 11 MB. Hiệu ứng phát một lần sẽ tự lặp lại. Các demo sử dụng pipeline Built-in.</p>
 </div>
+
+<ol class="vg-fx-guide">
+  <li><strong>Chọn hiệu ứng</strong><span>Chuyển giữa tám demo ở phía trên.</span></li>
+  <li><strong>Khám phá từng lớp</strong><span>Tạm dừng, giảm tốc độ hoặc chọn một particle system.</span></li>
+  <li><strong>Tinh chỉnh theo ý bạn</strong><span>Đổi kích thước, màu sắc rồi áp dụng thay đổi.</span></li>
+</ol>
 
 ## Thư viện texture offline
 
 Năm pack chứa **403 texture**, tất cả được render bằng Unity C# từ công thức do VinaGen tự xây dựng, không dùng artwork bên thứ ba và không cần runtime xử lý ảnh. Bản phát hành particle đầy đủ có 474 PNG (kiểm tra ngày 11/10/2026).
+
+<figure class="vg-texture-sheet"><img src="images/textures-default.png" alt="Mẫu texture DefaultGameFX sắp xếp theo từng nhóm" loading="lazy"><figcaption>DefaultGameFX: artwork gốc cho particle, vệt chuyển động và hiệu ứng gameplay.</figcaption></figure>
 
 | Pack | Số texture | Nhóm |
 | --- | --- | --- |

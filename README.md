@@ -37,10 +37,10 @@ When you add or change a page, update both the English file and its `vi/` twin. 
 
 ## Particle playground
 
-`playground/` is a copy of the toolkit's prebuilt Built-in WebGL player (`WebGLBuilds/ParticlePreview/Builtin`) plus native WebGL AssetBundles for ten effects from `Samples/GeneratedParticles/Standards`, exported with the MCP action `build_particle_web_preview`. The Particles page embeds it through `assets/js/vinagen-fx.js`.
+`playground/` is a copy of the toolkit's prebuilt Built-in WebGL player (`WebGLBuilds/ParticlePreview/Builtin`) plus native WebGL AssetBundles from `Samples/GeneratedParticles/Standards`, exported with the MCP action `build_particle_web_preview`. The Particles page embeds eight selected effects through `assets/js/vinagen-fx.js`; fire missile and impact are excluded from the demo picker.
 
 - The `.unityweb` files are Brotli with Unity's decompression fallback, so any static host works without `Content-Encoding` headers.
-- `?fx=<name>` imports `fx/<name>.json` once; `&replay=1` restarts one-shot effects after every system finishes. These two parameters and the narrower side panel are the only changes from the toolkit's player page.
+- `?fx=<name>` imports `fx/<name>.json` once; `&replay=1` restarts one-shot effects after every system finishes. `&lang=vi` translates the player controls. The docs player groups motion and developer controls into collapsible sections.
 - To add an effect: export its bundle with `build_particle_web_preview`, copy the bundle and the resulting `manifest.json` (renamed `fx/<name>.json`) here, and add a `data-fx` button in both `particles.md` files. Re-export every bundle whenever the player is rebuilt or the prefab changes.
 
 ## Screenshots
