@@ -14,7 +14,7 @@ Choose **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**, or dou
 2. Use **Root tools → Screen root** for the main screen; create a separate root for each popup.
 3. Add images, text, buttons and groups. Arrange them in **Layers**.
 4. Adjust geometry, colors, fonts, components and anchors in the Inspector.
-5. **Save** stores the document; **Export** downloads a file; **Unity** creates scene objects.
+5. **Save** stores the document; **Export** downloads a file; **Canvas** creates Unity scene objects.
 
 The saved document's width and height control Canvas import and Game View. Settings supply defaults for new documents.
 
@@ -110,7 +110,7 @@ For example, Ctrl/Cmd-click **Shop** and **Popup**, then use **Selected objects*
 | Format | File contents |
 | --- | --- |
 | **PNG** | Visible content combined into one transparent image at the authored 1× size. |
-| **SVG** | Browser layout with embedded images/fonts. Requires a `foreignObject`-compatible viewer; raster images and text previews remain raster content. |
+| **SVG** | Browser layout with embedded images/fonts. Requires a `foreignObject`-compatible viewer; raster images and text previews are not converted into vector paths. |
 | **PSD** | One file with groups/layers, names, ordering, opacity, visibility and supported text metadata. Artwork includes raster paint; fonts are referenced, not embedded. |
 
 Export does not Save the document. PSD text is editable, but Photoshop may redraw text/effects differently; editing requires the corresponding fonts. All objects preserves the combined board arrangement; PNG/SVG includes visible overflow beyond the reference rectangle.
@@ -121,7 +121,7 @@ Export limits: **8,192 pixels per side and 16 megapixels total**. PSD also limit
 
 1. Check Text type, components, images and Screen roots; **Save** the document.
 2. Select a target Canvas or its child in Unity. Without a selected Canvas, the tool creates a new **Screen Space Overlay Canvas**.
-3. Click **Unity** in UI Designer's top bar.
+3. Click **Canvas** in UI Designer's top bar (tooltip **Import UI to Editor**).
 4. Inspect Hierarchy and Game View: dimensions, anchors, text and interaction.
 5. Connect Button behavior to the game and **save the scene yourself**. For reuse, save the imported root as a prefab in Unity.
 

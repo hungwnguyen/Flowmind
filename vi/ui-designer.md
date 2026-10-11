@@ -14,7 +14,7 @@ Chọn **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**, hoặc
 2. Dùng **Root tools → Screen root** cho màn hình chính; tạo root riêng cho từng popup.
 3. Thêm ảnh, chữ, nút và nhóm; sắp xếp trong **Layers**.
 4. Chỉnh geometry, màu, font, component và anchor trong Inspector.
-5. **Save** lưu tài liệu; **Export** tải file; **Unity** tạo object trong scene.
+5. **Save** lưu tài liệu; **Export** tải file; **Canvas** tạo object trong scene Unity.
 
 Chiều rộng và cao của tài liệu đã lưu quyết định kích thước Canvas và Game View. Settings cung cấp mặc định cho tài liệu mới.
 
@@ -121,7 +121,7 @@ Giới hạn xuất: **8.192 px mỗi cạnh, tổng 16 megapixel**. PSD thêm g
 
 1. Kiểm tra Text type, component, ảnh và Screen root; **Save** tài liệu.
 2. Trong Unity, chọn Canvas đích hoặc object bên trong Canvas đó. Không chọn Canvas thì công cụ tạo **Screen Space Overlay Canvas** mới.
-3. Trong UI Designer, bấm **Unity** trên thanh trên cùng.
+3. Trong UI Designer, bấm **Canvas** trên thanh trên cùng (tooltip **Import UI to Editor**).
 4. Xem Hierarchy và Game View; kiểm tra kích thước, anchor, chữ và tương tác.
 5. Nối hành vi Button với game, rồi **tự lưu scene**. Muốn dùng lại màn hình, lưu root đã import thành prefab trong Unity.
 
