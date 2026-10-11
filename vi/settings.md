@@ -1,47 +1,31 @@
 # Cài đặt
 
-> Mọi cài đặt của toolkit là ScriptableObject trong `Assets/VinaGen AI Toolkit/Settings/`, có biểu tượng robot.
+Mở **Tools → VinaGen AI Toolkit → Open → Settings**, hoặc dùng menu **Settings**.
 
-Mở chúng từ **Tools → VinaGen AI Toolkit → Settings** hoặc từ tab **Settings** của cửa sổ toolkit.
+![Tab Settings của toolkit](../images/toolkit-settings.png)
 
-<div class="vg-pair">
-  <figure><img src="images/toolkit-settings.png" alt="Tab Settings của cửa sổ toolkit"><figcaption>Tab Settings mở từng asset trong Inspector.</figcaption></figure>
-</div>
+| Cài đặt | Chỉnh gì |
+| --- | --- |
+| **AI Settings** | Nhà cung cấp, model và thông tin đăng nhập. |
+| **Graph Appearance** | Giao diện graph và tên người viết comment trên web. |
+| **Design Content Settings** | Mặc định cho khung, font và chú thích. |
+| **UI Designer Settings** | Thư mục tài liệu/ảnh, font, độ phân giải, anchor và phím tắt. |
+| **Particle Texture Library** | Danh mục texture và alias. |
+| **Bundled Particle Library** | Prefab hiệu ứng và ưu tiên lựa chọn. |
+| **Particle WebGL Preview Settings** | Pipeline, camera, bloom và ảnh chụp preview. |
 
-| Menu | Asset | Cấu hình |
-| --- | --- | --- |
-| **AI Settings** | `VinaGenCopilotSettings` | Nhà cung cấp, model, thông tin xác thực và tùy chọn tạo ảnh. |
-| **Graph Appearance** | `GraphEditorAppearanceSettings` | Giao diện graph editor và chat, tên hiển thị khi bình luận trên web. |
-| **Design Content Settings** | `DesignContentEditorSettings` | Kích thước frame, màu, font và nhãn đánh số. |
-| **UI Designer Settings** | `VinaGenUIStudioSettings` | Thư mục tài liệu, font, độ phân giải Canvas, lưới bám và phím tắt. |
-| **Particle Texture Library** | `VinaGenParticleTextureLibrary` | Catalog, alias, tag, nguồn gốc và metadata chọn texture. |
-| **Bundled Particle Library** | `VinaGenBundledParticleLibrary` | Prefab hiệu ứng và ưu tiên chọn tự động. |
-| **Particle WebGL Preview Settings** | `VinaGenParticleWebPreviewSettings` | Pipeline, thư mục build, camera, bloom và thông số chụp mặc định. |
-| **Text → Settings** (menu Text) | `VinaGenTextSettings` | Mặc định của VinaGenText. |
-| **Open Settings Folder** | | Ping thư mục Settings trong cửa sổ Project. |
+## Cài đặt text
 
-## Cài đặt cá nhân và dùng chung
+Mở **Tools → VinaGen AI Toolkit → Text → Settings** để chỉnh:
 
-Cài đặt được tạo lại tự động trong dự án mới. **Cài đặt cá nhân và thông tin xác thực bị loại** khỏi bản xuất portable; đừng bao giờ commit hay chia sẻ asset chứa khóa.
+- **Auto Bake New Texts:** bật bake tự động cho label mới.
+- **Output Folder:** mặc định `Assets/VinaGen Text Bakes`, nằm ngoài toolkit.
+- **Shared Atlas:** gom ảnh chữ tĩnh vào các trang atlas dùng chung.
 
-## Quy ước biểu tượng robot
+Xem [VinaGenText](vinagen-text.md) để chọn chế độ render và xem benchmark.
 
-Mọi asset ScriptableObject lưu trong `Assets/VinaGen AI Toolkit/Settings/` tự nhận biểu tượng robot: postprocessor khi import gán biểu tượng và lần quét lúc khởi động sửa các asset cũ.
+## File cài đặt
 
-Khi mở rộng toolkit với một loại cài đặt mới:
+Asset cài đặt nằm trong `Assets/VinaGen AI Toolkit/Settings/`, có icon robot. Giữ thông tin đăng nhập riêng; công cụ export portable loại cấu hình cá nhân.
 
-```csharp
-[CreateAssetMenu(fileName = "YourSettingsName", menuName = "VinaGen AI Toolkit/Settings/Your Settings Name")]
-public sealed class YourSettingsName : ScriptableObject
-{
-    // các trường cài đặt...
-}
-```
-
-1. Đặt `fileName` trùng chính xác tên class.
-2. Lưu file `.asset` trong `Assets/VinaGen AI Toolkit/Settings/`.
-3. Chỉ khi asset buộc phải nằm chỗ khác, thêm type của nó vào `SettingsIconTargetTypes` trong `VinaGenSettingsUtility.cs`.
-4. Tạo asset bằng `[CreateAssetMenu]` hoặc `VinaGenSettingsUtility.GetOrCreateAsset<T>` để hook gán biểu tượng chạy.
-
----
 [Tiếp theo: Cấu trúc thư mục](folder-layout.md)

@@ -1,92 +1,83 @@
 # VinaGenText
 
-> Component chữ SDF dành cho UI game: gradient mặt chữ, viền, outline ngoài và đổ khối 3D. Chỉnh trên trình duyệt, Inspector hoặc code mà không đụng tới material dùng chung.
+Chữ UI có gradient, stroke, viền và độ nổi. Dùng Dynamic cho nội dung thay đổi, Static Baked cho label cố định.
 
-## Tính năng
+## Tạo label
 
-- **Chế độ gradient:** Single, Horizontal, Vertical và Four Corners, với key màu và key alpha (2–8 key mỗi dải), nội suy **Blend (Classic)** hoặc **Fixed**.
-- **Hiệu ứng:** Stroke, Outer Outline và 3D Extrusion. Thuộc tính chỉ hiện khi bật; khi tắt, giá trị đã chỉnh vẫn được nhớ.
-- **Bố cục:** xuống dòng, tự co cỡ chữ, định dạng rich text, giãn cách, lề, căn lề và uốn cong.
-- **Opacity:** làm mờ đồng thời mặt chữ, gradient, viền, outline và đổ khối.
+Chọn **GameObject → VNT → VinaGenText**, hoặc **Typography → Text type → VinaGenText** trong UI Designer.
 
-VinaGenText mặc định không có hiệu ứng. **Get Tickets style** áp kiểu mẫu (viền 2, outline 4, đổ khối 5 px).
+Chỉnh font, kích thước và hiệu ứng trong Inspector. **New** tạo style riêng; sửa style dùng chung sẽ cập nhật các label đang dùng nó. Font VinaGen dùng atlas tĩnh: cần có đủ ký tự trước khi build.
 
-## Tạo nhãn chữ
+Để tạo font, mở **Font Asset → Select → Create Font**, chọn TTF/OTF và bộ ký tự **Latin And Vietnamese**, rồi **Create & Apply**.
 
-- **GameObject → VNT → VinaGenText** thêm một nhãn vào scene.
-- Trong UI Designer đặt **Typography → Text type → VinaGenText** rồi import Canvas.
+## Chọn chế độ render
 
-Enum trong JSON là `textRenderer: "text" | "textMeshPro" | "vinaGenText"`. Đổi loại chữ cần import lại.
-
-## Style
-
-Style là ScriptableObject có huy hiệu **S** xanh tím, lưu font, typography và hiệu ứng.
-
-- Style đi kèm: `VinaTextPro/Text Styles/Defaults/`, gồm Default, Plain White, Cream Title, Red to Green, Blue to Purple, Sunset và Red to White.
-- Style xuất từ UI Designer: `Assets/VinaGenUI/Text Styles/UI Designs/<tên thiết kế>/`; preset độc lập trong `Presets/`.
-- **New** trong Inspector tạo một style độc lập. Thay đổi định dạng trong Inspector cập nhật mọi nhãn dùng style đó (có Undo/Redo). Nội dung chữ và Raycast Target vẫn riêng cho từng đối tượng.
-
-### Preset gradient
-
-Các SO gradient dùng lại được nằm trong `VinaTextPro/Text Gradients/Defaults/`. Trong **Material → Color Gradient**, gán một **Gradient Preset** hoặc để trống để chỉnh màu cục bộ. **Save Gradient as SO** lưu một bản độc lập vào `Text Gradients/Custom/`.
-
-## Font
-
-VinaGenText chỉ nhận font asset của VinaGen (biểu tượng **T** xanh tím). Bốn font dựng sẵn dùng được ngay sau khi import: **LiberationSans, Noto Sans Regular, Montserrat Black, Nunito Regular**, đã có ký tự Latin, tiếng Việt và dấu ba chấm.
-
-### Tạo font
-
-**Font Asset → Select → Create Font**, hoặc chuột phải vào file TTF/OTF trong cửa sổ Project và chọn **Create Vina Font**:
-
-1. Thả **Source Font** (font trong dự án, hoặc file TTF/OTF từ Explorer; file bên ngoài được sao chép vào `VinaTextPro/Fonts/Imported/`).
-2. Chọn tên asset, **Output Folder**, cỡ điểm lấy mẫu, padding và độ phân giải atlas.
-3. Chọn **Character Set**: *Latin* (mặc định), *Latin And Vietnamese* hoặc *Custom*.
-4. Xem trước bằng **Sample Text**, rồi bấm **Create & Apply**.
-
-Ký tự thiếu hoặc không xếp vừa atlas được báo trong Console. Font có sẵn không bao giờ bị ghi đè; tên trùng sẽ nhận đường dẫn khác.
-
-## Code
-
-```csharp
-using UnityEngine;
-using VinaGen.Text;
-
-public sealed class ScoreLabel : MonoBehaviour
-{
-    public VinaGenText label;
-
-    public void SetScore(int score)
-    {
-        label.BeginUpdate();          // gom nhiều thay đổi thuộc tính
-        label.text = $"Score: {score}";
-        label.opacity = 1f;
-        label.EndUpdate();
-    }
-}
-```
-
-Dùng `BeginUpdate()` / `EndUpdate()` khi đổi nhiều thuộc tính cùng lúc.
-
-## Menu Text
-
-| Menu (**Tools → VinaGen AI Toolkit → Text**) | Mục đích |
+| Chế độ | Phù hợp với |
 | --- | --- |
-| **Create Default Fonts & Styles** | Tạo lại asset khởi đầu bị thiếu, chạy offline, giữ nguyên GUID. |
-| **Organize Fonts** / **Organize Text Styles** | Chạy lại việc sắp xếp thư mục, giữ GUID. |
-| **Repair Font & Style Icons** | Gán lại biểu tượng T / S. |
-| **Validate Baked Text** / **Delete Unused Baked Text…** | Bảo trì asset chữ đã bake. |
-| **Settings** | Asset cài đặt chữ. |
+| **Dynamic** | Điểm số, đồng hồ và chữ đổi nội dung lúc chạy. |
+| **Static Baked** | Tiêu đề, nhãn nút và chữ trang trí cố định. |
 
-## Hiệu năng
+Static Baked gộp chữ và hiệu ứng thành một ảnh, vẽ một quad cho mỗi label, hỗ trợ fade alpha và bỏ bước parse, layout, kiểm tra style mỗi frame lúc chạy. Bản hiện tại dùng **ảnh Composited**; bake Geometry đã bị bỏ.
 
-- Nhãn chưa kích hoạt không cấp phát renderer cho tới khi bật; nhãn đang hoạt động dùng lại renderer của mình.
-- Các nhãn có cùng atlas/gradient dùng chung một material có đếm tham chiếu.
-- Outline và đổ khối vẽ thêm silhouette nên tốn hơn chữ thường; hãy đo trên thiết bị đích với số nhãn hiển thị thực tế.
-- VinaGenText là component UI chuyên biệt, không thay thế toàn bộ TMP. Tài nguyên rich text theo tên (font/material/sprite/style) không được hỗ trợ.
+## Bake chữ cố định
 
-## Giấy phép
+1. Hoàn thiện nội dung, font và style.
+2. Trong **Rendering**, chọn **Static Baked**, bấm **Bake / Rebuild**.
+3. Giữ **Shared Atlas** bật tại **Text → Settings** để dùng chung trang texture.
+4. Lưu scene hoặc prefab. Bake lại dữ liệu cũ hoặc không tương thích trước khi build.
 
-Engine bố cục đi kèm và một số shader là mã nguồn Unity đã chỉnh sửa, theo **Unity Companion License**. Giữ `Third-Party Notices.txt`, `StandaloneText/Licenses/` và giấy phép font khi phân phối.
+Muốn bake cả nhóm, chọn object gốc rồi dùng **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** đưa label về Dynamic.
 
----
+**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Mặc định lưu tại `Assets/VinaGen Text Bakes/`.
+
+## Các tối ưu đã có
+
+- **Dynamic:** label chưa kích hoạt chưa tạo renderer; các label có cùng atlas font và gradient có thể chia sẻ material. Dùng `BeginUpdate()` / `EndUpdate()` khi đổi nhiều thuộc tính.
+- **Bake:** nội dung, font và style khớp nhau dùng lại dữ liệu bake. Atlas chung giúp gom các label tương thích vào cùng batch.
+- **Auto Bake:** bake label đã thay đổi khi kết thúc chỉnh sửa hoặc lưu scene/prefab. Bỏ qua label không đổi; chỉ ghi lại trang atlas bị thay đổi. Không chạy trong Play Mode.
+
+## Gom chữ bằng Mesh Batch
+
+Dùng **Canvas** cho UI cần mask, raycast và CanvasGroup. Với chữ trong scene dùng **Mesh Renderer**:
+
+1. Đặt các label đã bake dưới cùng một object gốc.
+2. Chọn **Rendering → Backend → Mesh Renderer** cho các label.
+3. Thêm **VinaGen Text Mesh Batch** vào object gốc qua Add Component.
+
+Mỗi trang atlas cần một draw call. Nhóm dùng chung thứ tự render; tắt **Track Movement** nếu label không di chuyển trong nhóm, rồi gọi `Rebuild()` khi thay đổi vị trí.
+
+## Benchmark: 1.000 label
+
+Đo ngày **11/10/2026**, Unity **6000.3.22f1**, URP, Linear color space, Play Mode trong Editor, code Release, Canvas world space; **i7-14700K / RTX 3060 / RAM 32 GB**.
+
+UGUI dùng Outline + Shadow; TMP dùng outline, underlay và gradient; VinaGenText dùng style mặc định gồm gradient, stroke, viền và extrusion.
+
+<div class="vg-benchmark" role="region" aria-label="VinaGenText benchmark" tabindex="0">
+<table><thead><tr>
+<th scope="col">Chỉ số</th>
+<th scope="col">UGUI Text<br>Outline + Shadow</th>
+<th scope="col">TextMeshPro</th>
+<th scope="col">VinaGenText<br>Dynamic</th>
+<th scope="col">Static Baked<br>Geometry (đã bỏ)</th>
+<th scope="col">Static Baked<br>Composited (atlas)</th>
+</tr></thead><tbody>
+<tr><th scope="row">Kích hoạt lần đầu</th><td>75.6 ms</td><td>397.9 ms¹</td><td>141.1 ms</td><td>30.8 ms</td><td>25.8 ms</td></tr>
+<tr><th scope="row">Managed cấp phát</th><td>8.1 MB</td><td>14.4 MB</td><td>13.6 MB</td><td>0.8 MB</td><td>0.8 MB</td></tr>
+<tr><th scope="row">Mỗi frame đứng yên</th><td>0.009 ms</td><td>0.106 ms</td><td>0.499 ms</td><td>0.009 ms</td><td>0.010 ms</td></tr>
+<tr><th scope="row">Render / frame</th><td>1.01 ms</td><td>2.26 ms</td><td>7.09 ms</td><td>6.38 ms</td><td>1.7–2.1 ms</td></tr>
+<tr><th scope="row">Đổi chữ 1.000 label</th><td>74.2 ms</td><td>24.2 ms</td><td>37.2 ms</td><td>Bake lại</td><td>Bake lại</td></tr>
+<tr><th scope="row">File bake / label</th><td>—</td><td>—</td><td>—</td><td>17.0 KB</td><td>2.5 KB</td></tr>
+<tr><th scope="row">Bake 1.000 label</th><td>—</td><td>—</td><td>—</td><td>14.7 s</td><td>11.8–12.9 s</td></tr>
+</tbody></table></div>
+
+¹ Lần kích hoạt đầu của TMP gồm khoảng **340 ms** khởi tạo font, material và shader một lần. Các lần sau đo được **42.9 ms**. Managed là mức tăng heap Mono khi kích hoạt; dung lượng file bake là trên ổ đĩa cho mỗi label.
+
+Trong phép đo này, Static Baked giảm chi phí kích hoạt và cấp phát so với Dynamic. **UGUI render nhanh hơn trên Canvas**; các hiệu ứng khác nhau. Một lần đo Composited với **Mesh Batch** đạt **0.38 ms render, 4.6 ms kích hoạt, 0.36 MB managed và 1 draw call**.
+
+<details>
+<summary>Cách đo các chỉ số</summary>
+<p>Kích hoạt: SetActive(true) + Canvas.ForceUpdateCanvases(). Managed: trung vị năm lần kích hoạt, tắt GC. Render: lần tốt nhất trong ba khối, mỗi khối 40 lần camera.Render. Geometry là số đo trước khi bị bỏ. Đây là số liệu Editor trên máy đo; cần profile lại trên thiết bị đích.</p>
+<p>Nguồn trong dự án: <code>Documentation/VinaGenTextPerformance/VinaGenText-Performance-Report.md</code>, mục 9.11.</p>
+</details>
+
 [Tiếp theo: Particle & Texture](particles.md)

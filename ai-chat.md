@@ -1,42 +1,24 @@
 # AI Chat & Providers
 
-> AI is an **optional** layer on top of the toolkit. Everything offline keeps working without it.
+Use Agent Chat to ask questions and create content with your own AI provider.
 
-## Agent Chat
+## Set up
 
-Open **Tools → VinaGen AI Toolkit → Chat** (or **Open AI Chat** in the Welcome window). Agent Chat keeps conversation history, sessions and attachments and talks to the provider you selected.
+1. Open **Tools → VinaGen AI Toolkit → Settings → AI Settings**.
+2. Select a provider and enter your credentials.
+3. Choose a model available to your account.
+4. Open **Tools → VinaGen AI Toolkit → Chat**.
 
-<div class="vg-pair">
-  <figure><img src="images/agent-chat.png" alt="VinaGen Agent Chat window with Chat, History and Settings tabs"><figcaption>Agent Chat: the bridge status shows at the top right.</figcaption></figure>
-</div>
+![Agent Chat window](images/agent-chat.png)
 
-- In toolkit chat the assistant introduces itself as **VinaGen**.
-- Replies follow the language of your latest message: English → English, Vietnamese (with or without accents) → Vietnamese with full diacritics.
-- Generated graph descriptions, labels and metadata default to concise **English**; your own text and explicit localization requests are preserved.
+Chat keeps sessions, history and attachments. Replies follow your latest message's language. Specify the output language when creating screen copy or graph labels.
 
-The native graph and design editors also contain chat panels for **Ask** (advice and copyable code), graph generation, white-frame edits and image requests.
+## Costs and data
 
-## Configure a provider
+Provider chat and image generation use your account's quota or credits. Graph editing, UI design and offline particle tools can be used without provider access.
 
-1. Open **Tools → VinaGen AI Toolkit → Settings → AI Settings** (or **Set up AI** in the Welcome window).
-2. Choose a provider listed there — for example **Gemini, OpenAI, Poe, Claude** or **Cursor** — and enter your own credentials.
-3. Pick a model available to your account.
+Online requests may include your prompt, attachments and context collected for that workflow. Keep API keys in personal Editor settings; exclude credential-bearing settings from version control and shared packages.
 
-Image generation supports **Gemini, OpenAI** and **Poe**. Particle texture generation through Poe reads the key from the `POE_API_KEY` environment variable or a password field that is cleared when the window closes.
+For particle images, **Authoring Tools → Poe Image** uses a temporary password field or the `POE_API_KEY` environment variable.
 
-> Model availability, quotas and pricing are controlled by the provider. This asset does not include provider credits.
-
-## Credentials
-
-- Credentials are **personal, Editor-only** configuration — never runtime scene components.
-- Do not commit credential-bearing settings or put keys in source, assets, MCP payloads or manifests.
-- The portable exporter excludes personal settings and personal artwork.
-
-## What gets sent
-
-Online requests may include your prompt, files/images you attach explicitly, the selected graph/design context and project excerpts assembled for that workflow. A connected MCP assistant receives the tool results/context it requests.
-
-The toolkit implements **neither model training nor whole-project telemetry**. Retention and training policies belong to your provider account — review them before sending sensitive content, or use the offline workflows.
-
----
-[Next: Create from Claude Code / Codex](create-from-chat.md)
+To work from an external assistant, see [Create from Claude Code / Codex](create-from-chat.md).

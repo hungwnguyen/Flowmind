@@ -1,58 +1,59 @@
 # Flow & Design Graphs
 
-> Two graph asset types describe what your game **does** (flow) and what each screen **shows** (design). Both open in native Unity editors and in the shared browser workspace.
+Use **Flow** to plan game logic and **Design** to sketch screen content.
 
-## Flow graphs (logic)
+## Open
 
-A **MockFlowGraph** asset models gameplay flow, state transitions and progression: nodes are steps and connections are transitions.
+Choose **Tools → VinaGen AI Toolkit → Editors → Open Flow Editor**. Both graph types share this browser workspace.
 
-**Node kinds:** `Start`, `Action`, `Decision`, `End`, `Note` and `Image`.
+| Asset | Use it for |
+| --- | --- |
+| `MockFlowGraph` | Steps, decisions, branches and state transitions. |
+| `DesignContentGraph` | Screen frames, text, images and numbered callouts. |
 
-![NewMockFlowGraph sample in the browser Flow Editor](images/flow-editor.png)
+## Build a flow
 
-### Create and edit
+1. Create a Flow graph in **Files**, or open the sample graph.
+2. Add Start, Action, Decision and End nodes.
+3. Drag between ports to connect nodes. Label decision branches, such as **Yes / No**.
+4. Click **Save asset**.
 
-1. Open **Tools → VinaGen AI Toolkit → OpenGraphEditor** (native) or **Editors → Open Flow Editor** (browser).
-2. Create or select a MockFlowGraph asset.
-3. Add nodes, connect them and give every branch an explicit label (for example *Yes* / *No*).
-4. Use selected-node edits for focused changes. Keep node IDs stable so later patches and AI edits stay precise.
+![Flow graph in the browser editor](images/flow-editor.png)
 
-The graph works **without FlowCanvas or NodeCanvas**. When those products are installed, optional reflection adapters activate automatically; they are never redistributed or installed by the toolkit.
+A flow graph is a plan; connect its logic to your game code. FlowCanvas and NodeCanvas are optional integrations.
 
-### Ask vs. generate
+## Sketch screens
 
-In the native graph editor chat, **Ask** gives advice and copyable code. Graph generation belongs to the graph-creation action. Review generated nodes, branches, comments and connections before applying them to game logic.
+1. Open or create a Design graph.
+2. Add frames, screen copy and images.
+3. Add numbered callouts to explain behavior.
+4. Save the asset.
 
-Attach relevant files and images explicitly. Chat context can include the selected graph content, attachments and project excerpts assembled by the workflow — review the composed request when working with confidential content.
+![Design graph with screen frames and callouts](images/design-editor.png)
 
-## Design content graphs (wireframes)
+Use [UI Designer](ui-designer.md) when you want editable UI layers that import into a Unity Canvas.
 
-A **DesignContentGraph** asset describes screens: layout hierarchy, frame size and style, labels, copy, image slots and numbered callouts.
+## Write screen specifications
 
-- Open **Tools → VinaGen AI Toolkit → Open Design Content Editor**, or open the asset in the browser Flow Editor.
-- Frames carry rich text (bold, italic, color, size, bullet/checklist/numbered lists), reorderable image slots and draggable numbered callouts.
-- Screen copy defaults to concise **English** unless the request provides text or explicitly asks for localization.
-- Frame size, colors, fonts and callout style are configured in **Settings → Design Content Settings**.
+Select a Design frame, then click **Document editor → Edit document & label images** in the Inspector. Double-clicking the frame also opens it.
 
-![NewDesignContentGraph sample: Home screen and Kitty Puzzle Party popup with numbered callouts](images/design-editor.png)
+<figure>
+  <img src="images/design-document-editor.png" alt="Design document editor with Home and Popup tabs, formatted screen specifications, and an image with a numbered label">
+  <figcaption>Write screen behavior beside its reference image and numbered callouts.</figcaption>
+</figure>
 
-## Canvas Design Capture Studio
+| Area | What it does |
+| --- | --- |
+| **Document tabs** | Switch between screen documents, such as Home and Popup. |
+| **Outline** | Navigate headings added to the document. |
+| **Document and toolbar** | Write behavior and requirements; format headings, font, lists, alignment, links and images. |
+| **Images & labels** | Click an image to add a numbered label. Click its badge to edit; drag to move it. |
+| **Export image PNG with labels** | Download the reference image with its numbered labels. |
 
-With Unity UI installed, open **Tools → VinaGen AI Toolkit → Design Capture Studio → Inspector** and select the Canvas/UI hierarchy you want to work on. Inspect, capture or generate the requested design.
-
-- Existing TMP fonts are kept when available.
-- New UI falls back to native Unity UI **Text** when no TMP Essentials/font is configured.
-- The bundled Noto Sans is a dynamic bitmap font. For SDF text, create a TMP font with TMP's Font Asset Creator and assign it as the project font.
+For example, label **1** identifies the event card; item **1** in the document explains its unlock condition and what happens when tapped. Close the editor and use **Save asset** to save the graph.
 
 ## Export
 
-From the browser workspace you can export:
+Export **Markdown** for written specs, **JSON** for structured data, or **SVG / PNG** for a visual overview.
 
-| Format | Notes |
-| --- | --- |
-| **Markdown** | Uses the same native Flow/Design exporters, including callout details. |
-| **JSON** | Preserves both native schemas and stable GUID + local-file-ID image references. |
-| **SVG / PNG** | Exports the visible canvas with embedded images. |
-
----
 [Next: Web Flow Editor](web-editor.md)

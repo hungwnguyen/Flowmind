@@ -1,52 +1,30 @@
 # Folder Layout
 
-> Reusable product code and content live in `Assets/VinaGen AI Toolkit/`. Everything **you** create goes to separate `Assets/VinaGen*` folders.
+The installed toolkit lives in `Assets/VinaGen AI Toolkit/`.
 
-## Toolkit folder
+## Main folders
 
-| Folder | Contents |
-| --- | --- |
-| `Editor/Core`, `Graph`, `Design`, `Chat` | Entry windows, native graph/design editors, chat and providers. |
-| `Editor/Bridge`, `UIStudio` | HTTP/MCP transport and document tools; UI documents, Canvas import, text and previews. |
-| `Editor/Particles` | Creation, textures/catalogs, materials, libraries, authoring, inspection, preview and review. |
-| `Editor/Images`, `Settings`, `Packaging` | Image authoring, settings inspectors/icon hooks and portable export. |
-| `Editor/WebGraph` | Bundled browser editor (HTML/CSS/JS). |
-| `Runtime/` | Runtime code for graphs, UI, text and particles, plus shaders and WebGL interop. |
-| `Content/Particles/ToonLibrary` | Bundled particle prefabs, materials, textures and artwork. |
-| `Content/UI/Prefabs` | Reusable UI templates. |
-| `Images/` | Particle textures and manifests, editor icons, previews and documentation screenshots. |
-| `Settings/` | Settings assets (robot icon) and per-dataset texture metadata. |
-| `Samples/` | Example graphs, UI document and particles. |
-| `Skills/` | Modular AI skill instructions (router + one skill per intent). |
-| `StandaloneText/`, `VinaTextPro/` | VinaGenText engine, fonts, styles and gradients. |
-| `DesignCaptureStudio/`, `MockGraph/` | Canvas Design Capture and the bundled mock graph. |
-| `WebGLBuilds/ParticlePreview` | Prebuilt, versioned Built-in/URP preview players. |
-| `Documentation/` | In-package documentation. |
-
-## Your project output
+Paths below are relative to the toolkit root.
 
 | Folder | Contents |
 | --- | --- |
-| `Assets/VinaGenUI/` | UI images (including `PSD Imported/`), fonts and text styles from UI Designer. |
-| `Assets/VinaGen PSD Imports/<PSD name>/` | Images and text styles from each PSD import. |
-| `Assets/VinaGenParticles/` | Generated prefabs, materials, textures, preview scenes and captures. |
-| `Assets/VinaGenGraphs/` | Block diagrams and white frames. |
-| `Assets/VinaGenGenerated/Code` | Default location for generated source code. |
-| `Assets/VinaGenImages/Generated` | Personal generated artwork and provenance. |
-| `Library/…` | Rebuildable caches, jobs and web snapshots. |
-| `Builds/…` | Review captures and verification reports. |
+| `Editor/`, `Runtime/` | Editor tools, runtime components and shaders. |
+| `Content/UI/Documents/`, `Content/UI/Images/` | Default UI documents and uploaded images. |
+| `Content/Particles/ToonLibrary/` | Bundled particle prefabs and dependencies. |
+| `Images/Particles/` | Particle textures and manifests. |
+| `VinaTextPro/Fonts/`, `VinaTextPro/Text Styles/` | Fonts and reusable text styles. |
+| `Samples/Graphs/` | Flow and Design graph examples. |
+| `Samples/Example VinaGenUIDocument/` | Complete UI sample. |
+| `Samples/GeneratedParticles/` | Generated particle prefabs, materials, textures and captures. |
+| `Settings/`, `Skills/`, `Documentation/` | Configuration, assistant instructions and reference docs. |
+| `WebGLBuilds/ParticlePreview/` | Supplied WebGL players. |
 
-None of these folders are required to install the toolkit, and they are excluded from toolkit redistribution.
+## Output outside the toolkit
 
-## Portable export
+- **Private PSD imports:** `Assets/VinaGen PSD Imports/<PSD name>/` keeps each import's document, images, styles, fonts and bakes together.
+- **Baked text:** `Assets/VinaGen Text Bakes/` by default. Change it in Text Settings.
+- **Caches and jobs:** `Library/`; review reports may use `Builds/`.
 
-`VinaGenPackageExporter` writes a filtered `.unitypackage` plus a sibling `.unitypackage.audit.json` listing included assets, exclusions and dependency problems. It excludes personal settings, credentials, generated artwork, user output, WebGL caches and tests. Batch export from a **closed** project:
+UI and particle defaults above match the current code. Choose graph destinations when creating them; older projects may retain legacy output paths.
 
-```sh
-Unity -batchmode -quit -projectPath <project> -executeMethod FlowCanvasExporter.Editor.VinaGenPackageExporter.ExportBatch -vinagenPackage <destination.unitypackage>
-```
-
-> Don't export the working folder with **Include dependencies** — that pulls in personal outputs the exporter deliberately filters.
-
----
 [Next: FAQ & Troubleshooting](faq.md)

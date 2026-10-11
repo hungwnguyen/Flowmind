@@ -72,6 +72,22 @@
 .sidebar-nav hr { margin: 18px 0 12px; border-color: var(--vg-line); }
 .markdown-section table { border-radius: 10px; overflow: hidden; font-size: 14px; }
 .markdown-section table th, .markdown-section table td { border-color: var(--vg-line); }
+.markdown-section .vg-benchmark {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 24px 0 14px;
+  border: 1px solid var(--vg-line);
+  border-radius: 10px;
+}
+.vg-benchmark:focus-visible { outline: 2px solid var(--vg-violet); outline-offset: 4px; }
+.markdown-section .vg-benchmark table { min-width: 810px; margin: 0; border-radius: 0; font-size: 13px; }
+.markdown-section .vg-benchmark th,
+.markdown-section .vg-benchmark td { padding: 12px 14px; border-width: 0 0 1px; text-align: right; font-variant-numeric: tabular-nums; }
+.markdown-section .vg-benchmark thead th { text-align: center; color: #c1c9dc !important; font-size: 12px; line-height: 1.6; }
+.markdown-section .vg-benchmark th:first-child { width: 180px; text-align: left; }
+.markdown-section .vg-benchmark tbody th { background: transparent !important; color: var(--vg-ink) !important; font-weight: 500; }
+.markdown-section .vg-benchmark :is(th, td):last-child { background: rgba(70, 192, 138, .08) !important; color: #8ce0b8 !important; font-weight: 600; }
+.markdown-section .vg-benchmark tbody tr:last-child :is(th, td) { border-bottom: 0; }
 .markdown-section pre { max-width: 100%; }
 
 body,

@@ -1,92 +1,160 @@
 # UI Designer
 
-> Design game screens in the browser, import PSDs and images, label components, then import a ready-to-use **Unity Canvas**.
+Build screens, popups and UI components with editable layers. Export images/PSD for sharing, or turn the design into a Unity Canvas for your game.
 
 ## Open
 
-- **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**, or
-- In the Flow Editor top bar choose **UI Designer → Unity**, or
-- Double-click a **VinaGenUIDocument** asset (create one with **Assets → Create → VinaGen AI Toolkit → UI Designer Document**).
+Choose **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**, or double-click a `VinaGenUIDocument` asset.
 
-![UI Designer with the sample VinaGenUIDocument](images/ui-designer.png)
-
-UI Designer shares the Flow Editor workspace chrome: Files/Layers/Assets on the left, Design/Unity properties on the right, drawing tools below the canvas. Unsaved edits show a yellow warning in the top bar and a dot on **Save**.
+![UI Designer with the bundled sample](images/ui-designer.png)
 
 ## Build a screen
 
-1. **New screen** or **Import** (PSD, JSON or images) from the **Files** panel.
-2. Draw **frames, rectangles, text and buttons**; group, duplicate, copy/paste, align/distribute, reorder, hide/lock layers.
-3. Drag images from **Unity Assets** (or PNG/JPEG files) onto the canvas.
-4. Label every layer as **Background / Image / Button / Text / Group** — use the property control or **Alt+1–5**.
-5. Choose responsive anchors, clip children or bake horizontal/vertical auto layout.
-6. Click **Save** to write the `VinaGenUIDocument` asset.
+1. Choose **New screen**, or import a PSD, JSON or images.
+2. Use **Root tools → Screen root** for the main screen; create a separate root for each popup.
+3. Add images, text, buttons and groups. Arrange them in **Layers**.
+4. Adjust geometry, colors, fonts, components and anchors in the Inspector.
+5. **Save** stores the document; **Export** downloads a file; **Unity** creates scene objects.
 
-When exactly one object is selected, creation tools add children under it using its local coordinates. Clear the selection to create on the outermost layer. **Root tools → Screen root** creates a screen-sized container.
+The saved document's width and height control Canvas import and Game View. Settings supply defaults for new documents.
 
-### Editing tips
+## Workspace and layers
 
-- **Move snapping** to screen, parent and sibling edges/centers with red guides and equal-distance labels. **Alt+drag** bypasses snapping, **Shift+drag** constrains to one axis.
-- Resize from any of the **four corners or four edges**; **Shift+resize** keeps proportions.
-- **Image → Scale → Fit** keeps source proportions; **Stretch** fills the rectangle. **Reset to image size** restores original dimensions.
-- **Shift+1** fits the screen; mouse wheel pans; **Ctrl/Cmd+wheel** zooms around the pointer.
-- Repeated clicks at the same spot cycle through overlapping layers; transparent pixels are click-through.
+| Area | Purpose |
+| --- | --- |
+| **Files** | Create/open documents and find project files. |
+| **Layers** | Select, rename, reorder, reparent, hide/lock and collapse the hierarchy. |
+| **Assets** | Browse Unity images and drag them onto the canvas. |
+| **Inspector** | Edit geometry, layout, paint, images, text and Unity properties. |
+| **Bottom toolbar** | Move, Hand, Scale, Empty/Screen root, shapes, Image, Text and Comment. |
+
+Select one object before drawing/dropping an image to create its child. Clear the selection to create a top-level layer. Use **Add Component** for object behavior; Image/Button/Text/Group roles have `Alt+2–5` shortcuts.
+
+| Layer / component | Unity result |
+| --- | --- |
+| **Empty / ordinary Group** | A non-visual `RectTransform` container. |
+| **Image** | `Image`; editable shapes with fill/stroke use `VinaGenUIShape`. |
+| **Button** | Image + Button from the configured Button prefab. Add a Text child for a caption. |
+| **Text** | Unity UI Text, TextMeshProUGUI or VinaGenText, based on Text type. |
+| **Canvas Group** | `CanvasGroup`: opacity, Interactable, Blocks raycasts, Ignore parent groups. |
+| **Horizontal / Vertical / Grid** | The corresponding LayoutGroup with spacing, padding and child sizes. Grid has columns and cell dimensions. |
+
+## Select and edit several objects
+
+- **Ctrl/Cmd-click** adds/removes individual layers; **Shift-click** selects a range in Layers. You can also drag a marquee on the canvas.
+- Align, distribute, group, duplicate, copy/paste and reorder through tools or the context menu. Paste targets the selected parent; Duplicate keeps the existing parent.
+- **Move** snaps edges, centers and equal spacing. `Alt-drag` bypasses snapping; `Shift-drag` constrains movement to one axis.
+- Drag edges/corners to resize; hold `Shift` for proportions. **Scale** (`K`) resizes the hierarchy, font sizes and strokes together.
+- **Selection colors** updates matching colors in the selection and its descendants together.
+
+## Images, shapes and 9-slice
+
+Drop local PNG/JPEG files or drag project images from **Assets**. **Choose project image / Replace image** assigns artwork; **Reset to image size** restores its original dimensions.
+
+| Image mode | Result |
+| --- | --- |
+| **Preserve Aspect** | Fit the image inside its rectangle, keeping its ratio. |
+| **None** | Stretch the image to fill the rectangle. |
+| **9-slice** | Keep corners/borders while stretching the center; useful for panels and button backgrounds. |
+
+9-slice detects repeated pixel bands on both axes. Save/Canvas import minimizes each standalone PNG/JPEG source once, keeping its path and GUID; Unity uses **Image.Type.Sliced** with Sprite borders. This optimization does not apply to atlas/multiple-sprite sources.
+
+**Rectangle, Line, Arrow, Ellipse, Polygon and Star** retain editable geometry. **Fill** supports Solid, Linear and Radial paint, alpha and 2–8 gradient stops; **Stroke** sets border color/width. Clip limits children overflowing their container.
+
+## Fusion images
+
+Use Fusion to combine artwork into one image while keeping text editable.
+
+1. Select an **Image, Button or Group/Empty container** with child images.
+2. Click **Fusion images** in **Image**.
+3. Wait for the combined PNG to be saved in the project and assigned to the selected object.
+
+Fusion combines visible artwork, including paint, transforms, clipping and opacity. **Text is excluded**; text, hidden artwork and necessary containers remain. Fused image nodes are removed while the positions of retained text stay intact.
+
+Unchanged artwork reuses the cache; changed artwork updates its owned Fusion PNG while retaining its GUID. **Undo** restores the layer hierarchy; the generated PNG remains in the project, and document Undo does not rewind overwritten file pixels. **Save** the document after Fusion.
+
+Text layers and locked hierarchies cannot be fused. A new fusion needs visible child images; previous results can be reused from cache. PNG upload to Unity has a **5 MB** limit. Failed Fusion retains the original layers.
+
+## Text and fonts
+
+**Typography → Text type** offers **Text**, **TextMesh Pro** and **VinaGenText**. Use [VinaGenText](vinagen-text.md) for gradients, borders, extrusion and static text baking.
+
+Text supports horizontal/vertical alignment, wrapping, auto size, spacing, margins and renderer-supported rich text. **Text on path / Curve angle** bends text. TMP offers font/material presets and shader controls; VinaGenText offers reusable styles and effects.
+
+Register fonts in **Settings → UI Designer Settings**. **Editors → Create UI Designer TMP starter fonts** creates starter fonts under `VinaTextPro/Fonts/TextMeshPro/`. Layer material overrides preserve source presets; changing **Text type** requires Canvas re-import.
 
 ## PSD import
 
-PSD v1 import runs in a local Web Worker with progress and cancellation.
+Import runs locally with progress and Cancel. Supported: **8-bit RGB PSD**, pixel layers, groups, names, opacity, visibility and supported blend modes. Text with compatible metadata is restored as Text; unsupported content uses cached artwork and needs review.
 
-| Supported | Needs review / not supported |
+For missing fonts, choose **PSD import → Default font**; matching project fonts retain priority. PSD files do not contain font files. Each import keeps its document, images and styles in `Assets/VinaGen PSD Imports/<PSD name>/`; fonts reference shared resources.
+
+Review masks, smart objects, blend modes and effects visually. PSB, CMYK and 16/32-bit PSDs are unsupported.
+
+## Export SVG, PSD and PNG
+
+Open **Export** in the top bar; in a collapsed toolbar, use **More actions → Export**.
+
+1. Select canvas/Layers objects when exporting part of the document.
+2. Choose **Selected object / Selected objects** or **All objects** under **Content**.
+3. Click **Export SVG**, **Export PSD** or **Export PNG** to download the file.
+
+| Content | Scope |
 | --- | --- |
-| 8-bit RGB pixel layers (raw/RLE/ZIP), layer names, groups, opacity, visibility | Masks, non-normal blend modes, effects, smart objects (review visually) |
-| Single-color layers become editable Image fills | PSB, CMYK and 16/32-bit PSDs (not supported) |
-| Type layers import as raster — assign a Text label to make them editable | |
+| **Selected object** | One object and all descendants, in local coordinates without outside ancestors' pose/appearance. |
+| **Selected objects** | Several objects and their descendants, retaining the arrangement between selected roots. Selecting both parent and child does not duplicate content. |
+| **All objects** | The whole document. Default when nothing is selected; available even when a selection exists. |
 
-PSD imports keep their own `Images/` and `Text Styles/` under `Assets/VinaGen PSD Imports/<PSD name>/`.
+For example, Ctrl/Cmd-click **Shop** and **Popup**, then use **Selected objects** to export them together. Choose **All objects** for the full board. For one file per screen, select and export each Screen root separately.
 
-## Text layers
-
-Pick **Typography → Text type**:
-
-| Type | Imported component |
+| Format | File contents |
 | --- | --- |
-| **Text** | Unity UI Text |
-| **TextMesh Pro** | `TextMeshProUGUI` with SDF fonts and material presets |
-| **VinaGenText** | `VinaGen.Text.VinaGenText` with gradients, stroke, outline and extrusion — see [VinaGenText](vinagen-text.md) |
+| **PNG** | Visible content combined into one transparent image at the authored 1× size. |
+| **SVG** | Browser layout with embedded images/fonts. Requires a `foreignObject`-compatible viewer; raster images and text previews remain raster content. |
+| **PSD** | One file with groups/layers, names, ordering, opacity, visibility and supported text metadata. Artwork includes raster paint; fonts are referenced, not embedded. |
 
-Previews render entirely in the browser using the source font. **Create TMP starter fonts** (UI Designer Settings, or **Tools → VinaGen AI Toolkit → Editors → Create UI Designer TMP starter fonts**) registers six SDF fonts with Vietnamese fallback in `Assets/VinaGenUI/Fonts/TextMeshPro`.
+Export does not Save the document. PSD text is editable, but Photoshop may redraw text/effects differently; editing requires the corresponding fonts. All objects preserves the combined board arrangement; PNG/SVG includes visible overflow beyond the reference rectangle.
 
-## 9-slice
+Export limits: **8,192 pixels per side and 16 megapixels total**. PSD also limits **1,000 layer records** including group dividers, **512 characters per label**, and **500 MB**. Repair missing font/image resources or wait for pending previews before retrying. Keep the document unchanged during export.
 
-UI Designer detects 9-slice borders automatically (repeated RGBA bands, two-pixel margin and center, following the Auto9Slicer algorithm). On Save and Canvas import, each standalone source PNG/JPEG is replaced once by its minimum optimized texture while keeping its GUID, and every sliced layer uses Unity **Sliced** Images with full sprite borders. Uniform-color images become Images with **Source Image = None**.
+## Transfer to Unity Canvas
 
-## Import into Unity
+1. Check Text type, components, images and Screen roots; **Save** the document.
+2. Select a target Canvas or its child in Unity. Without a selected Canvas, the tool creates a new **Screen Space Overlay Canvas**.
+3. Click **Unity** in UI Designer's top bar.
+4. Inspect Hierarchy and Game View: dimensions, anchors, text and interaction.
+5. Connect Button behavior to the game and **save the scene yourself**. For reuse, save the imported root as a prefab in Unity.
 
-Click the blue **Unity** button (or **Import to Unity Canvas** in the document Inspector):
+Alternatively, select the `VinaGenUIDocument` asset in Project, assign **Target Canvas** in its Inspector and click **Import to Canvas**.
 
-- Every reference is validated before any object is created; the import is one isolated **Undo** group.
-- The selected scene Canvas is used, or a screen-space Canvas is created. **Scenes are not saved automatically.**
-- **Image** and **Button** layers use the standard Unity Image component; Buttons get that Image as their target Graphic. Connect click events yourself.
-- Objects matching the Settings screen width/height use **Stretch–Stretch** anchors; other popups use Center anchors.
-- Auto-layout rectangles are baked; no live LayoutGroups are created.
-- The **VinaGen UI Designer** Game View preset is selected/updated to the Settings resolution.
+The importer validates references before creating objects. Each import creates a new hierarchy in one **Undo** group; previous imports are not automatically synchronized or removed. Undo removes imported objects while generated resources remain reusable. CanvasScaler and the **VinaGen UI Designer** Game View preset use the document's width/height.
 
-After import, text/style/typography edits in the same browser session update the imported text object live — no reimport needed.
+### Multiple screens and popups
 
-## Show in Editor
+Create **Root tools → Screen root**, or enable **Import as popup** on a container's context menu. Each root and its descendants become a separate screen directly under the Canvas, centered independently. Side-by-side design-board positions do not offset screens in Unity.
 
-The **Show in Editor** toolbar button pings the active document asset in the Project window. Unsaved work offers **Save and open** or **Open and discard**.
+Full-screen roots use **Stretch–Stretch**; smaller popups use **Center**. Hidden roots import inactive. With Screen roots present, layers outside those roots are excluded; roots cannot nest. Without marked roots, screen-sized top-level containers are detected, or the whole document imports under one root.
 
-## Settings
+### Anchors, layout and components
 
-**Tools → VinaGen AI Toolkit → Settings → UI Designer Settings** opens `VinaGenUIStudioSettings.asset` with cards for:
+**Auto adjust anchors** in UI Designer Settings derives anchors from each layer's position in its parent. Disable it to retain manual anchors; screen-sized layers still use Stretch–Stretch.
 
-- **Assets** — document, image and font folders (drop multiple TTF/OTF fonts at once).
-- **Canvas** — reference width and height (screen resolution).
-- **Shortcuts** — click a key badge or **Record**, then press the combination. Duplicates and reserved keys are rejected.
+**Horizontal / Vertical / Grid** create live Unity LayoutGroups. Legacy auto layout without a group type retains baked rectangles. **Canvas Group**, clipping, shapes, gradients and text curves become their corresponding components.
 
-## AI review
+Buttons use **UI Designer Settings → Button prefab**; the default prefab has no text. A custom prefab can retain components, children, transitions and events; the layer provides name, geometry, artwork and Interactable.
 
-MCP clients can present a design with `render_ui_web_demo`, then request **one cropped PNG per screen/popup** with `capture_ui_web_screens` and poll `inspect_ui_web_demo`. Captures go to `Builds/UIStudioReview/<requestId>/`. These actions never save documents or scenes. See [MCP Bridge](mcp-bridge.md).
+### Text and color after import
 
----
+Within the same browser session, text/style/typography edits update the most recently linked imported text objects. Re-import after changing renderer or hierarchy; edits do not save the scene.
+
+In Linear projects, **VinaGenUIGammaCompositor** brings composition closer to the browser, with a render target/redraw cost per active screen. **Linear alpha → Compensate Alpha** in Settings uses compensated color/alpha with ordinary Canvas rendering. Unsupported custom/TMP materials produce a warning and fall back to ordinary rendering; check Game View on your pipeline.
+
+## Save, settings and review
+
+**Save / Ctrl+S / Cmd+S** writes the `VinaGenUIDocument`, retaining layers, components and asset references. **Show in Editor** selects it in Project; unsaved edits offer Save and open or Open and discard. JSON import retains UI data but still needs matching project images/fonts. Through [MCP Bridge](mcp-bridge.md), `read_ui_document` returns `document` data for a JSON copy.
+
+Open **Settings → UI Designer Settings** for folders, fonts, Button prefab, default resolution, Auto adjust anchors, Linear alpha and shortcuts. **Comment** pins review notes without generating Canvas objects.
+
+Assistants can use `render_ui_web_demo` and `capture_ui_web_screens` to capture each screen/popup separately. Review actions do not save documents or scenes.
+
 [Next: VinaGenText](vinagen-text.md)
