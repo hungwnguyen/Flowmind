@@ -59,6 +59,10 @@
 
 **A:** Only what an online workflow you start needs: your prompt, files you attach, selected graph/design context and excerpts assembled for that request. A connected MCP assistant receives the tool results it requests. The toolkit performs no model training and no whole-project telemetry. Keep the bridge local and stop it when you're done.
 
+### Q: How does this site pick its language?
+
+**A:** A choice made with the **EN / VI** switch always wins and is remembered in your browser. Otherwise the site uses your location: a Vietnam time zone shows Vietnamese, anywhere else shows English. UTC+7 is shared by several countries (Windows reports Hanoi as `Asia/Bangkok`), so for those zones the site looks up your country from your IP address via geojs.io, and falls back to your browser language if the lookup fails.
+
 ---
 
 ## Licensing

@@ -8,6 +8,8 @@ A **MockFlowGraph** asset models gameplay flow, state transitions and progressio
 
 **Node kinds:** `Start`, `Action`, `Decision`, `End`, `Note` and `Image`.
 
+![NewMockFlowGraph sample in the browser Flow Editor](images/flow-editor.png)
+
 ### Create and edit
 
 1. Open **Tools → VinaGen AI Toolkit → OpenGraphEditor** (native) or **Editors → Open Flow Editor** (browser).
@@ -32,7 +34,7 @@ A **DesignContentGraph** asset describes screens: layout hierarchy, frame size a
 - Screen copy defaults to concise **English** unless the request provides text or explicitly asks for localization.
 - Frame size, colors, fonts and callout style are configured in **Settings → Design Content Settings**.
 
-![Design content graph in the browser workspace](images/design-editor.png)
+![NewDesignContentGraph sample: Home screen and Kitty Puzzle Party popup with numbered callouts](images/design-editor.png)
 
 ## Canvas Design Capture Studio
 
@@ -51,8 +53,6 @@ From the browser workspace you can export:
 | **Markdown** | Uses the same native Flow/Design exporters, including callout details. |
 | **JSON** | Preserves both native schemas and stable GUID + local-file-ID image references. |
 | **SVG / PNG** | Exports the visible canvas with embedded images. |
-
-![Export preview](images/parity-export-preview.png)
 
 ---
 [Next: Web Flow Editor](web-editor.md)

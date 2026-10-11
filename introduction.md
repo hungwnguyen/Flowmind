@@ -1,63 +1,46 @@
-# VinaGen AI Toolkit
+<div class="vg-hero">
+  <div>
+    <h1>VinaGen AI Toolkit</h1>
+    <p>One Unity workspace for game flow, screen design, styled text and particle effects. Use it fully offline, or bring your own AI.</p>
+  </div>
+  <img class="vg-hero-robot" src="images/robot.png" alt="VinaGen robot">
+</div>
 
-> **One Unity workspace for game flow, screen design, styled text and particle effects — with optional AI.**
+<figure class="vg-hero-shot">
+  <img src="images/ui-designer.png" alt="UI Designer showing the sample game UI document with Settings, New Cube and Your Score screens">
+  <figcaption>UI Designer with the bundled sample document, ready to import into a Unity Canvas.</figcaption>
+</figure>
 
-![VinaGen robot](images/robot.png ':size=96')
-
-**VinaGen AI Toolkit** is a Unity Editor extension for game designers and developers. It brings together visual logic graphs, a Figma-style UI Designer that imports straight into a Unity Canvas, the VinaGenText styled-text renderer, a native particle authoring pipeline with an offline texture library, a browser-based particle preview and a local MCP bridge that lets AI assistants such as Claude Code or Codex drive the toolkit.
+**VinaGen AI Toolkit** is a Unity Editor extension for game designers and developers. It combines visual logic graphs, a browser UI Designer that imports straight into a Unity Canvas, the VinaGenText styled-text renderer, native particle authoring with an offline texture library, a browser particle preview and a local MCP bridge that lets Claude Code, Codex and other assistants drive the toolkit.
 
 **Online AI is optional.** Graphs, UI design, text, offline texture generation and particle construction all work without an AI subscription. Provider accounts, credentials, network access and usage charges are separate from this asset.
 
-<div class="vg-cards">
-  <div class="vg-card">
-    <h4>Flow & Design graphs</h4>
-    <p>Plan game logic with flow graphs and sketch screens with design wireframes — natively or in the browser.</p>
-    <a href="#/graphs">Read more →</a>
-  </div>
-  <div class="vg-card">
-    <h4>UI Designer</h4>
-    <p>Design layers, import PSD/images, label components and import a ready Unity Canvas.</p>
-    <a href="#/ui-designer">Read more →</a>
-  </div>
-  <div class="vg-card">
-    <h4>VinaGenText</h4>
-    <p>SDF text with gradients, stroke, outline and 3D extrusion, editable from browser, Inspector or code.</p>
-    <a href="#/vinagen-text">Read more →</a>
-  </div>
-  <div class="vg-card">
-    <h4>Particles</h4>
-    <p>About 1,500 original textures, a bundled effect library and structured particle construction.</p>
-    <a href="#/particles">Read more →</a>
-  </div>
-  <div class="vg-card">
-    <h4>WebGL preview</h4>
-    <p>Review effects in a prebuilt browser player with seeded, repeatable captures.</p>
-    <a href="#/webgl-preview">Read more →</a>
-  </div>
-  <div class="vg-card">
-    <h4>MCP bridge</h4>
-    <p>Let Claude Code, Codex or any MCP client create UI, graphs and FX in your project.</p>
-    <a href="#/mcp-bridge">Read more →</a>
-  </div>
-</div>
+## Choose your workspace
 
-![Flow Editor running in the browser](images/flow-editor.png)
+<div class="vg-workspaces">
+  <a class="vg-ws vg-ws--chat" href="#/ai-chat"><strong>Agent Chat</strong><span>Think, ask and create with your own AI provider.</span></a>
+  <a class="vg-ws vg-ws--flow" href="#/graphs"><strong>Flow Editor</strong><span>Plan game flows and sketch screen wireframes.</span></a>
+  <a class="vg-ws vg-ws--ui" href="#/ui-designer"><strong>UI Designer</strong><span>UI layers, PSD/images and Canvas import.</span></a>
+  <a class="vg-ws vg-ws--text" href="#/vinagen-text"><strong>VinaGenText</strong><span>Gradients, stroke, outline and 3D extrusion for game labels.</span></a>
+  <a class="vg-ws vg-ws--fx" href="#/particles"><strong>Particles</strong><span>Original textures, effect prefabs and a browser preview.</span></a>
+  <a class="vg-ws vg-ws--bridge" href="#/mcp-bridge"><strong>MCP Bridge</strong><span>Let Claude Code or Codex build inside your project.</span></a>
+</div>
 
 ## Core concepts
 
-- **Flow graph (`MockFlowGraph`)** — a game-logic graph: steps, decisions, branches and transitions. Works without FlowCanvas or NodeCanvas.
-- **Design content graph (`DesignContentGraph`)** — screen wireframes: frames, copy, image slots and numbered callouts.
-- **UI document (`VinaGenUIDocument`)** — a layered game-UI design that can be imported into a Unity Canvas.
-- **Texture library & particle library** — catalogued original artwork and effect prefabs used to construct particle systems.
-- **MCP bridge** — a localhost HTTP server inside the Unity Editor that exposes toolkit actions to external assistants.
-- **Skills** — short, modular instruction files under `Skills/` that route each AI task to exactly one workflow.
+- **Flow graph (`MockFlowGraph`)**: game logic as steps, decisions, branches and transitions. Works without FlowCanvas or NodeCanvas.
+- **Design content graph (`DesignContentGraph`)**: screen wireframes with frames, copy, image slots and numbered callouts.
+- **UI document (`VinaGenUIDocument`)**: a layered game-UI design that imports into a Unity Canvas.
+- **Texture library and particle library**: catalogued original artwork and effect prefabs used to construct particle systems.
+- **MCP bridge**: a localhost HTTP server inside the Unity Editor that exposes toolkit actions to external assistants.
+- **Skills**: short, modular instruction files under `Skills/` that route each AI task to exactly one workflow.
 
 ## Requirements
 
 | Item | Requirement |
 | --- | --- |
 | Unity | Validated on **Unity 6000.3.22f1**. Verify other versions before relying on them. |
-| Core features | Unity engine/Editor modules only — no Python, Node.js, npm, CDN or third-party Asset Store package. |
+| Core features | Unity engine/Editor modules only. No Python, Node.js, npm, CDN or third-party Asset Store package. |
 | UI Designer, Canvas tools, text | Official **Unity UI (uGUI)** and **TextMesh Pro** (TMP ships inside uGUI on Unity 6). |
 | Particle rendering | Bundled Built-in compatible shaders; URP/HDRP adapters activate automatically when installed. |
 | WebGL particle preview | Prebuilt players are included. Exporting native prefab bundles needs Unity Hub's **WebGL Build Support** module. |
@@ -83,4 +66,4 @@ All menus live under **Tools → VinaGen AI Toolkit**.
 | **Text → …** | VinaGenText fonts, styles and maintenance commands. |
 | **Settings → …** | Every toolkit settings asset. |
 
-👉 **Next:** [Getting Started](getting-started.md)
+**Next:** [Getting Started](getting-started.md)

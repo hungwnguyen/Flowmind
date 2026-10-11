@@ -9,9 +9,9 @@
 
 Default URL: `http://127.0.0.1:8888/graph-editor/`. The editor shares the MCP bridge listener, so **Unity must stay open**. Compilation briefly interrupts the server; if a request is interrupted, your draft is kept — reload and recover it once Unity is ready.
 
-![Open Web Editor from the graph Inspector](images/open-web-inspector.png)
-
 ## Workspace
+
+![Flow Editor: Layers on the left, canvas in the middle, Document inspector on the right](images/flow-editor.png)
 
 - **One workspace for both graph types.** Open graphs from the **Files** panel; Flow and Design documents appear as tabs. Closing a tab closes the view, not the Unity asset.
 - **Files / Layers / Assets** on the left, the **inspector** on the right, drawing tools floating below the canvas and zoom controls at the top right.
@@ -38,8 +38,6 @@ The **Comment** tool pins discussion threads on the canvas (Flow, Design and UI 
 ## Appearance and preferences
 
 Click the **gear icon** for **Light / Dark / System** themes, light grid background, enhanced contrast, snap/grid and minimap preferences. Preferences are stored in browser localStorage per origin, not in the Unity project.
-
-![Settings dialog](images/settings-editor.png)
 
 ## Keyboard shortcuts
 

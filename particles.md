@@ -2,21 +2,21 @@
 
 > Build Unity particle systems from an **offline library of original textures** and bundled effect prefabs — with optional AI for missing artwork.
 
-![VinaGen Original Toon Game FX](images/default_game_fx_overview.png)
+![A sample of the DefaultGameFX textures, one per category](images/textures-default.png)
 
 ## Offline texture library
 
-Five manifests describe about **1,500 primary PNG textures**, all rendered by Unity C# from VinaGen-authored recipes — no third-party artwork inputs and no imaging runtime.
+Five packs ship **403 textures**, all rendered by Unity C# from VinaGen-authored recipes, with no third-party artwork inputs and no imaging runtime. The complete particle release has 474 PNGs (audit of 2026-10-11).
 
-| Pack | Contents |
-| --- | --- |
-| **DefaultGameFX** | Core FX: flame, smoke, impact, lightning, slash, portal, sparkle and more. |
-| **ArtStylesFX** | The same concepts across art styles. |
-| **GameEssentialsFX** | Everyday game effects. |
-| **UniversalGameTextures** | 487 textures in 18 groups: particles, decals, surfaces, terrain, masks, UI and sprites. |
-| **CombatCollisionFX** | 500 combat/collision textures in 20 families for 2D/3D mechanics, across five art tracks. |
+| Pack | Textures | Categories |
+| --- | --- | --- |
+| **DefaultGameFX** | 82 | Collectible, confetti, decal, explosion, feather, fire, flare, ghost, glow, healing, ice, leaf, lightning, magic, portal, shockwave, slash, smoke, snow, sparks, star, trail, water |
+| **ArtStylesFX** | 70 | Fire, glow, impact, lightning, magic, puzzle, slash, smoke, sparkle and splash across art styles |
+| **GameEssentialsFX** | 71 | Combat, environment, fire, gameplay, magic, sci-fi, weather |
+| **CombatCollisionFX** | 97 | Ballistic, blade, block, blunt, dark, defense, electric, explosive, fluid, fracture, frost, ground, magic, motion, space and more |
+| **UniversalGameTextures** | 83 | Impacts, decals, environment, glow, status, object sprites, rewards, sci-fi, smoke, UI textures, utility masks, water, weather |
 
-![Art-style variants](images/style_game_fx_overview.png)
+![A sample of the CombatCollisionFX textures](images/textures-combat.png)
 
 ### Import contracts
 
@@ -32,7 +32,7 @@ General assets are excluded from automatic particle selection. Assign surfaces a
 
 ## Bundled particle library
 
-`Content/Particles/ToonLibrary` contains an independent library of **1,213 prefabs** with 255 materials, 16 parametric meshes and original artwork. Browse it from **Open → Particles → Bundled Particle Library**. The gallery under `Samples/Particles/Texture Gallery/` shows every reusable texture on a prefab.
+`Content/Particles/ToonLibrary` contains an independent library of **78 effect prefabs** with their materials, meshes and original artwork. Browse it from **Open → Particles → Bundled Particle Library**. The gallery under `Samples/Particles/Texture Gallery/` shows every reusable texture on a prefab.
 
 ## Authoring Tools
 
@@ -53,7 +53,7 @@ Generation and analysis run as incremental Editor jobs with progress and cancel.
 
 ### Datasets
 
-`all` covers the five packs, `universal` selects the 487 game textures, `combat` selects the 500 combat recipes, and `lowpoly` / `voxel` select those art tracks. For a review copy, write to `Library/VinaGenNativeParticleTools/Generated` instead of the bundled folders.
+`all` covers the five packs; `universal` and `combat` select a single pack, and `lowpoly` / `voxel` select those art tracks. For a review copy, write to `Library/VinaGenNativeParticleTools/Generated` instead of the bundled folders.
 
 ## Construct an effect
 

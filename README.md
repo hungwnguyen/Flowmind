@@ -23,7 +23,25 @@ VinaGen AI Toolkit is a Unity Editor extension that combines flow/design graphs,
 | `folder-layout.md` | Toolkit and project folders, portable export |
 | `faq.md` | FAQ and troubleshooting |
 
-Navigation lives in `_sidebar.md`, the footer in `_footer.md` and site configuration/theme in `index.html`.
+Navigation lives in `_sidebar.md`, the footer in `_footer.md` and site configuration in `index.html`. The theme (palette taken from the toolkit's own Editor windows) and motion live in `assets/css/vinagen.css`.
+
+## Languages
+
+English pages sit at the root; Vietnamese pages mirror them under `vi/` with their own `vi/_sidebar.md` and `vi/_footer.md`. `assets/js/vinagen-lang.js` picks the language:
+
+1. A choice made with the **EN / VI** switch (stored in `localStorage`) always wins.
+2. Otherwise a Vietnam time zone shows Vietnamese and other zones show English.
+3. UTC+7 zones shared by several countries (Windows reports Hanoi as `Asia/Bangkok`) look up the country by IP via geojs.io, falling back to the browser language.
+
+When you add or change a page, update both the English file and its `vi/` twin. In `vi/` pages, Markdown images use `../images/…`; raw HTML `<img>` tags use `images/…`.
+
+## Screenshots
+
+Every image in `images/` is a real capture of the toolkit (Unity windows, the browser Flow Editor and UI Designer with the bundled samples) or a contact sheet built from the bundled texture PNGs.
+
+## Design skill
+
+`.claude/skills/frontend-design/` is Anthropic's [frontend-design skill](https://github.com/anthropics/skills/tree/main/skills/frontend-design) (see its `LICENSE.txt`). Claude Code loads it automatically when working on this site's look and motion.
 
 ## Preview locally
 

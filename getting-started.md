@@ -19,6 +19,11 @@ When UI Designer needs **TMP Essential Resources**, it imports them from the ins
 
 Open **Tools → VinaGen AI Toolkit → Open**. The toolkit window has five tabs:
 
+<div class="vg-pair">
+  <figure><img src="images/toolkit-home.png" alt="Toolkit window, Home tab"><figcaption>Home: choose a workspace.</figcaption></figure>
+  <figure><img src="images/toolkit-settings.png" alt="Toolkit window, Settings tab"><figcaption>Settings: every project default in one place.</figcaption></figure>
+</div>
+
 | Tab | What you do there |
 | --- | --- |
 | **Home** | Choose a workspace: Agent Chat, Flow Editor or UI Designer, plus quick access to the bridge, particle tools and settings. |

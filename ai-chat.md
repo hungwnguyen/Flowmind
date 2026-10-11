@@ -6,6 +6,10 @@
 
 Open **Tools → VinaGen AI Toolkit → Chat** (or **Open AI Chat** in the Welcome window). Agent Chat keeps conversation history, sessions and attachments and talks to the provider you selected.
 
+<div class="vg-pair">
+  <figure><img src="images/agent-chat.png" alt="VinaGen Agent Chat window with Chat, History and Settings tabs"><figcaption>Agent Chat: the bridge status shows at the top right.</figcaption></figure>
+</div>
+
 - In toolkit chat the assistant introduces itself as **VinaGen**.
 - Replies follow the language of your latest message: English → English, Vietnamese (with or without accents) → Vietnamese with full diacritics.
 - Generated graph descriptions, labels and metadata default to concise **English**; your own text and explicit localization requests are preserved.

@@ -1,0 +1,323 @@
+/* VinaGen docs theme — palette taken from the toolkit's own Editor windows:
+   navy surfaces, violet primary action, teal Flow, green UI Designer. */
+:root {
+  --vg-night: #161a27;
+  --vg-panel: #1c2132;
+  --vg-line: #2e3550;
+  --vg-ink: #e8ebf4;
+  --vg-muted: #9aa3b8;
+  --vg-violet: #8f7ff5;
+  --vg-violet-deep: #5b4ba3;
+  --vg-teal: #3fb6c8;
+  --vg-green: #46c08a;
+  --vg-amber: #e0a24a;
+  --vg-cyan: #59c8f2;
+
+  --base-font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --code-font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --base-line-height: 1.7;
+  --heading-h1-font-size: 2.1rem;
+  --heading-h2-font-size: 1.4rem;
+  --heading-h1-font-weight: 800;
+}
+
+body,
+.markdown-section,
+.sidebar {
+  font-family: var(--base-font-family);
+}
+
+.markdown-section code,
+.markdown-section pre {
+  font-family: var(--code-font-family);
+}
+
+.markdown-section h1 {
+  letter-spacing: -0.02em;
+}
+
+.markdown-section h2 {
+  letter-spacing: -0.01em;
+  padding-top: 0.4em;
+}
+
+.markdown-section img {
+  border-radius: 10px;
+  border: 1px solid var(--vg-line);
+}
+
+:focus-visible {
+  outline: 2px solid var(--vg-violet);
+  outline-offset: 2px;
+}
+
+/* ===== Sidebar brand ===== */
+.vg-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--vg-ink);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+}
+
+.vg-brand img {
+  width: 42px;
+  height: 42px;
+  border: 0 !important;
+}
+
+.vg-brand small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--vg-muted);
+}
+
+/* ===== Language switch (EN / VI) ===== */
+.vg-lang {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 40;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border: 1px solid var(--vg-line);
+  border-radius: 999px;
+  background: rgba(22, 26, 39, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.vg-lang::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: var(--vg-violet-deep);
+  box-shadow: inset 0 0 0 1px rgba(143, 127, 245, 0.55);
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vg-lang[data-lang="vi"]::before {
+  transform: translateX(100%);
+}
+
+.vg-lang button {
+  position: relative;
+  min-width: 42px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--vg-muted);
+  font: 600 13px/1 var(--base-font-family);
+  cursor: pointer;
+  transition: color 220ms ease;
+}
+
+.vg-lang button[aria-pressed="true"] {
+  color: #fff;
+}
+
+.vg-lang button:hover {
+  color: var(--vg-ink);
+}
+
+/* ===== Home hero: the page's one orchestrated moment ===== */
+.vg-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: center;
+  margin: 8px 0 26px;
+}
+
+.markdown-section .vg-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 4.2vw, 2.9rem);
+  line-height: 1.12;
+}
+
+.vg-hero p {
+  margin: 0;
+  max-width: 34em;
+  font-size: 1.08rem;
+  color: var(--vg-muted);
+}
+
+.markdown-section .vg-hero-robot {
+  width: 132px;
+  height: 132px;
+  border: 0;
+  border-radius: 0;
+  filter: drop-shadow(0 0 0 rgba(89, 200, 242, 0));
+}
+
+.vg-hero-shot {
+  position: relative;
+  margin: 0 0 30px;
+}
+
+.markdown-section .vg-hero-shot img {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.vg-hero-shot figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--vg-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vg-hero-robot {
+    animation: vg-robot-in 700ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both,
+      vg-robot-boot 1400ms 650ms ease-out both;
+  }
+
+  .vg-hero h1,
+  .vg-hero p {
+    animation: vg-rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .vg-hero h1 {
+    animation-delay: 120ms;
+  }
+
+  .vg-hero p {
+    animation-delay: 260ms;
+  }
+
+  .vg-hero-shot img {
+    animation: vg-wipe 900ms 420ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+
+  .vg-hero-shot figcaption {
+    animation: vg-rise 500ms 1150ms ease-out both;
+  }
+
+  /* Navigating answers the reader's click with a short settle. */
+  .vg-route-enter {
+    animation: vg-settle 200ms ease-out both;
+  }
+}
+
+@keyframes vg-robot-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.86) rotate(-6deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes vg-robot-boot {
+  0% { filter: drop-shadow(0 0 0 rgba(89, 200, 242, 0)); }
+  35% { filter: drop-shadow(0 0 22px rgba(89, 200, 242, 0.75)); }
+  100% { filter: drop-shadow(0 0 10px rgba(143, 127, 245, 0.35)); }
+}
+
+@keyframes vg-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes vg-wipe {
+  from { clip-path: inset(0 0 100% 0 round 12px); opacity: 0.4; }
+  to { clip-path: inset(0 0 0 0 round 12px); opacity: 1; }
+}
+
+@keyframes vg-settle {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+
+/* ===== Workspace index: mirrors the toolkit's "Choose your workspace" rows ===== */
+.vg-workspaces {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 30px;
+}
+
+.markdown-section a.vg-ws {
+  display: block;
+  padding: 14px 16px 14px 18px;
+  border: 1px solid var(--vg-line);
+  border-left: 3px solid var(--ws, var(--vg-violet));
+  border-radius: 10px;
+  background: var(--vg-panel);
+  color: var(--vg-ink);
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.markdown-section a.vg-ws:hover {
+  text-decoration: none;
+  border-color: var(--ws, var(--vg-violet));
+  background: #20263a;
+}
+
+.vg-ws strong {
+  display: block;
+  font-size: 1.02rem;
+  color: var(--vg-ink);
+}
+
+.vg-ws span {
+  display: block;
+  margin-top: 3px;
+  font-size: 14px;
+  color: var(--vg-muted);
+}
+
+.vg-ws--chat { --ws: var(--vg-violet); }
+.vg-ws--flow { --ws: var(--vg-teal); }
+.vg-ws--ui { --ws: var(--vg-green); }
+.vg-ws--text { --ws: #c58cf0; }
+.vg-ws--fx { --ws: var(--vg-amber); }
+.vg-ws--bridge { --ws: var(--vg-cyan); }
+
+/* Narrow screenshots (Editor windows) sit side by side. */
+.vg-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  align-items: start;
+  margin: 12px 0 22px;
+}
+
+.vg-pair figure {
+  margin: 0;
+}
+
+.vg-pair figcaption {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--vg-muted);
+}
+
+@media (max-width: 760px) {
+  .vg-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .vg-hero-robot {
+    order: -1;
+    width: 92px !important;
+    height: 92px !important;
+  }
+
+  .vg-workspaces {
+    grid-template-columns: 1fr;
+  }
+
+  .vg-lang {
+    top: 10px;
+    right: 12px;
+  }
+}

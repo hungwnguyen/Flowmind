@@ -28,9 +28,11 @@
   <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.6.0/css/regular.css" />
   <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.6.0/css/solid.css" />
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Be Vietnam Pro covers Vietnamese diacritics for both languages -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;600&display=swap"
     rel="stylesheet">
 
   <style>
@@ -45,7 +47,7 @@
       --content-max-width: 920px;
 
       /* ===== Dark Mode Colors (Deep Slate) ===== */
-      --base-background-color: #0f172a;
+      --base-background-color: #161a27;
       --base-color: #cbd5e1;
       /* Text color mượt hơn */
       --heading-color: #f8fafc;
@@ -57,30 +59,30 @@
       --heading-h1-font-weight: 600;
 
       /* ===== Links ===== */
-      --link-color: #22c55e;
+      --link-color: #8f7ff5;
       --link-text-decoration: none;
       --link-text-decoration--hover: underline;
 
       /* ===== Sidebar & Navbar ===== */
-      --sidebar-background: #020617;
-      --sidebar-border-color: #1e293b;
-      --sidebar-name-color: #22c55e;
+      --sidebar-background: #11141f;
+      --sidebar-border-color: #232838;
+      --sidebar-name-color: #8f7ff5;
       --sidebar-nav-link-color: #94a3b8;
-      --sidebar-nav-link-color--active: #22c55e;
+      --sidebar-nav-link-color--active: #8f7ff5;
 
       /* ===== Search Plugin Fix ===== */
-      --search-background: #020617;
+      --search-background: #11141f;
       --search-input-color: #f8fafc;
       --search-input-placeholder-color: #64748b;
-      --search-result-heading-color: #22c55e;
-      --search-result-keyword-background: rgba(34, 197, 94, 0.2);
+      --search-result-heading-color: #8f7ff5;
+      --search-result-keyword-background: rgba(143, 127, 245, 0.2);
 
       /* ===== Blockquote & Tabs ===== */
-      --blockquote-border-color: #22c55e;
-      --blockquote-background: rgba(34, 197, 94, 0.08);
-      --docsifytabs-tab-background: #1e293b;
+      --blockquote-border-color: #8f7ff5;
+      --blockquote-background: rgba(143, 127, 245, 0.08);
+      --docsifytabs-tab-background: #232838;
       --docsifytabs-tab-color: #94a3b8;
-      --docsifytabs-tab-color--active: #22c55e;
+      --docsifytabs-tab-color--active: #8f7ff5;
     }
 
     /* ===== DARK MODE OVERRIDES ===== */
@@ -106,7 +108,7 @@
     }
 
     .search .search-keyword {
-      color: #22c55e !important;
+      color: #8f7ff5 !important;
       font-style: normal;
     }
 
@@ -129,7 +131,7 @@
     }
 
     .download-btn {
-      background-color: #22c55e !important;
+      background-color: #8f7ff5 !important;
       color: #ffffff !important;
       padding: 12px 24px;
       border-radius: 8px;
@@ -143,7 +145,7 @@
     }
 
     .download-btn:hover {
-      background-color: #16a34a !important;
+      background-color: #7565e6 !important;
       transform: translateY(-2px);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
@@ -154,42 +156,42 @@
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 1.5rem;
-      background-color: #0f172a !important;
+      background-color: #161a27 !important;
       color: var(--base-color) !important;
     }
 
     .markdown-section table tr {
-      border-top: 1px solid #1e293b;
-      background-color: #0f172a !important;
+      border-top: 1px solid #232838;
+      background-color: #161a27 !important;
     }
 
     .markdown-section table tr:nth-child(2n) {
-      background-color: #1e293b !important;
+      background-color: #232838 !important;
     }
 
     .markdown-section table th,
     .markdown-section table td {
       padding: 12px 15px;
-      border: 1px solid #334155;
+      border: 1px solid #343b52;
       color: var(--base-color) !important;
     }
 
     .markdown-section table th {
-      background-color: #1e293b !important;
-      color: #22c55e !important;
+      background-color: #232838 !important;
+      color: #8f7ff5 !important;
       font-weight: 700;
     }
 
     /* --- Code Blocks --- */
     code,
     pre {
-      background-color: #020617 !important;
+      background-color: #11141f !important;
       color: #e5e7eb !important;
       border-radius: 6px;
     }
 
     pre {
-      border: 1px solid #1e293b !important;
+      border: 1px solid #232838 !important;
     }
 
     /* --- Sidebar --- */
@@ -220,9 +222,9 @@
       position: relative;
       display: flex;
       align-items: center;
-      background: #0f172a !important;
+      background: #161a27 !important;
       /* Màu nền nhẹ hơn sidebar một chút để tạo khối */
-      border: 1px solid #334155;
+      border: 1px solid #343b52;
       /* Border sáng hơn để thấy rõ viền */
       border-radius: 10px;
       padding: 8px 12px 8px 38px;
@@ -231,10 +233,10 @@
 
     /* Hiệu ứng khi click vào ô tìm kiếm */
     .search .input-wrap:focus-within {
-      border-color: #22c55e;
+      border-color: #8f7ff5;
       /* Màu xanh lá đặc trưng của bạn */
-      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
-      background: #020617 !important;
+      box-shadow: 0 0 0 2px rgba(143, 127, 245, 0.15);
+      background: #11141f !important;
       /* Đổi nền tối sâu hơn khi focus */
     }
 
@@ -252,7 +254,7 @@
     }
 
     .search .input-wrap:focus-within::before {
-      color: #22c55e;
+      color: #8f7ff5;
       /* Icon sáng lên khi focus */
     }
 
@@ -281,9 +283,9 @@
       font-size: 10px;
       font-weight: 600;
       color: #94a3b8;
-      background: #1e293b;
+      background: #232838;
       /* Nền phím tắt nổi bật trên nền tối */
-      border: 1px solid #334155;
+      border: 1px solid #343b52;
       border-radius: 4px;
       box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
       /* Tạo hiệu ứng phím vật lý */
@@ -307,8 +309,8 @@
     .vff-footer {
       margin-top: 60px;
       padding: 50px 20px 30px;
-      border-top: 1px solid #1e293b;
-      background: #020617;
+      border-top: 1px solid #232838;
+      background: #11141f;
     }
 
     .vff-footer-grid {
@@ -320,7 +322,7 @@
     }
 
     .vff-footer h3 {
-      color: #22c55e;
+      color: #8f7ff5;
       font-size: 20px;
       margin-bottom: 15px;
     }
@@ -349,73 +351,28 @@
     }
 
     .vff-footer a:hover {
-      color: #22c55e;
+      color: #8f7ff5;
       transform: translateX(4px);
     }
 
     .vff-footer-bottom {
       margin-top: 40px;
       padding-top: 20px;
-      border-top: 1px solid #1e293b;
+      border-top: 1px solid #232838;
       text-align: center;
       font-size: 13px;
       color: #64748b;
     }
 
-    /* ===== VinaGen sidebar brand ===== */
-    .vg-brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 20px;
-      color: #f8fafc;
-    }
-
-    .vg-brand img {
-      width: 40px;
-      height: 40px;
-    }
-
-    .vg-brand small {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #22c55e;
-    }
-
-    .vg-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-      margin: 18px 0 24px;
-    }
-
-    .vg-card {
-      padding: 16px 18px;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      background: rgba(2, 6, 23, 0.6);
-    }
-
-    .vg-card h4 {
-      margin: 0 0 6px !important;
-      color: #f8fafc;
-    }
-
-    .vg-card p {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
   </style>
 
+  <link rel="stylesheet" href="assets/css/vinagen.css">
 </head>
 
 <body>
   <div id="app"></div>
+  <!-- Language routing (English at /, Vietnamese at /vi/) runs before Docsify renders -->
+  <script src="assets/js/vinagen-lang.js"></script>
   <script>
     // Enter the URL of your own GitHub Repository in between the two quotes below
     var gitLinkRepoURL = 'https://github.com/hungwnguyen/Flowmind';
@@ -477,6 +434,12 @@
       name: '<span class="vg-brand"><img src="images/robot.png" alt=""><span>VinaGen <small>AI Toolkit</small></span></span>',
       // repo           : 'https://github.com/hibbitts-design/docsify-open-publishing-starter-kit/',
       homepage: 'introduction.md',
+      // Vietnamese pages live in vi/ with their own _sidebar.md and _footer.md
+      relativePath: true,
+      alias: {
+        '/vi/': '/vi/introduction',
+        '/vi/README': '/vi/introduction',
+      },
       // coverpage      : '_coverpage.md',
       loadSidebar: !(getURLParameterByName(['standalone', 'embedded']) || standalone || false),
 
@@ -499,8 +462,9 @@
       search: {
         maxAge: 86400000, // Expiration time, the default one day
         paths: 'auto',
-        placeholder: 'Search Ctrl+K',
-        noData: 'No matches found.',
+        placeholder: { '/vi/': 'Tìm kiếm Ctrl+K', '/': 'Search Ctrl+K' },
+        noData: { '/vi/': 'Không tìm thấy kết quả.', '/': 'No matches found.' },
+        pathNamespaces: ['/vi'],
         // Headline depth, 1 - 6
         depth: 3,
         namespace: 'vinagen-ai-toolkit-docs',
@@ -615,6 +579,16 @@
 
           // Invoked on each page load after new HTML has been appended to the DOM
           hook.doneEach(function () {
+
+            // Short settle on each route change (disabled by prefers-reduced-motion in vinagen.css)
+            var section = document.querySelector('.markdown-section');
+            if (section) {
+              section.classList.remove('vg-route-enter');
+              void section.offsetWidth;
+              section.classList.add('vg-route-enter');
+            }
+            // Aliased home routes (/vi/) have no sidebar match, leaving a bare "- Name" title
+            if (/^\s*-\s/.test(document.title)) document.title = document.title.replace(/^\s*-\s*/, '');
 
             /* Javascript generated/assisted by Anthropic Claude AI */
             // Function to resolve image paths

@@ -4,6 +4,10 @@
 
 Open them from **Tools → VinaGen AI Toolkit → Settings** or from the **Settings** tab of the toolkit window.
 
+<div class="vg-pair">
+  <figure><img src="images/toolkit-settings.png" alt="Settings tab of the toolkit window"><figcaption>The Settings tab opens each asset in the Inspector.</figcaption></figure>
+</div>
+
 | Menu | Asset | Configures |
 | --- | --- | --- |
 | **AI Settings** | `VinaGenCopilotSettings` | Providers, models, credentials and image-generation options. |
@@ -13,7 +17,7 @@ Open them from **Tools → VinaGen AI Toolkit → Settings** or from the **Setti
 | **Particle Texture Library** | `VinaGenParticleTextureLibrary` | Catalog, aliases, tags, provenance and selection metadata. |
 | **Bundled Particle Library** | `VinaGenBundledParticleLibrary` | Effect prefabs and automatic selection preferences. |
 | **Particle WebGL Preview Settings** | `VinaGenParticleWebPreviewSettings` | Pipelines, build folders, camera, bloom and capture defaults. |
-| **Text → Settings** | `VinaGenTextSettings` | VinaGenText defaults. |
+| **Text → Settings** (Text menu) | `VinaGenTextSettings` | VinaGenText defaults. |
 | **Open Settings Folder** | — | Pings the Settings folder in the Project window. |
 
 ## Personal vs. shared settings

@@ -8,6 +8,8 @@
 - In the Flow Editor top bar choose **UI Designer → Unity**, or
 - Double-click a **VinaGenUIDocument** asset (create one with **Assets → Create → VinaGen AI Toolkit → UI Designer Document**).
 
+![UI Designer with the sample VinaGenUIDocument](images/ui-designer.png)
+
 UI Designer shares the Flow Editor workspace chrome: Files/Layers/Assets on the left, Design/Unity properties on the right, drawing tools below the canvas. Unsaved edits show a yellow warning in the top bar and a dot on **Save**.
 
 ## Build a screen
