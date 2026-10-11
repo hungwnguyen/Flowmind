@@ -4,6 +4,27 @@
 
 ![A sample of the DefaultGameFX textures, one per category](images/textures-default.png)
 
+## Try it in your browser
+
+These effects ship in `Samples/GeneratedParticles/Standards`. They run here in the toolkit's own prebuilt WebGL player (Built-in pipeline), loaded from native WebGL AssetBundles exported by the toolkit. Pick an effect, then use the panel to restart, slow down, recolor or move the emitter.
+
+<div class="vg-fx">
+  <div class="vg-fx-picker" role="group" aria-label="Effect">
+    <button type="button" data-fx="toon_explosion" aria-pressed="true">Explosion</button>
+    <button type="button" data-fx="toon_fire_missile" aria-pressed="false">Fire missile</button>
+    <button type="button" data-fx="lightning_strike" aria-pressed="false">Lightning</button>
+    <button type="button" data-fx="portal" aria-pressed="false">Portal</button>
+    <button type="button" data-fx="toon_heal_burst" aria-pressed="false">Heal</button>
+    <button type="button" data-fx="toon_slash" aria-pressed="false">Slash</button>
+    <button type="button" data-fx="toon_impact" aria-pressed="false">Impact</button>
+    <button type="button" data-fx="toon_shield_hit" aria-pressed="false">Shield hit</button>
+    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false">Smoke</button>
+    <button type="button" data-fx="rain_2d" aria-pressed="false">Rain</button>
+  </div>
+  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1" title="VinaGen particle playground" loading="lazy" allow="fullscreen"></iframe>
+  <p class="vg-fx-note">The player is about 11 MB and loads when this section scrolls into view. One-shot effects replay automatically. <a data-fx-open href="playground/?fx=toon_explosion&replay=1" target="_blank" rel="noopener">Open full screen</a></p>
+</div>
+
 ## Offline texture library
 
 Five packs ship **403 textures**, all rendered by Unity C# from VinaGen-authored recipes, with no third-party artwork inputs and no imaging runtime. The complete particle release has 474 PNGs (audit of 2026-10-11).

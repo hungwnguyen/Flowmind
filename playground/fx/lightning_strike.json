@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "buildTarget": "WebGL",
+  "unityVersion": "6000.3.22f1",
+  "actualRenderPipeline": "Built-in",
+  "colorSpace": "Linear",
+  "prefabPath": "Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Standards/lightning_strike.prefab",
+  "assetName": "assets/vinagen ai toolkit/samples/generatedparticles/standards/lightning_strike.prefab",
+  "bundleFile": "fx-32cf1c1a3d1ea914db97c333929fc12e-a586b3703cf38bae1daf6c7ccb7dae9f",
+  "dependencyHash": "a586b3703cf38bae1daf6c7ccb7dae9f",
+  "sourceRenderPipeline": "Built-in",
+  "fidelity": {
+    "preserved": [
+      "Native ParticleSystem modules, curves, hierarchy, meshes, textures and sub-emitter references."
+    ],
+    "adapted": [],
+    "unsupported": [
+      "HDRP-specific rendering, VFX Graph and scripts absent from the prebuilt player are not native browser equivalents."
+    ]
+  }
+}

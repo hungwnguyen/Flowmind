@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "buildTarget": "WebGL",
+  "unityVersion": "6000.3.22f1",
+  "actualRenderPipeline": "Built-in",
+  "colorSpace": "Linear",
+  "prefabPath": "Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Standards/toon_heal_burst.prefab",
+  "assetName": "assets/vinagen ai toolkit/samples/generatedparticles/standards/toon_heal_burst.prefab",
+  "bundleFile": "fx-5d3aa2eea4f3af64ea36210599ea6001-803f17257a32c06abb2f96ceb3177f1a",
+  "dependencyHash": "803f17257a32c06abb2f96ceb3177f1a",
+  "sourceRenderPipeline": "Built-in",
+  "fidelity": {
+    "preserved": [
+      "Native ParticleSystem modules, curves, hierarchy, meshes, textures and sub-emitter references."
+    ],
+    "adapted": [],
+    "unsupported": [
+      "HDRP-specific rendering, VFX Graph and scripts absent from the prebuilt player are not native browser equivalents."
+    ]
+  }
+}

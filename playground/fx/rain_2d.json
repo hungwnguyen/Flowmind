@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "buildTarget": "WebGL",
+  "unityVersion": "6000.3.22f1",
+  "actualRenderPipeline": "Built-in",
+  "colorSpace": "Linear",
+  "prefabPath": "Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Standards/rain_2d.prefab",
+  "assetName": "assets/vinagen ai toolkit/samples/generatedparticles/standards/rain_2d.prefab",
+  "bundleFile": "fx-de0c0bdafb8c3d147af4aae1e040eaec-aa306510888a7f0a15b1f2a2ef5e64b2",
+  "dependencyHash": "aa306510888a7f0a15b1f2a2ef5e64b2",
+  "sourceRenderPipeline": "Built-in",
+  "fidelity": {
+    "preserved": [
+      "Native ParticleSystem modules, curves, hierarchy, meshes, textures and sub-emitter references."
+    ],
+    "adapted": [],
+    "unsupported": [
+      "HDRP-specific rendering, VFX Graph and scripts absent from the prebuilt player are not native browser equivalents."
+    ]
+  }
+}

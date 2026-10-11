@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "buildTarget": "WebGL",
+  "unityVersion": "6000.3.22f1",
+  "actualRenderPipeline": "Built-in",
+  "colorSpace": "Linear",
+  "prefabPath": "Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Standards/toon_smoke_burst.prefab",
+  "assetName": "assets/vinagen ai toolkit/samples/generatedparticles/standards/toon_smoke_burst.prefab",
+  "bundleFile": "fx-f499b0f2f88bbba449e037dd9089ac4c-cf17cd65c9202e0117b04671d620ed48",
+  "dependencyHash": "cf17cd65c9202e0117b04671d620ed48",
+  "sourceRenderPipeline": "Built-in",
+  "fidelity": {
+    "preserved": [
+      "Native ParticleSystem modules, curves, hierarchy, meshes, textures and sub-emitter references."
+    ],
+    "adapted": [],
+    "unsupported": [
+      "HDRP-specific rendering, VFX Graph and scripts absent from the prebuilt player are not native browser equivalents."
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "buildTarget": "WebGL",
+  "unityVersion": "6000.3.22f1",
+  "actualRenderPipeline": "Built-in",
+  "colorSpace": "Linear",
+  "prefabPath": "Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Standards/toon_slash.prefab",
+  "assetName": "assets/vinagen ai toolkit/samples/generatedparticles/standards/toon_slash.prefab",
+  "bundleFile": "fx-a0ebed245c6474848af7864a86a2c0b5-13270460d77044d33e58c05cf0fd6df6",
+  "dependencyHash": "13270460d77044d33e58c05cf0fd6df6",
+  "sourceRenderPipeline": "Built-in",
+  "fidelity": {
+    "preserved": [
+      "Native ParticleSystem modules, curves, hierarchy, meshes, textures and sub-emitter references."
+    ],
+    "adapted": [],
+    "unsupported": [
+      "HDRP-specific rendering, VFX Graph and scripts absent from the prebuilt player are not native browser equivalents."
+    ]
+  }
+}

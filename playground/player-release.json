@@ -1,0 +1,13 @@
+{
+    "unityVersion": "6000.3.22f1",
+    "pipeline": "BuiltIn",
+    "colorSpace": "Linear",
+    "files": [
+        "Build/9be6f9d01ee8b167bb4382233692980b.data.unityweb",
+        "Build/9be6f9d01ee8b167bb4382233692980b.framework.js.unityweb",
+        "Build/9be6f9d01ee8b167bb4382233692980b.loader.js",
+        "Build/9be6f9d01ee8b167bb4382233692980b.wasm.unityweb",
+        "index.html",
+        "robot.png"
+    ]
+}

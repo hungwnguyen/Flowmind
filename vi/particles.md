@@ -4,6 +4,27 @@
 
 ![Mẫu texture DefaultGameFX, mỗi nhóm một texture](../images/textures-default.png)
 
+## Thử ngay trên trình duyệt
+
+Các hiệu ứng này có sẵn trong `Samples/GeneratedParticles/Standards`. Chúng chạy ngay tại đây bằng chính player WebGL dựng sẵn của toolkit (pipeline Built-in), nạp từ AssetBundle WebGL gốc do toolkit xuất ra. Chọn một hiệu ứng, rồi dùng bảng bên cạnh để phát lại, làm chậm, đổi màu hoặc cho emitter di chuyển.
+
+<div class="vg-fx">
+  <div class="vg-fx-picker" role="group" aria-label="Hiệu ứng">
+    <button type="button" data-fx="toon_explosion" aria-pressed="true">Vụ nổ</button>
+    <button type="button" data-fx="toon_fire_missile" aria-pressed="false">Cầu lửa</button>
+    <button type="button" data-fx="lightning_strike" aria-pressed="false">Sét đánh</button>
+    <button type="button" data-fx="portal" aria-pressed="false">Cổng dịch chuyển</button>
+    <button type="button" data-fx="toon_heal_burst" aria-pressed="false">Hồi máu</button>
+    <button type="button" data-fx="toon_slash" aria-pressed="false">Chém</button>
+    <button type="button" data-fx="toon_impact" aria-pressed="false">Va chạm</button>
+    <button type="button" data-fx="toon_shield_hit" aria-pressed="false">Đỡ bằng khiên</button>
+    <button type="button" data-fx="toon_smoke_burst" aria-pressed="false">Khói</button>
+    <button type="button" data-fx="rain_2d" aria-pressed="false">Mưa</button>
+  </div>
+  <iframe class="vg-fx-frame" src="playground/?fx=toon_explosion&replay=1" title="Sân chơi particle VinaGen" loading="lazy" allow="fullscreen"></iframe>
+  <p class="vg-fx-note">Player nặng khoảng 11 MB và chỉ tải khi bạn cuộn tới phần này. Hiệu ứng phát một lần sẽ tự phát lại. <a data-fx-open href="playground/?fx=toon_explosion&replay=1" target="_blank" rel="noopener">Mở toàn màn hình</a></p>
+</div>
+
 ## Thư viện texture offline
 
 Năm pack chứa **403 texture**, tất cả được render bằng Unity C# từ công thức do VinaGen tự xây dựng, không dùng artwork bên thứ ba và không cần runtime xử lý ảnh. Bản phát hành particle đầy đủ có 474 PNG (kiểm tra ngày 11/10/2026).

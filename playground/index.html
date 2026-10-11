@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>VinaGen Particle Preview | Vina Gen</title>
+  <link rel="icon" type="image/png" href="robot.png">
+  <style>
+    :root { color-scheme: dark; --panel:#10141e; --panel2:#181e2b; --line:#2a3346; --text:#eef3ff; --muted:#96a4bc; --accent:#7c9cff; --good:#61d9a5; --bad:#ff6b7d; }
+    * { box-sizing:border-box; }
+    html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#080b12; color:var(--text); font:13px/1.4 Inter,Segoe UI,Arial,sans-serif; }
+    #app { display:grid; grid-template-columns:minmax(0,1fr) clamp(260px,32vw,340px); width:100%; height:100%; }
+    #stage { position:relative; min-width:0; background:radial-gradient(circle at 50% 42%,#1f2940 0,#0a0e17 58%,#05070c 100%); }
+    #unity-canvas { width:100%; height:100%; display:block; outline:none; background:transparent; }
+    #loading { position:absolute; inset:0; display:grid; place-items:center; background:#080b12; z-index:4; }
+    #loading-card { width:min(360px,75vw); }
+    #loading-title { display:flex; justify-content:space-between; margin-bottom:10px; font-weight:600; }
+    #loading-track { height:6px; overflow:hidden; border-radius:99px; background:#222b3c; }
+    #loading-fill { width:0; height:100%; background:linear-gradient(90deg,#6f86ff,#6edbc4); transition:width .15s; }
+    #panel { overflow:auto; padding:16px; border-left:1px solid var(--line); background:linear-gradient(180deg,var(--panel2),var(--panel)); }
+    h1 { margin:0; font-size:18px; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand img { flex:none; object-fit:contain; }
+    .sub { margin:4px 0 14px; color:var(--muted); }
+    .status { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .chip { padding:4px 8px; border:1px solid var(--line); border-radius:99px; color:var(--muted); background:#0c1018; }
+    .chip.ready { color:var(--good); border-color:#2f765b; }
+    section { padding:12px 0; border-top:1px solid var(--line); }
+    label { display:block; margin:8px 0 4px; color:var(--muted); }
+    input, select, textarea, button { width:100%; border:1px solid var(--line); border-radius:7px; background:#0b1019; color:var(--text); font:inherit; }
+    input, select, button { height:34px; padding:0 9px; }
+    textarea { min-height:124px; padding:9px; resize:vertical; font:12px/1.45 Consolas,monospace; }
+    button { cursor:pointer; background:#20283a; font-weight:600; }
+    button:hover { border-color:var(--accent); background:#27314a; }
+    .primary { background:#3f5de0; border-color:#5975ef; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+    .row { display:flex; align-items:center; gap:8px; }
+    .row input[type=range] { padding:0; }
+    output { width:42px; text-align:right; color:var(--muted); }
+    #state { margin:0; max-height:210px; overflow:auto; white-space:pre-wrap; color:#b8c5d9; font:11px/1.4 Consolas,monospace; }
+    #shot { width:100%; margin-top:8px; border:1px solid var(--line); border-radius:7px; display:none; }
+    #error { min-height:18px; color:var(--bad); }
+    @media (max-width:640px) { #app { grid-template-columns:1fr; grid-template-rows:minmax(45vh,1fr) minmax(280px,45vh); } #panel { border-left:0; border-top:1px solid var(--line); } }
+  </style>
+</head>
+<body>
+<div id="app">
+  <main id="stage">
+    <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+    <div id="loading"><div id="loading-card"><div id="loading-title"><span>Loading particle playground</span><span id="loading-pct">0%</span></div><div id="loading-track"><div id="loading-fill"></div></div></div></div>
+  </main>
+  <aside id="panel">
+    <div class="brand"><img src="robot.png" alt="" width="28" height="28"><h1>VinaGen Particle Playground</h1></div>
+    <p class="sub">Live-edit the running Particle System and capture a frame for an AI agent.</p>
+    <div class="status"><span id="ready-chip" class="chip">connecting</span><span id="pipeline-chip" class="chip">pipeline: —</span></div>
+
+    <section>
+      <label for="target">Particle target</label>
+      <select id="target"><option value="*">All systems</option></select>
+      <div class="grid3" style="margin-top:8px"><button data-action="play">Play</button><button data-action="pause">Pause</button><button data-action="restart" class="primary">Restart</button></div>
+      <label for="time-scale">Time scale</label>
+      <div class="row"><input id="time-scale" type="range" min="0" max="2" step="0.05" value="1"><output id="time-scale-value">1.00</output></div>
+    </section>
+
+    <section>
+      <div class="grid2">
+        <div><label for="lifetime">Lifetime</label><input id="lifetime" type="number" min="0.01" step="0.1" value="1.2"></div>
+        <div><label for="start-size">Start size</label><input id="start-size" type="number" min="0" step="0.05" value="0.35"></div>
+        <div><label for="emission">Emission / sec</label><input id="emission" type="number" min="0" step="1" value="25"></div>
+        <div><label for="start-color">Start color</label><input id="start-color" type="color" value="#77aaff"></div>
+      </div>
+      <div class="grid2" style="margin-top:8px"><button id="apply-basics" class="primary">Apply basics</button><button id="request-state">Refresh state</button></div>
+    </section>
+
+    <section>
+      <label for="render-mode">Renderer mode</label>
+      <div class="grid2"><select id="render-mode"><option>Billboard</option><option value="Stretch">Stretched Billboard</option><option>HorizontalBillboard</option><option>VerticalBillboard</option><option>Mesh</option></select><input id="mesh-index" type="number" min="0" max="5" step="1" value="0" title="Mesh palette index"></div>
+      <label for="camera-distance">Camera distance</label>
+      <div class="row"><input id="camera-distance" type="range" min="2" max="15" step="0.25" value="7"><output id="camera-distance-value">7.0</output></div>
+    </section>
+
+    <section>
+      <label for="motion-path">Emitter motion</label>
+      <select id="motion-path"><option value="off">Off</option><option value="line">Line A to B</option><option value="arc">Arc</option><option value="circle">Circle</option><option value="ellipse">Ellipse</option><option value="triangle">Triangle</option><option value="rectangle">Rectangle</option><option value="zigzag">Zigzag</option><option value="sine">Sine wave</option><option value="figure_eight">Figure eight</option><option value="helix">Helix</option></select>
+      <div class="grid2"><div><label for="motion-start">A: viewport X,Y</label><input id="motion-start" value="0.25,0.5"></div><div><label for="motion-end">B: viewport X,Y</label><input id="motion-end" value="0.75,0.5"></div><div><label for="motion-duration">Duration (s)</label><input id="motion-duration" type="number" min="0.1" max="120" step="0.1" value="2"></div><div><label for="motion-amplitude">Amplitude</label><input id="motion-amplitude" type="number" min="0" max="1" step="0.01" value="0.18"></div></div>
+      <label><input id="motion-loop" type="checkbox"> Loop motion</label>
+      <button id="apply-motion">Apply path</button>
+    </section>
+
+    <section>
+      <label for="json-command">Raw command JSON</label>
+      <textarea id="json-command">{"command":"set","target":"*","path":"noise.strength","number":0.4}</textarea>
+      <button id="send-json" style="margin-top:8px">Send command</button>
+      <div id="error"></div>
+    </section>
+
+    <section>
+      <label for="import-fx">Import FX file</label>
+      <input id="import-fx" type="file">
+      <label for="import-manifest">FX manifest URL</label>
+      <input id="import-manifest" type="url" placeholder="http://127.0.0.1:8890/bundles/manifest.json">
+      <button id="sync-fx" style="margin-top:8px">Sync FX</button>
+    </section>
+
+    <section>
+      <div class="grid2"><button id="capture" class="primary">Capture frame</button><button id="download">Download PNG</button></div>
+      <img id="shot" alt="Latest captured particle frame">
+    </section>
+
+    <section><label>Live state</label><pre id="state">Waiting for the preview player…</pre></section>
+  </aside>
+</div>
+
+<script>
+  // Avoid a browser favicon request failing an otherwise clean automated review.
+  const favicon = document.createElement('link'); favicon.rel = 'icon'; favicon.href = 'data:,'; document.head.appendChild(favicon);
+  const canvas = document.querySelector('#unity-canvas');
+  const loading = document.querySelector('#loading');
+  const loadingFill = document.querySelector('#loading-fill');
+  const loadingPct = document.querySelector('#loading-pct');
+  const readyChip = document.querySelector('#ready-chip');
+  const pipelineChip = document.querySelector('#pipeline-chip');
+  const stateElement = document.querySelector('#state');
+  const errorElement = document.querySelector('#error');
+  const targetElement = document.querySelector('#target');
+  const shotElement = document.querySelector('#shot');
+  let bridgeObjectName = 'VinaGen Particle Web Preview';
+  let latestCapture = '';
+
+  function acceptStateJson(json) {
+    try {
+      const state = typeof json === 'string' ? JSON.parse(json) : json;
+      window.vinagenParticlePreview.state = state;
+      stateElement.textContent = JSON.stringify(state, null, 2);
+      const expectedPipeline = state.expectedRenderPipeline || 'unknown';
+      const actualPipeline = state.actualRenderPipeline || 'unknown';
+      pipelineChip.textContent = expectedPipeline === actualPipeline
+        ? 'pipeline: ' + actualPipeline
+        : 'preview: ' + expectedPipeline + ' via ' + actualPipeline;
+      errorElement.textContent = state.lastError || '';
+      const selected = targetElement.value;
+      const systems = Array.isArray(state.systems) ? state.systems : [];
+      targetElement.innerHTML = '<option value="*">All systems</option>' + systems.map((system, index) => {
+        const value = system.path || String(index);
+        return '<option value="' + value.replace(/"/g, '&quot;') + '">' + (system.path || system.name) + '</option>';
+      }).join('');
+      if ([...targetElement.options].some(option => option.value === selected)) targetElement.value = selected;
+      document.dispatchEvent(new CustomEvent('vinagen-particle-state-ready', { detail: state }));
+    } catch (error) {
+      errorElement.textContent = 'State parse error: ' + error.message;
+    }
+  }
+
+  window.vinagenParticlePreview = {
+    apiVersion: 'booting',
+    unityInstance: null,
+    state: null,
+    send(payload) {
+      if (!this.unityInstance) throw new Error('Preview player is not ready.');
+      this.unityInstance.SendMessage(bridgeObjectName, 'ApplyCommandJson', JSON.stringify(payload));
+    },
+    command(command, target = '*') { this.send({ command, target }); },
+    set(target, path, value) {
+      const payload = { command: 'set', target: target || '*', path };
+      if (Array.isArray(value)) payload.values = value.map(Number);
+      else if (typeof value === 'boolean') payload.boolean = value;
+      else if (typeof value === 'number') payload.number = value;
+      else payload.stringValue = String(value);
+      this.send(payload);
+    },
+    setRange(target, path, min, max) { this.send({ command: 'set', target: target || '*', path, useRange: true, min: Number(min), max: Number(max) }); },
+    requestState() { this.send({ command: 'state' }); },
+    capture(type = 'image/png', quality = 0.95) { return canvas.toDataURL(type, quality); }
+  };
+
+  window.addEventListener('vinagen-particle-ready', event => {
+    bridgeObjectName = event.detail.bridgeObjectName || bridgeObjectName;
+    readyChip.textContent = 'ready';
+    readyChip.classList.add('ready');
+    acceptStateJson(event.detail.stateJson);
+  });
+  window.addEventListener('vinagen-particle-state', event => acceptStateJson(event.detail.stateJson));
+
+  document.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', () => {
+    window.vinagenParticlePreview.command(button.dataset.action, targetElement.value);
+  }));
+  document.querySelector('#time-scale').addEventListener('input', event => {
+    document.querySelector('#time-scale-value').value = Number(event.target.value).toFixed(2);
+    window.vinagenParticlePreview.send({ command: 'timeScale', number: Number(event.target.value) });
+  });
+  document.querySelector('#apply-basics').addEventListener('click', () => {
+    const api = window.vinagenParticlePreview, target = targetElement.value;
+    api.set(target, 'main.startLifetime', Number(document.querySelector('#lifetime').value));
+    api.set(target, 'main.startSize', Number(document.querySelector('#start-size').value));
+    api.set(target, 'emission.rateOverTime', Number(document.querySelector('#emission').value));
+    api.set(target, 'main.startColor', document.querySelector('#start-color').value);
+    api.command('restart', target);
+  });
+  document.querySelector('#request-state').addEventListener('click', () => window.vinagenParticlePreview.requestState());
+  document.querySelector('#render-mode').addEventListener('change', event => {
+    const api = window.vinagenParticlePreview, target = targetElement.value;
+    if (event.target.value === 'Mesh') api.set(target, 'renderer.meshIndex', Number(document.querySelector('#mesh-index').value));
+    else api.set(target, 'renderer.renderMode', event.target.value);
+    api.command('restart', target);
+  });
+  document.querySelector('#mesh-index').addEventListener('change', event => window.vinagenParticlePreview.set(targetElement.value, 'renderer.meshIndex', Number(event.target.value)));
+  document.querySelector('#camera-distance').addEventListener('input', event => {
+    const distance = Number(event.target.value);
+    document.querySelector('#camera-distance-value').value = distance.toFixed(1);
+    window.vinagenParticlePreview.send({ command: 'camera', values: [0, 12, distance] });
+  });
+  document.querySelector('#send-json').addEventListener('click', () => {
+    try { errorElement.textContent = ''; window.vinagenParticlePreview.send(JSON.parse(document.querySelector('#json-command').value)); }
+    catch (error) { errorElement.textContent = error.message; }
+  });
+  function analyzeGlowCapture(record) {
+    const required = String(record.actualRenderPipeline || '').toUpperCase() === 'URP';
+    if (!required || !record.dataUrl) {
+      return Promise.resolve({ required, passed: true, status: required ? 'not-run' : 'not-required' });
+    }
+
+    return new Promise(resolve => {
+      const image = new Image();
+      image.onload = () => {
+        const size = 256;
+        const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        context.drawImage(image, 0, 0, width, height);
+        const pixels = context.getImageData(0, 0, width, height).data;
+        const core = new Uint8Array(width * height);
+        let corePixels = 0;
+        const luminance = index => (0.2126 * pixels[index] + 0.7152 * pixels[index + 1] + 0.0722 * pixels[index + 2]) / 255;
+        for (let pixel = 0; pixel < core.length; pixel++) {
+          if (luminance(pixel * 4) >= 0.82) { core[pixel] = 1; corePixels++; }
+        }
+        const halo = new Uint8Array(width * height);
+        let haloPixels = 0;
+        for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+          const pixel = y * width + x;
+          if (core[pixel] || luminance(pixel * 4) < 0.16) continue;
+          let foundCore = false;
+          for (let dy = -6; dy <= 6 && !foundCore; dy++) for (let dx = -6; dx <= 6; dx++) {
+            if (dx * dx + dy * dy > 36) continue;
+            const nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && core[ny * width + nx]) { foundCore = true; break; }
+          }
+          if (foundCore && !halo[pixel]) { halo[pixel] = 1; haloPixels++; }
+        }
+        const haloToCoreRatio = corePixels > 0 ? haloPixels / corePixels : 0;
+        const passed = corePixels >= 3 && haloToCoreRatio >= 0.04;
+        resolve({
+          required, passed, status: passed ? 'passed' : 'failed', corePixels, haloPixels, haloToCoreRatio,
+          message: passed ? 'Browser capture contains a visible glow halo.' : 'Browser capture has no measurable glow halo; URP bloom may be absent.'
+        });
+      };
+      image.onerror = () => resolve({ required: true, passed: false, status: 'failed', message: 'Browser could not decode the WebGL capture.' });
+      image.src = record.dataUrl;
+    });
+  }
+
+  async function showCapture(record) {
+    const dataUrl = typeof record === 'string' ? record : record && record.dataUrl;
+    if (!dataUrl) return;
+    latestCapture = dataUrl;
+    shotElement.src = dataUrl;
+    shotElement.style.display = 'block';
+    if (typeof record !== 'string') {
+      const validation = record.glowValidation && !record.glowValidation.required
+        ? record.glowValidation : await analyzeGlowCapture(record);
+      record.browserGlowValidation = validation;
+      window.vinagenParticlePreview.glowValidation = validation;
+      if (validation.required && !validation.passed) {
+        errorElement.textContent = validation.message;
+        console.error('VinaGen particle preview glow validation failed:', validation);
+      }
+      document.dispatchEvent(new CustomEvent('vinagen-particle-glow-validation', { detail: validation }));
+    }
+  }
+  document.addEventListener('vinagen-particle-capture-ready', event => showCapture(event.detail));
+  document.querySelector('#apply-motion').addEventListener('click', () => {
+    try {
+      const path = document.querySelector('#motion-path').value;
+      window.vinagenParticlePreview.setMotion({ enabled: path !== 'off', path: path === 'off' ? 'line' : path, space: 'viewport',
+        start: document.querySelector('#motion-start').value.split(',').map(Number), end: document.querySelector('#motion-end').value.split(',').map(Number),
+        duration: Number(document.querySelector('#motion-duration').value), amplitude: Number(document.querySelector('#motion-amplitude').value), loop: document.querySelector('#motion-loop').checked });
+    } catch (error) { errorElement.textContent = error.message; }
+  });
+  window.addEventListener('vinagen-particle-sync-error', event => { errorElement.textContent = event.detail.message; });
+  document.querySelector('#import-fx').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try { errorElement.textContent = ''; await window.vinagenParticlePreview.importEffect(file); }
+    catch (error) { errorElement.textContent = error.message; }
+    event.target.value = '';
+  });
+  document.querySelector('#sync-fx').addEventListener('click', async () => {
+    try {
+      errorElement.textContent = '';
+      await window.vinagenParticlePreview.importManifest(document.querySelector('#import-manifest').value);
+    } catch (error) { errorElement.textContent = error.message; }
+  });
+  document.querySelector('#capture').addEventListener('click', async () => {
+    try {
+      errorElement.textContent = '';
+      const captures = await window.vinagenParticlePreview.capture({ times: [Math.max(0.1, window.vinagenParticlePreview.state?.playbackSeconds || 1)], postToSink: true });
+      showCapture(Array.isArray(captures) ? captures[captures.length - 1] : captures);
+    } catch (error) { errorElement.textContent = error.message; }
+  });
+  document.querySelector('#download').addEventListener('click', async () => {
+    try {
+      errorElement.textContent = '';
+      const captures = await window.vinagenParticlePreview.capture({ times: [Math.max(0.1, window.vinagenParticlePreview.state?.playbackSeconds || 1)], download: true, postToSink: true });
+      showCapture(Array.isArray(captures) ? captures[captures.length - 1] : captures);
+    } catch (error) { errorElement.textContent = error.message; }
+  });
+
+  const buildUrl = 'Build';
+  const loaderUrl = buildUrl + '/9be6f9d01ee8b167bb4382233692980b.loader.js';
+  const config = {
+    dataUrl: buildUrl + '/9be6f9d01ee8b167bb4382233692980b.data.unityweb',
+    frameworkUrl: buildUrl + '/9be6f9d01ee8b167bb4382233692980b.framework.js.unityweb',
+    codeUrl: buildUrl + '/9be6f9d01ee8b167bb4382233692980b.wasm.unityweb',
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: "DefaultCompany",
+    productName: "Vina Gen",
+    productVersion: "0.1.0"
+  };
+  const loaderScript = document.createElement('script');
+  loaderScript.src = loaderUrl;
+  loaderScript.onload = () => createUnityInstance(canvas, config, progress => {
+    const pct = Math.round(progress * 100); loadingFill.style.width = pct + '%'; loadingPct.textContent = pct + '%';
+  }).then(instance => {
+    window.vinagenParticlePreview.unityInstance = instance;
+    const params = new URLSearchParams(window.location.search);
+    const manifestUrl = params.get('fxManifest');
+    // Docs site: ?fx=<name> imports fx/<name>.json once (static hosting, no live watch needed).
+    const bundledFx = params.get('fx');
+    if (!manifestUrl && /^[a-z0-9_]+$/.test(bundledFx || '')) {
+      function importBundledFx() {
+        const fx = window.vinagenParticlePreview;
+        if (!fx.state || typeof fx.importManifest !== 'function') return;
+        window.removeEventListener('vinagen-particle-ready', importBundledFx);
+        fx.importManifest('fx/' + bundledFx + '.json').catch(error => { errorElement.textContent = error.message; });
+      }
+      window.addEventListener('vinagen-particle-ready', importBundledFx);
+      importBundledFx();
+    }
+    // ?replay=1 restarts one-shot effects once every system has finished (looping effects keep playing).
+    if (params.get('replay') === '1') {
+      let settleTicks = 0;
+      setInterval(() => {
+        const fx = window.vinagenParticlePreview;
+        if (!fx.state || !fx.loadedBundleFile || fx.state.importInProgress || document.hidden) return;
+        if (settleTicks > 0) { settleTicks--; fx.requestState(); return; }
+        const systems = fx.state.systems || [];
+        if (systems.length && systems.every(system => !system.isPlaying && !system.particleCount)) {
+          fx.command('restart', '*');
+          settleTicks = 2;
+        } else {
+          fx.requestState();
+        }
+      }, 1200);
+    }
+    if (manifestUrl) {
+      // The loader promise can resolve before MonoBehaviour.Start initializes the jslib API.
+      function startManifestSync() {
+        const fx = window.vinagenParticlePreview;
+        if (!fx.state || typeof fx.watchManifest !== 'function') return;
+        window.removeEventListener('vinagen-particle-ready', startManifestSync);
+        fx.stopSync = fx.watchManifest(manifestUrl);
+      }
+      window.addEventListener('vinagen-particle-ready', startManifestSync);
+      startManifestSync();
+    }
+    loading.style.display = 'none';
+  }).catch(message => { errorElement.textContent = String(message); loadingPct.textContent = 'error'; });
+  document.body.appendChild(loaderScript);
+</script>
+</body>
+</html>

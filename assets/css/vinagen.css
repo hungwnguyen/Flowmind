@@ -301,6 +301,61 @@ body,
   color: var(--vg-muted);
 }
 
+/* ===== Particle playground embed ===== */
+.vg-fx {
+  margin: 16px 0 30px;
+}
+
+.vg-fx-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.vg-fx-picker button {
+  padding: 7px 14px;
+  border: 1px solid var(--vg-line);
+  border-radius: 999px;
+  background: var(--vg-panel);
+  color: var(--vg-muted);
+  font: 500 14px/1.2 var(--base-font-family);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.vg-fx-picker button:hover {
+  color: var(--vg-ink);
+  border-color: var(--vg-amber);
+}
+
+.vg-fx-picker button[aria-pressed="true"] {
+  color: #fff;
+  border-color: var(--vg-amber);
+  background: rgba(224, 162, 74, 0.18);
+}
+
+.vg-fx-frame {
+  display: block;
+  width: 100%;
+  height: 620px;
+  border: 1px solid var(--vg-line);
+  border-radius: 12px;
+  background: #080b12;
+}
+
+.vg-fx-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--vg-muted);
+}
+
+@media (max-width: 760px) {
+  .vg-fx-frame {
+    height: 720px;
+  }
+}
+
 @media (max-width: 760px) {
   .vg-hero {
     grid-template-columns: 1fr;

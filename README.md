@@ -35,6 +35,14 @@ English pages sit at the root; Vietnamese pages mirror them under `vi/` with the
 
 When you add or change a page, update both the English file and its `vi/` twin. In `vi/` pages, Markdown images use `../images/…`; raw HTML `<img>` tags use `images/…`.
 
+## Particle playground
+
+`playground/` is a copy of the toolkit's prebuilt Built-in WebGL player (`WebGLBuilds/ParticlePreview/Builtin`) plus native WebGL AssetBundles for ten effects from `Samples/GeneratedParticles/Standards`, exported with the MCP action `build_particle_web_preview`. The Particles page embeds it through `assets/js/vinagen-fx.js`.
+
+- The `.unityweb` files are Brotli with Unity's decompression fallback, so any static host works without `Content-Encoding` headers.
+- `?fx=<name>` imports `fx/<name>.json` once; `&replay=1` restarts one-shot effects after every system finishes. These two parameters and the narrower side panel are the only changes from the toolkit's player page.
+- To add an effect: export its bundle with `build_particle_web_preview`, copy the bundle and the resulting `manifest.json` (renamed `fx/<name>.json`) here, and add a `data-fx` button in both `particles.md` files. Re-export every bundle whenever the player is rebuilt or the prefab changes.
+
 ## Screenshots
 
 Every image in `images/` is a real capture of the toolkit (Unity windows, the browser Flow Editor and UI Designer with the bundled samples) or a contact sheet built from the bundled texture PNGs.
