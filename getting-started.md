@@ -1,97 +1,90 @@
-# Getting Started with Auto UI Generator
+# Getting Started
 
-> The **Auto UI Generator** is a breakthrough AI solution for Unity Developers, transforming static UI mockups into fully functional hierarchies (**UGUI** or **UI Toolkit**) in seconds.
+> Import the toolkit, open the workspace and create your first graph, UI screen or effect in a few minutes.
 
-## Step 1: Set Up The Dependencies
+## Step 1: Install
 
-Before starting, ensure your environment meets the following requirements for the AI Engine to operate correctly.
+1. Open your project in **Unity 6000.3.22f1** (the validated version).
+2. Install the official **Unity UI (uGUI)** package if you plan to use UI Designer, Canvas tools or text features. On Unity 6, TextMesh Pro is included in uGUI.
+3. Import the `VinaGen AI Toolkit` `.unitypackage` (**Assets → Import Package → Custom Package…**).
+4. Wait for Unity to finish importing and compiling.
 
-### Install Unity
+Everything lives under one folder: `Assets/VinaGen AI Toolkit/`. You do not need any other project folder, Python, Node.js, npm, a CDN or a cloud login.
 
-Auto UI Generator is compatible with the following Unity versions:
+> **Without uGUI** the graph, texture, particle and bridge features still work; only the Canvas/UI integrations are disabled.
 
-* **Unity 2021.3 (LTS) or newer.**
-* You can download Unity from the [Unity download archive](https://unity.com/releases/editor/archive).
+When UI Designer needs **TMP Essential Resources**, it imports them from the installed official package and waits for the import to finish. Existing TMP settings are preserved.
 
-### AI Engine Installation
+## Step 2: Open the workspace
 
-Ensure you have run the **Setup Wizard** via the Tools menu to install the local AI Engine.
+Open **Tools → VinaGen AI Toolkit → Open**. The toolkit window has five tabs:
 
-![Image: Unity Game View resolution settings demo](images\12.png)
-
-## Step 2: Scene Preparation & Resolution Matching
-
-For the AI to accurately map your mockup, your Unity project must match the design's properties.
-
-### 1️⃣ Create a Canvas (For UGUI)
-
-* Add a **Canvas** to your scene.
-* In the **Canvas Scaler** component:
-
-  * Set **UI Scale Mode** → `Scale With Screen Size`
-  * Set **Screen Match Mode** → `Match Width Or Height`
-  * Set **Reference Resolution** → Enter the exact resolution of your original mockup.
-
-👉 Example:
-If your mockup is **1080 × 1920**, set the Reference Resolution to **1080 × 1920**.
-
-📌 This ensures the UI scales correctly and keeps the same proportions as your original design.
-
-![Image: Unity Game View resolution settings demo](images\13.png)
-
-### 2️⃣ Match the Game View Resolution
-
-* Open the **Game View** tab in Unity.
-* Create (or select) a resolution preset.
-* Set the **Width** and **Height** to match your mockup exactly.
-
-👉 Example:
-If your mockup is **1080 × 1920**, set the Game View resolution to **1080 × 1920**.
-
-📌 This guarantees that the aspect ratio inside Unity matches your design image, preventing layout distortion during testing.
-
-![Image: Unity Game View resolution settings demo](images\14.png)
-
-## Step 3: Open the Auto UI Tool
-
-Launch the interface via **Tools > Auto UI Generator > Auto UI Tools** or use the shortcut `Shift + A`.
-
-![Image: Unity Game View resolution settings demo](images\15.png)
-
-## Step 4: Input & Asset Mapping
-
-Populate the tool using a simple drag-and-drop workflow:
-
-1. **Template Assets (Sub-Images):** Drag your UI sprites or folders containing sub-images into the **"DROP FOLDERS / IMAGES HERE"** zone. The AI uses these to identify. All images must preserve their original scale ratio from the mockup — do not resize, stretch, crop, rotate, or modify them in any way. If an element exists in multiple resolutions (e.g., 1x, 2x, 3x), drag **all resolution variants** into the system. The AI will automatically validate them and select the highest-resolution version for optimal detection accuracy.
-
-![Image: Unity Game View resolution settings demo](images\16.png)
-
-2. **Main Screenshot (Mockup):** Drop the target UI design image into the **Main Screenshot** field.
-3. **Target Root (UGUI only):** Drag the **RectTransform** of your Canvas or a specific Panel from the Hierarchy into this slot.
-
-> **Note:** For **UI Toolkit**, no complex root setup is required. The tool generates the UXML/USS files automatically based on the mockup's reference resolution.
-
-<img src="images/demo 1.gif" alt="Unity Game View resolution settings demo" width="100%">
-
-## Step 5: Intelligent Detection Options
-
-Choose what the AI should identify in the **Detection Options** section:
-
-* **Detect Text (OCR):** Enable this to convert image text into **TextMeshPro** objects automatically.
-* **Detect Buttons:** Enable this to identify clickable elements and apply button logic.
-
-<img src="images/demo 2.gif" alt="Unity Game View resolution settings demo" width="100%">
-
-## Step 6: Execute Generation
-
-The tool now supports two powerful export modes:
-
-| Mode | Description |
+| Tab | What you do there |
 | --- | --- |
-| **Generate UGUI** | Builds a traditional hierarchy using GameObjects and RectTransforms. Requires a Target Root. |
-| **Generate UI Toolkit** | (Unity 2021+) Generates UI Toolkit assets instantly. No manual setup is needed—just click and export. |
+| **Home** | Choose a workspace: Agent Chat, Flow Editor or UI Designer, plus quick access to the bridge, particle tools and settings. |
+| **Create** | Start something new in Agent Chat, Flow Editor or UI Designer. |
+| **Particles** | Browse the Particle Texture Library and Bundled Particle Library, or repair materials for the active render pipeline. |
+| **MCP Bridge** | Start/stop the local bridge, change its URL and install chat skills for Claude Code and Codex. |
+| **Settings** | Open AI provider, graph appearance, design content, UI Designer, texture library and WebGL preview settings. |
 
-Click the desired **Generate** button. The backend will process the data and build the UI in your project automatically.
+**Tools → VinaGen AI Toolkit → Show Welcome Window** opens a lightweight launch pad with *Open AI Chat*, *Set up AI* and three workspace cards: **Design & code**, **Create visuals** and **Build effects**.
+
+## Step 3: Pick a first workflow
+
+<!-- tabs:start -->
+
+#### **Flow graph**
+
+1. Open **Tools → VinaGen AI Toolkit → Editors → Open Flow Editor**.
+2. In the **Files** panel, create a new Flow graph inside an existing `Assets` folder.
+3. Add nodes, drag from a port to connect them, label branches.
+4. Click **Save asset**.
+
+See [Flow & Design Graphs](graphs.md) and [Web Flow Editor](web-editor.md).
+
+#### **UI screen**
+
+1. Open **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**.
+2. Create a **New screen** or **Import** a PSD, JSON or images.
+3. Label layers as Background / Image / Button / Text / Group (**Alt+1–5**).
+4. Click the blue **Unity** button to import the Canvas.
+
+See [UI Designer](ui-designer.md).
+
+#### **Particle effect**
+
+1. Open **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
+2. Browse the bundled texture and particle libraries from the **Particles** tab.
+3. Construct an effect from a composition, a texture alias or a prefab — manually or through the MCP bridge.
+4. Review it in the [WebGL Particle Preview](webgl-preview.md).
+
+See [Particles & Textures](particles.md).
+
+#### **From AI chat**
+
+1. Start the bridge in **Open → MCP Bridge → Start**.
+2. In Claude Code type `/vina create a shop screen in Assets/MyUI/Shop.asset` (Codex: `$vina …`).
+
+See [Create from Claude Code / Codex](create-from-chat.md).
+
+<!-- tabs:end -->
+
+## Step 4 (optional): Connect an AI provider
+
+Open **Tools → VinaGen AI Toolkit → Settings → AI Settings**, choose a configured provider and a model your account can use. Model availability, quotas and pricing are controlled by the provider — the toolkit does not include provider credits.
+
+Credentials are personal, Editor-only configuration. Never commit credential-bearing settings and never export them manually. See [AI Chat & Providers](ai-chat.md).
+
+## Samples
+
+The toolkit ships ready-to-open examples under `Samples/`:
+
+| Folder | Contents |
+| --- | --- |
+| `Samples/Graphs` | `NewMockFlowGraph.asset` and `NewDesignContentGraph.asset`. |
+| `Samples/Example VinaGenUIDocument` | A full UI document with fonts, images, styles and a scene. |
+| `Samples/Particles` | Texture gallery, toon effects, reviewed recipes and original FX. |
+| `Samples/GeneratedParticles` | Example generated prefabs such as `StraightFireballFX` and `toon_explosion`. |
 
 ---
-[Next Step: Explore Supported Features](features.md)
+[Next: Flow & Design Graphs](graphs.md)

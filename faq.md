@@ -1,88 +1,66 @@
-> **General**
+# FAQ & Troubleshooting
 
-### Q: How can I reduce the waiting time during UI generation?
+## General
 
-**A:** Processing time is directly proportional to the **input resolution and the number of images** being analyzed.
-If the **mockup resolution is very high** or the **total size of all sub-images and template assets is large**, the detection and matching process will take longer to complete.
+### Q: Do I need an AI subscription?
 
-To improve performance:
+**A:** No. Graphs, UI Designer, VinaGenText, offline texture generation and particle construction work without AI. A provider is only needed for AI chat and image generation, and you bring your own account and credentials.
 
-* Use a **reasonable mockup resolution** (avoid unnecessarily large images).
-* Reduce the **number of template images** when possible.
+### Q: Which Unity versions are supported?
 
-In general, **the larger the combined file size of the mockup and sub-images, the longer the processing time will be**.
+**A:** The toolkit is validated on **Unity 6000.3.22f1**. Test other versions in your project before relying on them.
 
----
+### Q: Do I need FlowCanvas, NodeCanvas, Python or Node.js?
 
-### Q: How can I improve text detection accuracy?
+**A:** No. The mock graph is bundled; FlowCanvas/NodeCanvas adapters activate only if you already own and installed them. The web editor runs inside Unity — Node.js is used only by optional developer tests.
 
-**A:** Ensure **Detect Text (OCR)** is enabled in the Configuration panel. High-resolution mockups work best. Note that stylized or handwritten fonts may result in minor OCR errors.
+### Q: Does the toolkit change my render pipeline or install packages?
 
----
-
-### Q: Does the tool support multiple Canvases?
-
-**A:** Yes. Drag any Canvas or UI root into the **Target Root** field. The tool will automatically locate the parent Canvas to calculate relative coordinates.
+**A:** No. Importing never installs packages or switches pipelines. The only automatic import is TMP Essential Resources from the official package, when UI Designer needs them.
 
 ---
 
-### Q: Why do some images appear as Magenta/Pink squares?
+## Troubleshooting
 
-**A:** This happens because the matching sprite is **missing** from your **Templates** folder.
-The system displays a pink placeholder when it cannot find a file that matches the detected element's name.
-
----
-
-### Q: Why do I need to match the Game View ratio to the image ratio?
-
-**A:** The tool calculates positions based on the screenshot's dimensions. If your Game View or Canvas has a different aspect ratio, the anchors and positions may shift during the `ApplyLayout` process.
-
----
-
-### Q: Can I use custom fonts or button designs?
-
-**A:** Yes. The tool uses prefabs located at `Assets/Auto UI Generator/Editor/Prefabs/`.
-
-* **For Text:** Customize `Text.prefab` to set your default **Font Asset**, **color**, **outline**, **material**, or other custom scripts.
-* **For Buttons:** Customize `Button.prefab` to configure **transitions**, **animations**, or attach additional **gameplay/UI scripts**.
-
-All generated UI elements will inherit the settings defined in these prefabs.
+| Problem | Fix |
+| --- | --- |
+| **Bridge unavailable** | Start it in **Open → MCP Bridge**, verify the address and wait for compilation to finish. |
+| **`/vina` not found** | Check status in the MCP Bridge tab, click **Install chat skills**, then reopen the project chat. A conflicting user command is never replaced — rename it to let VinaGen own `/vina`. |
+| **Canvas tools unavailable** | Install the optional Unity UI (uGUI) package, or use the core tools. |
+| **Pink particles** | Run **Particle System → Repair Materials For Active Pipeline** and check shader errors. |
+| **Blank atlas frames** | Verify grid, first frame and declared frame count; skip black padding cells. |
+| **No screenshot at startup** | Expected — captures are explicit. Call `capture()` with times. |
+| **WebGL bundle export unavailable** | Install **WebGL Build Support** through Unity Hub. |
+| **No generated image** | Check provider/job status, account credits and model availability. |
+| **Web editor shows a 409 conflict** | The asset changed elsewhere. Your draft is kept — reload from Unity or export before overwriting. |
+| **Web editor disconnected after a script change** | Wait for compilation; the session token refreshes once automatically. Reload the page if needed — drafts are recovered. |
 
 ---
 
-### Q: Why are some UI elements not detected?
+## UI Designer
 
-**A:** This usually happens when the visual appearance of the UI element differs from the provided template.
+### Q: Why don't my PSD effects look right?
 
-Common causes include:
+**A:** PSD import supports 8-bit RGB pixel layers, groups, opacity and visibility. Masks, blend modes, layer effects and smart objects need visual review; PSB, CMYK and 16/32-bit files are not supported.
 
-* The element in the mockup was **scaled or slightly modified**
-* The template image does not **match the exact pixel appearance**
-* The element is **too small or partially occluded**
-* The UI element has **heavy effects (blur, glow, gradient)**
+### Q: Does Canvas import save my scene?
 
-For best results, ensure templates are **exact exports from the original design assets**.
+**A:** No. Import creates objects in one Undo group and leaves saving to you.
 
----
+### Q: Are button click events connected?
 
-### Q: What image formats are recommended?
-
-**A:** The recommended formats are:
-
-* **PNG** (preferred) – preserves transparency and exact pixel data
-* **JPG** – acceptable for mockups without transparency
-
-For template images, **PNG is strongly recommended** to maintain accurate alpha masks for detection.
+**A:** No. Buttons get their Image as target Graphic; you connect the gameplay events.
 
 ---
 
-### Q: Does Auto UI Generator support responsive layouts?
+## Privacy
 
-**A:** Yes. Generated UI elements use Unity's **RectTransform anchors and pivots** relative to the detected layout positions.
+### Q: What data leaves my machine?
 
-This allows the UI to scale correctly with **Canvas Scaler** settings such as:
+**A:** Only what an online workflow you start needs: your prompt, files you attach, selected graph/design context and excerpts assembled for that request. A connected MCP assistant receives the tool results it requests. The toolkit performs no model training and no whole-project telemetry. Keep the bridge local and stop it when you're done.
 
-* `Scale With Screen Size`
-* `Match Width Or Height`
+---
 
-However, complex responsive behavior may still require **manual adjustment or layout groups**.
+## Licensing
+
+Noto Sans uses the SIL Open Font License 1.1, and parts of VinaGenText derive from Unity source under the Unity Companion License — see `Third-Party Notices.txt`. Native texture recipes use no third-party artwork. Rotation or sharpening of imported third-party artwork does **not** grant redistribution rights; imported artwork is excluded from exports by default.

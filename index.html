@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Auto UI Generator</title>
+  <title>VinaGen AI Toolkit</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="Auto UI Generator">
+  <meta name="description" content="VinaGen AI Toolkit for Unity: flow graphs, UI Designer, VinaGenText, native particles, WebGL preview and a local MCP bridge.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="assets/favicon/favicon.png">
 
@@ -361,6 +361,55 @@
       font-size: 13px;
       color: #64748b;
     }
+
+    /* ===== VinaGen sidebar brand ===== */
+    .vg-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 20px;
+      color: #f8fafc;
+    }
+
+    .vg-brand img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .vg-brand small {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #22c55e;
+    }
+
+    .vg-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 18px 0 24px;
+    }
+
+    .vg-card {
+      padding: 16px 18px;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      background: rgba(2, 6, 23, 0.6);
+    }
+
+    .vg-card h4 {
+      margin: 0 0 6px !important;
+      color: #f8fafc;
+    }
+
+    .vg-card p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
   </style>
 
 </head>
@@ -369,7 +418,7 @@
   <div id="app"></div>
   <script>
     // Enter the URL of your own GitHub Repository in between the two quotes below
-    var gitLinkRepoURL = 'https://github.com/hungwnguyen/Auto-UI';
+    var gitLinkRepoURL = 'https://github.com/hungwnguyen/Flowmind';
 
     // Set standalone to true to permanently hide the Sidebar and Navbar
     var standalone = false;
@@ -425,7 +474,7 @@
     window.$docsify = {
       // GENERAL SETTINGS
       // -----------------------------------------------------------------
-      name: '<img src="images/10.png">',
+      name: '<span class="vg-brand"><img src="images/robot.png" alt=""><span>VinaGen <small>AI Toolkit</small></span></span>',
       // repo           : 'https://github.com/hibbitts-design/docsify-open-publishing-starter-kit/',
       homepage: 'introduction.md',
       // coverpage      : '_coverpage.md',
@@ -454,7 +503,7 @@
         noData: 'No matches found.',
         // Headline depth, 1 - 6
         depth: 3,
-        namespace: 'docsify-open-publishing-starter-kit',
+        namespace: 'vinagen-ai-toolkit-docs',
         hideOtherSidebarContent: false, // whether or not to hide other sidebar content
       },
 

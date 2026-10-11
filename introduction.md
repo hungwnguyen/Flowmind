@@ -1,53 +1,86 @@
-# What is Auto UI Generator?
+# VinaGen AI Toolkit
 
-> **Auto UI Generator** is a Unity Editor extension that transforms UI design mockups into fully functional, production-ready UGUI and UI Toolkit layouts — quickly, accurately, and entirely in-seconds.
+> **One Unity workspace for game flow, screen design, styled text and particle effects — with optional AI.**
 
-<center>
-  <iframe width="100%" height="450"
-    src="https://www.youtube.com/embed/TvFjpDeIAV0?si=sDHGiqx3E9dNqk3Y"
-    title="Auto UI Generator Demo"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</center>
+![VinaGen robot](images/robot.png ':size=96')
 
-Auto UI Generator creates a seamless bridge between design tools such as <strong>Figma</strong> and <strong>Photoshop</strong> and the <strong>Unity Editor</strong>.  
-Design screenshots are analyzed and automatically converted into standard <strong>Unity UGUI (Canvas)</strong> components or modern <strong>UI Toolkit (UXML + USS)</strong> layouts, eliminating hours of manual layout work, anchoring, and positioning.
+**VinaGen AI Toolkit** is a Unity Editor extension for game designers and developers. It brings together visual logic graphs, a Figma-style UI Designer that imports straight into a Unity Canvas, the VinaGenText styled-text renderer, a native particle authoring pipeline with an offline texture library, a browser-based particle preview and a local MCP bridge that lets AI assistants such as Claude Code or Codex drive the toolkit.
 
-## Core Concepts
+**Online AI is optional.** Graphs, UI design, text, offline texture generation and particle construction all work without an AI subscription. Provider accounts, credentials, network access and usage charges are separate from this asset.
 
-- **Mockup (Main Screenshot)**  
-  A full design image representing the target UI layout you want to generate inside Unity.
+<div class="vg-cards">
+  <div class="vg-card">
+    <h4>Flow & Design graphs</h4>
+    <p>Plan game logic with flow graphs and sketch screens with design wireframes — natively or in the browser.</p>
+    <a href="#/graphs">Read more →</a>
+  </div>
+  <div class="vg-card">
+    <h4>UI Designer</h4>
+    <p>Design layers, import PSD/images, label components and import a ready Unity Canvas.</p>
+    <a href="#/ui-designer">Read more →</a>
+  </div>
+  <div class="vg-card">
+    <h4>VinaGenText</h4>
+    <p>SDF text with gradients, stroke, outline and 3D extrusion, editable from browser, Inspector or code.</p>
+    <a href="#/vinagen-text">Read more →</a>
+  </div>
+  <div class="vg-card">
+    <h4>Particles</h4>
+    <p>About 1,500 original textures, a bundled effect library and structured particle construction.</p>
+    <a href="#/particles">Read more →</a>
+  </div>
+  <div class="vg-card">
+    <h4>WebGL preview</h4>
+    <p>Review effects in a prebuilt browser player with seeded, repeatable captures.</p>
+    <a href="#/webgl-preview">Read more →</a>
+  </div>
+  <div class="vg-card">
+    <h4>MCP bridge</h4>
+    <p>Let Claude Code, Codex or any MCP client create UI, graphs and FX in your project.</p>
+    <a href="#/mcp-bridge">Read more →</a>
+  </div>
+</div>
 
-- **Sub-Images (Template Assets)**  
-  Individual UI element images extracted from the mockup or provided as separate sprites.  
-  These are used for element detection, OCR, and template matching.
+![Flow Editor running in the browser](images/flow-editor.png)
 
-![Unity Game View resolution settings demo](images/9.png)
+## Core concepts
 
-## ⚠️ Technical Limitations
+- **Flow graph (`MockFlowGraph`)** — a game-logic graph: steps, decisions, branches and transitions. Works without FlowCanvas or NodeCanvas.
+- **Design content graph (`DesignContentGraph`)** — screen wireframes: frames, copy, image slots and numbered callouts.
+- **UI document (`VinaGenUIDocument`)** — a layered game-UI design that can be imported into a Unity Canvas.
+- **Texture library & particle library** — catalogued original artwork and effect prefabs used to construct particle systems.
+- **MCP bridge** — a localhost HTTP server inside the Unity Editor that exposes toolkit actions to external assistants.
+- **Skills** — short, modular instruction files under `Skills/` that route each AI task to exactly one workflow.
 
-Before getting started, please review the following requirements to ensure a stable and accurate generation workflow.
+## Requirements
 
-**Supported Operating System: Windows (Required)**  
-The AI detection engine (`ui-detect.exe`) is optimized exclusively for Windows to guarantee fast image processing and reliable execution.
+| Item | Requirement |
+| --- | --- |
+| Unity | Validated on **Unity 6000.3.22f1**. Verify other versions before relying on them. |
+| Core features | Unity engine/Editor modules only — no Python, Node.js, npm, CDN or third-party Asset Store package. |
+| UI Designer, Canvas tools, text | Official **Unity UI (uGUI)** and **TextMesh Pro** (TMP ships inside uGUI on Unity 6). |
+| Particle rendering | Bundled Built-in compatible shaders; URP/HDRP adapters activate automatically when installed. |
+| WebGL particle preview | Prebuilt players are included. Exporting native prefab bundles needs Unity Hub's **WebGL Build Support** module. |
+| AI chat / image generation | Optional: your own provider account, API key and any provider charges. |
 
-**Alpha Transparency**  
-Sub-images must match their original source assets exactly.
-Scaled, stretched, rotated, or re-rendered elements are not supported.
+> Importing the toolkit never installs packages behind your back or changes your render pipeline.
 
-If a UI element exists in multiple resolutions (e.g., 1x, 2x, 3x), export each version separately.
-The system will automatically validate them and select the highest-resolution match internally.
-This guarantees optimal detection precision while minimizing unnecessary memory and processing overhead.
+## Main entry points
 
-![Unity Game View resolution settings demo](images/11.png)
+All menus live under **Tools → VinaGen AI Toolkit**.
 
-## 🚀 Get Started
+| Menu | Opens |
+| --- | --- |
+| **Open** | The toolkit window: Home, Create, Particles, MCP Bridge and Settings tabs. |
+| **Show Welcome Window** | The launch pad with quick links to chat, editors and particle tools. |
+| **Chat** | Agent Chat with conversation history and attachments. |
+| **OpenGraphEditor** | The native logic-graph editor with Unity development chat. |
+| **Open Design Content Editor** | The native design-content (wireframe) editor. |
+| **Editors → Open Flow Editor** | The browser Flow/Design workspace. |
+| **Editors → Open UI Designer** | The browser UI Designer. |
+| **Particle System → Authoring Tools** | Texture generation, audit, registration, inspection and FX review. |
+| **MCP → Control Panel / Start Bridge / Stop Bridge** | The local MCP bridge. |
+| **Text → …** | VinaGenText fonts, styles and maintenance commands. |
+| **Settings → …** | Every toolkit settings asset. |
 
-Ready to generate your first UI?
-
-- Follow the **step-by-step guide** for a full workflow breakdown  
-- Or jump straight in with the **Quick Start** guide
-
-👉 **Continue here:** [Getting Started](getting-started)
+👉 **Next:** [Getting Started](getting-started.md)
