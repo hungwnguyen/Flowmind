@@ -1,29 +1,45 @@
 # Documentation capture inventory — 13 October 2026
 
-Product screenshots were captured on the local Windows computer running the `C:/Projects/vinagen` project in **Unity 6000.3.22f1**. Browser captures use the running Unity bridge or this documentation repository's real prebuilt WebGL player. They are not generated mockups. Cropping removes unrelated desktop areas or empty space; no controls, artwork or settings values were fabricated. The English interface is shared by the EN/VI guides; captions are localized.
+## Current interface refresh
+
+The 20 screenshots listed in `captures-2026-10-13.json` replace their earlier documentation images. They were captured on this Windows device from the running `C:/Projects/vinagen` project in **Unity 6000.3.22f1**, its live browser editor, and the documentation site's real prebuilt WebGL player.
+
+- The five toolkit tabs were captured at their normal **522 × 637** window size, rather than maximized.
+- Inspector captures keep the actual **461 px** wide settings pane, cropped from the Unity window. No controls or field values were fabricated. API Keys remained collapsed.
+- Browser workspaces and the Portal demo were captured in Chrome at **1280 × 800**.
+- Documentation uses the original interface captures. Asset Store Media Studio presentation frames are not used in the guides.
+- The English UI is shared by the English and Vietnamese guides; explanatory text and captions are localized.
 
 | Images | Actual capture source |
 | --- | --- |
-| `toolkit-home.png`, `toolkit-create.png`, `toolkit-particles.png`, `toolkit-bridge.png`, `toolkit-settings.png` | Native VinaGen AI Toolkit window; all five tabs. Home and Settings replace earlier captures. |
-| `settings-ai.png`, `settings-graph.png`, `settings-design.png` | Unity Inspector after opening the matching settings card. API Keys remains collapsed. |
-| `settings-ui-assets.png`, `settings-ui-canvas.png` | UI Designer Settings Inspector, first asset/font section and scrolled Canvas section. |
-| `settings-textures.png`, `settings-prefabs.png` | Texture catalog index and bundled prefab list expanded in Unity Inspector. |
-| `settings-web-particle.png`, `settings-text.png` | WebGL preview/capture settings and VinaGenText Settings Inspectors. |
-| `particle-authoring-defaults.png`, `particle-authoring-poe.png`, `particle-authoring-inspect.png`, `particle-authoring-review.png` | All four Particle Authoring tabs. Capturing a tab did not run its generation/review action. |
-| `ui-designer.png`, `ui-files.png`, `ui-assets.png`, `ui-export.png` | Local Unity browser UI Designer, bundled `Samples/Example VinaGenUIDocument/VinaGenUIDocument.svgpro`; layer/file/asset panels and actual export dialog. UI Designer replaces the previous screenshot. Assets shows the initial choose-folder state. |
-| `ui-canvas-demo.png` | Existing sample `Samples/Example VinaGenUIDocument/Scenes/UI.unity`, Game View score popup with Hierarchy/Project. |
-| `vinagen-text-demo.png` | Local UI Designer rendering of `Samples/Text Effects/ILoveYouTextShowcase.asset`; six decorated label styles. |
-| `particle-web-demo.png`, `particle-web-motion.png`, `particle-web-capture.png` | Actual `playground/?fx=toon_explosion` player, playback, expanded motion and capture controls. |
-| `particle-review-1.png`, `particle-review-2.png`, `particle-review-3.png` | Native preview-camera frames returned by API v3 `capture()`: 960 × 640, seed 12345, simulation enabled, motion disabled, `postToSink:false`. Requested times 0.08 / 0.18 / 0.80 seconds; actual times 0.079999998 / 0.180000007 / 0.800000012. Unity 6000.3.22f1, Linear color space, actual pipeline Built-in; `toon_explosion.prefab` under `Samples/GeneratedParticles/Standards/`. |
+| `toolkit-home.png`, `toolkit-create.png`, `toolkit-particles.png`, `toolkit-bridge.png`, `toolkit-settings.png` | All five native toolkit tabs at the normal window size. The shared particle player displays Installed v1.1.0. |
+| `toolkit-settings-particles.png` | Additional documentation capture: Settings scrolled to Particles & previews. Together with the top view, it shows all seven settings cards. |
+| `settings-ai.png`, `settings-graph.png`, `settings-design.png` | Current custom Unity Inspectors for AI & tool settings, Graph appearance and Design Content settings. |
+| `settings-ui-assets.png`, `settings-ui-canvas.png` | UI Designer settings: Project assets and expanded Fonts; a second view with Fonts collapsed shows Canvas defaults. |
+| `settings-textures.png`, `settings-prefabs.png` | Current texture catalog and prefab library Inspectors with lists expanded. Counts shown belong to this project. |
+| `settings-web-particle.png`, `settings-text.png` | Current Particle preview Inspector (output, review target and camera) and Text settings Inspector (Font Studio, bake output and defaults). |
+| `ui-designer.png`, `ui-export.png` | Live local UI Designer using the bundled `Samples/Example VinaGenUIDocument/VinaGenUIDocument.svgpro`; all three screens and the actual export dialog. |
+| `flow-editor.png`, `design-editor.png` | Live local browser editor using `Samples/Graphs/NewMockFlowGraph.asset` and `NewDesignContentGraph.asset`. |
+| `vinagen-text-demo.png` | Live UI Designer rendering `Samples/Text Effects/ILoveYouTextShowcase.asset`; six decorated text styles. |
+| `particle-web-demo.png` | Live `playground/?fx=portal&replay=1&lang=en` player. The bundled Portal effect was paused after it became visible, using the browser playback control. |
 
-Existing `flow-editor.png`, `design-editor.png`, `design-document-editor.png`, `agent-chat.png`, texture sheets and robot artwork are retained from the previous documentation; they were not recaptured in this update.
+## Retained captures
+
+These images remain from the earlier documentation batch. They were not recaptured as part of the current interface refresh:
+
+- `ui-files.png`, `ui-assets.png`: file and asset panels in the local UI Designer.
+- `ui-canvas-demo.png`: the existing bundled UI scene in Unity Game View with Hierarchy and Project.
+- `particle-authoring-defaults.png`, `particle-authoring-poe.png`, `particle-authoring-inspect.png`, `particle-authoring-review.png`: the four Particle Authoring tabs. Taking these images did not execute generation actions.
+- `particle-web-motion.png`, `particle-web-capture.png`: the earlier Toon Explosion preview with expanded motion and capture controls.
+- `particle-review-1.png`, `particle-review-2.png`, `particle-review-3.png`: explicit native preview-camera frames from `toon_explosion.prefab`, at 960 × 640, seed 12345, simulation enabled, motion disabled, `postToSink:false`. Requested times: 0.08 / 0.18 / 0.80 s; actual times: 0.079999998 / 0.180000007 / 0.800000012 s. Actual pipeline: Built-in.
+- `design-document-editor.png`, `agent-chat.png`, texture sheets and robot artwork.
 
 ## Verification scope
 
-- Inspected the 30 new/replacement captures and browser renders. All 24 EN/VI article routes passed browser checks, including image loading and section links; six mobile layouts had no page overflow. The static audit resolved all 104 image references and local document links. `git diff --check` passed.
-- Ran the actual Built-in WebGL effect and explicit seeded camera captures. Returned frames include timing and pipeline metadata; an API success flag is not a substitute for looking at the images.
-- No paid AI-provider request, WebGL player build, new Canvas/UI Toolkit import or new text bake was needed for these documentation captures.
-- This update does not validate a clean toolkit-only Unity import, URP/HDRP parity, Photoshop round trips or target-device performance. UI Toolkit behavior is documented from the current implementation/skill contract; the Canvas screenshots are not proof of UI Toolkit parity.
+All 20 replacements were checked against the capture hashes and dimensions, existing article references, and the local HTTP responses. The additional Settings image loaded correctly. The updated Settings page was inspected in both languages; its image pair becomes a single column on a 390 px screen with no horizontal page overflow.
+
+The current refresh changes documentation images and labels. It does not verify a clean Unity import, URP/HDRP parity, Photoshop round trips, or target-device performance. Existing camera-frame evidence and standalone-editor verification retain their original scope. No paid AI request, new WebGL build, Canvas/UI Toolkit import, or text bake was performed for this refresh.
+
 # Standalone Web Designer — 13 October 2026
 
 `web-designer/workspace.png`, `settings.png`, `export.png`, `inspector.png`,

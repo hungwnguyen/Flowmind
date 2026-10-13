@@ -2,14 +2,14 @@
 
 **Mục đích chính của Web Particle là hỗ trợ AI Agent kiểm thử trực quan particle mà agent tạo ra.** Agent tải hiệu ứng, đọc trạng thái runtime, chụp thời điểm đã chọn, đánh giá ảnh, chỉnh hiệu ứng trong Unity rồi kiểm thử phiên bản tiếp theo. Người dùng cũng có thể xem và kiểm tra thủ công trên cùng preview.
 
-![Player WebGL thật với hiệu ứng và điều khiển playback](../images/particle-web-demo.png)
+![Demo Portal trong player WebGL thật với điều khiển playback](../images/particle-web-demo.png)
 
 [Demo trên website](particles.md) minh họa hiệu ứng có sẵn. Preview cục bộ tải prefab/bundle của dự án qua Unity bridge. Điều khiển trình duyệt chỉnh playback live, không tự lưu về prefab Unity. Agent cần áp dụng thay đổi bền vững trong Unity rồi xuất/tải lại phiên bản mới.
 
 ## Chuẩn bị player
 
 1. Giữ Unity mở, bật **Open → MCP Bridge**.
-2. Mở **Tools → VinaGen AI Toolkit → Open → Particles**. Trong **Particle WebGL player**, bấm **Download** nếu chưa cài. Player được tải một lần, dùng chung cho các dự án trên máy. **Re-download** cập nhật; **Show folder** mở nơi lưu.
+2. Mở **Tools → VinaGen AI Toolkit → Open → Particles**. Trong **Particle WebGL player**, bấm **Download** nếu chưa cài. Player được tải một lần, dùng chung cho các dự án trên máy. Nếu bản cài đã cũ, bấm **Update**; khi đã cài, **Re-download** tải lại player và **Show folder** mở nơi lưu.
 3. Cài **WebGL Build Support** chính thức qua Unity Hub khi cần xuất bundle prefab gốc.
 4. Mở **Editors → Open Particle Preview → Built-in / URP / HDRP**, hoặc `webPreviewUrl` toolkit trả về cho hiệu ứng.
 

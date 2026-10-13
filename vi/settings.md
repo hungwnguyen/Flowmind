@@ -2,7 +2,12 @@
 
 Mở **Tools → VinaGen AI Toolkit → Open → Settings**. Bấm **Open** trên thẻ để chọn asset trong **Inspector** của Unity. Mở rộng từng nhóm để xem các trường; thay đổi được lưu trên asset của dự án.
 
-![Tab Settings với đầy đủ bảy thẻ cài đặt](../images/toolkit-settings.png)
+Ở kích thước cửa sổ thường, cuộn tab **Settings** để xem đủ các thẻ. Nhóm **Make it yours** chứa cài đặt AI, graph, design và UI; nhóm **Particles & previews** chứa các thư viện và cài đặt preview particle.
+
+<div class="vg-pair">
+  <figure><img src="images/toolkit-settings.png" alt="Settings: các thẻ AI, Graph Appearance, Design Content và UI Designer" loading="lazy"><figcaption>Make it yours: cài đặt AI, graph, design và UI.</figcaption></figure>
+  <figure><img src="images/toolkit-settings-particles.png" alt="Settings sau khi cuộn tới Particles and previews" loading="lazy"><figcaption>Cuộn xuống: thư viện texture, prefab và Particle WebGL Preview.</figcaption></figure>
+</div>
 
 Ảnh được chụp trên máy này ngày **13/10/2026**, bằng **Unity 6000.3.22f1**. Giá trị trong ảnh thuộc dự án demo; hãy dùng thư mục, độ phân giải và nhà cung cấp phù hợp.
 
@@ -42,14 +47,14 @@ Bấm vào ảnh để phóng lớn khi đọc nhãn trong Inspector.
 | **VinaGenText fonts** | **Add bundled VinaGenText fonts** đăng ký font có sẵn. |
 | **TextMesh Pro fonts** | **Create TMP starter fonts** chuẩn bị font từ tài nguyên TMP chính thức khi cần. |
 | **Custom fonts** | Thả TTF/OTF vào đây để Text và trình duyệt dùng được. |
-| **Default screen resolution** | Width/height cho tài liệu mới. Tài liệu đã lưu giữ kích thước riêng khi import và mở Game View. |
-| **Canvas scaling → Match** | 0 ưu tiên chiều rộng; 1 ưu tiên chiều cao. Kiểm tra màn hình dọc/ngang. |
-| **Snap grid (px)** | Bước lưới khi đặt vị trí. |
+| **Canvas defaults → Reference Resolution** | Width/height cho tài liệu mới. Tài liệu đã lưu giữ kích thước riêng khi import và mở Game View. |
+| **Match Width Or Height** | 0 ưu tiên chiều rộng; 1 ưu tiên chiều cao. Kiểm tra màn hình dọc/ngang. |
+| **Grid Size** | Bước lưới khi đặt vị trí. |
 | **Auto adjust anchors** | Suy ra anchor khi chỉnh/import; tắt để giữ anchor thủ công. |
-| **Linear alpha** | Chọn Gamma Compositor hoặc Compensate Alpha, rồi so sánh Game View với trình duyệt. |
+| **Linear Alpha Mode** | Chọn Gamma Compositor hoặc Compensate Alpha, rồi so sánh Game View với trình duyệt. |
 | **Keyboard shortcuts** | Mở rộng để chỉnh phím tắt; mở lại cài đặt trình duyệt để làm mới. |
 
-Dùng **Open UI Designer in browser** để trở lại workspace. [UI Designer](ui-designer.md) giải thích import Canvas/UI Toolkit.
+Dùng **Open UI Designer ↗** để trở lại workspace. [UI Designer](ui-designer.md) giải thích import Canvas/UI Toolkit.
 
 ## Thư viện particle
 
@@ -64,7 +69,7 @@ Dùng **Open UI Designer in browser** để trở lại workspace. [UI Designer]
 
 ## Particle WebGL Preview Settings
 
-![Cài đặt WebGL Particle: camera và tùy chọn chụp theo yêu cầu](../images/settings-web-particle.png)
+![Cài đặt WebGL Particle: nơi lưu, Review Target và camera](../images/settings-web-particle.png)
 
 | Nhóm | Chỉnh gì |
 | --- | --- |
@@ -86,8 +91,8 @@ Mở **Tools → VinaGen AI Toolkit → Text → Settings**.
 
 - **Font Studio → Create Font…:** tạo font với bộ ký tự game cần.
 - **Output Folder:** nơi lưu bake và trang atlas dùng chung. Phiên bản này hiển thị mặc định legacy `Assets/VinaGen Text Bakes`. Với đầu ra toolkit/sample, đặt thư mục trong `Assets/VinaGen AI Toolkit/`, chẳng hạn `Samples/Text Effects/Bakes/` dưới root này. PSD riêng giữ thư mục thuộc lần import đó.
-- **Auto Bake New Texts:** mặc định cho label mới; label đang có giữ cài đặt trên component.
-- **Shared Atlas:** label đã bake tương thích trong cùng thư mục có thể dùng chung trang texture.
+- **New text defaults → Auto Bake New Texts:** mặc định cho label mới; label đang có giữ cài đặt trên component. Label đã chỉnh sẽ bake khi kết thúc chỉnh sửa hoặc khi lưu scene/prefab. Gõ chữ và kéo thả không tự chạy bake.
+- **Baked images → Shared Atlas:** label đã bake tương thích trong cùng thư mục có thể dùng chung trang texture.
 
 Xem [VinaGenText](vinagen-text.md) để chọn chế độ render và [demo](demos.md) để thực hành.
 

@@ -2,14 +2,14 @@
 
 **Web Particle primarily helps an AI Agent visually test the particles it creates.** The agent loads an effect, inspects runtime state, captures selected moments, evaluates the images, adjusts the Unity effect and tests the next revision. Users can also inspect the same preview manually.
 
-![Real WebGL particle preview and playback controls](images/particle-web-demo.png)
+![Portal demo in the real WebGL player with playback controls](images/particle-web-demo.png)
 
 The [website demos](particles.md) show supplied effects. A project's local preview loads that project's prefab/bundle through the Unity bridge. Browser controls change live playback; they do not save edits back to a Unity prefab. The agent must apply persistent edits in Unity and export/reload the revision.
 
 ## Prepare the player
 
 1. Keep Unity open and start **Open → MCP Bridge**.
-2. Open **Tools → VinaGen AI Toolkit → Open → Particles**. Under **Particle WebGL player**, use **Download** if missing. It is downloaded once and shared by projects on this computer. **Re-download** updates it; **Show folder** locates it.
+2. Open **Tools → VinaGen AI Toolkit → Open → Particles**. Under **Particle WebGL player**, use **Download** if missing. It is downloaded once and shared by projects on this computer. If the installed version is outdated, use **Update**. Once installed, **Re-download** downloads it again and **Show folder** locates it.
 3. Install official **WebGL Build Support** through Unity Hub when exporting native prefab bundles.
 4. Open **Editors → Open Particle Preview → Built-in / URP / HDRP**, or the returned `webPreviewUrl` for your effect.
 

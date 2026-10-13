@@ -2,7 +2,12 @@
 
 Open **Tools → VinaGen AI Toolkit → Open → Settings**. Click **Open** on a card to select its asset in Unity's **Inspector**. Expand a section to see its fields; changes are stored on that project asset.
 
-![Settings tab with all seven settings cards](images/toolkit-settings.png)
+At a normal window size, scroll the **Settings** tab to reach all cards. **Make it yours** contains AI, graph, design and UI settings; **Particles & previews** contains the libraries and particle preview settings.
+
+<div class="vg-pair">
+  <figure><img src="images/toolkit-settings.png" alt="Settings: AI, Graph Appearance, Design Content and UI Designer cards" loading="lazy"><figcaption>Make it yours: AI, graph, design and UI settings.</figcaption></figure>
+  <figure><img src="images/toolkit-settings-particles.png" alt="Settings scrolled to Particles and previews" loading="lazy"><figcaption>Scroll down: texture and prefab libraries, and Particle WebGL Preview.</figcaption></figure>
+</div>
 
 These screenshots were captured on this computer on **13 October 2026**, using **Unity 6000.3.22f1**. Values shown belong to the demo project; use your own folders, resolution and provider.
 
@@ -42,14 +47,14 @@ Set **Comment Display Name** before leaving web review comments. Change graph co
 | **VinaGenText fonts** | **Add bundled VinaGenText fonts** registers supplied fonts. |
 | **TextMesh Pro fonts** | **Create TMP starter fonts** prepares fonts from official TMP resources when needed. |
 | **Custom fonts** | Drop TTF/OTF fonts here for Text and browser use. |
-| **Default screen resolution** | Width/height for new documents. Existing documents retain their saved size for import and Game View. |
-| **Canvas scaling → Match** | 0 favors width; 1 favors height. Check portrait and landscape layouts. |
-| **Snap grid (px)** | Positioning grid increment. |
+| **Canvas defaults → Reference Resolution** | Width/height for new documents. Existing documents retain their saved size for import and Game View. |
+| **Match Width Or Height** | 0 favors width; 1 favors height. Check portrait and landscape layouts. |
+| **Grid Size** | Positioning grid increment. |
 | **Auto adjust anchors** | Derive anchors during editing/import; disable when preserving manual anchors. |
-| **Linear alpha** | Choose Gamma Compositor or Compensate Alpha, then compare Game View with the browser. |
+| **Linear Alpha Mode** | Choose Gamma Compositor or Compensate Alpha, then compare Game View with the browser. |
 | **Keyboard shortcuts** | Expand to customize commands; reopen browser settings to refresh. |
 
-Use **Open UI Designer in browser** to return to your workspace. [UI Designer](ui-designer.md) explains Canvas/UI Toolkit import.
+Use **Open UI Designer ↗** to return to your workspace. [UI Designer](ui-designer.md) explains Canvas/UI Toolkit import.
 
 ## Particle libraries
 
@@ -64,7 +69,7 @@ Use **Open UI Designer in browser** to return to your workspace. [UI Designer](u
 
 ## Particle WebGL Preview Settings
 
-![Particle WebGL settings: camera and explicit capture options](images/settings-web-particle.png)
+![Particle WebGL settings: output folders, review target and camera](images/settings-web-particle.png)
 
 | Section | Adjusts |
 | --- | --- |
@@ -86,8 +91,8 @@ Open **Tools → VinaGen AI Toolkit → Text → Settings**.
 
 - **Font Studio → Create Font…:** build a font with the characters your game needs.
 - **Output Folder:** destination for bakes and shared atlas pages. This version displays the legacy `Assets/VinaGen Text Bakes` default. For toolkit/sample output, choose a folder inside `Assets/VinaGen AI Toolkit/`, such as `Samples/Text Effects/Bakes/` under that root. Private PSD imports retain their own owned folder.
-- **Auto Bake New Texts:** default for new labels; existing labels retain their component setting.
-- **Shared Atlas:** compatible baked labels in the same output folder can share texture pages.
+- **New text defaults → Auto Bake New Texts:** default for new labels; existing labels retain their component setting. A changed label bakes when editing loses focus or its scene/prefab is saved. Typing and dragging do not trigger a bake.
+- **Baked images → Shared Atlas:** compatible baked labels in the same output folder can share texture pages.
 
 See [VinaGenText](vinagen-text.md) for rendering modes and [demos](demos.md) for a first practice run.
 
