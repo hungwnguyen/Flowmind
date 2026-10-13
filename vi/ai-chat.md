@@ -4,7 +4,7 @@ Dùng Agent Chat để hỏi và tạo nội dung bằng tài khoản AI của b
 
 ## Thiết lập
 
-1. Mở **Tools → VinaGen AI Toolkit → Settings → AI Settings**.
+1. Mở **Tools → VinaGen AI Toolkit → Open → Settings → AI Provider Settings**.
 2. Chọn nhà cung cấp, nhập thông tin đăng nhập.
 3. Chọn model mà tài khoản của bạn dùng được.
 4. Mở **Tools → VinaGen AI Toolkit → Chat**.
@@ -12,6 +12,10 @@ Dùng Agent Chat để hỏi và tạo nội dung bằng tài khoản AI của b
 ![Cửa sổ Agent Chat](../images/agent-chat.png)
 
 Chat lưu phiên làm việc, lịch sử và tệp đính kèm. Trợ lý trả lời theo ngôn ngữ tin nhắn mới nhất. Khi tạo nội dung màn hình hoặc nhãn graph, hãy nói rõ ngôn ngữ đầu ra.
+
+![AI Provider Settings với provider, model và nhóm API Keys đang đóng](../images/settings-ai.png)
+
+Mở **AI Chat** để chọn **Active Provider**, rồi **Refresh Models / Select Model** hoặc **Custom Model**. Key nằm trong **API Keys**; ảnh giữ nhóm này đóng. Xem [Cài đặt](settings.md) để hiểu thêm phần chat, image và particle output.
 
 ## Chi phí và dữ liệu
 

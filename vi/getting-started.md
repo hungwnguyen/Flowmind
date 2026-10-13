@@ -15,6 +15,33 @@ Dự án hiện dùng **Unity 6000.3.22f1**. Công cụ UI và text cần **Unit
   <figure><img src="images/toolkit-settings.png" alt="Tab Settings của toolkit"><figcaption>Settings: chỉnh mặc định của dự án.</figcaption></figure>
 </div>
 
+## Năm tab của toolkit
+
+| Tab | Dùng để |
+| --- | --- |
+| **Home** | Mở Agent Chat, Flow Editor hoặc UI Designer. |
+| **Create** | Chọn workspace cho nội dung mới. |
+| **Particles** | Mở thư viện, quản lý player WebGL dùng chung và sửa material. |
+| **MCP Bridge** | Bật bridge, kiểm tra URL và đăng ký chat skill. |
+| **Settings** | Mở asset cài đặt trong Inspector. |
+
+<details>
+<summary>Create — Chọn workspace cho nội dung mới.</summary>
+<p><img src="images/toolkit-create.png" alt="VinaGen AI Toolkit: Create"></p>
+</details>
+
+<details>
+<summary>Particles — Mở thư viện, quản lý player WebGL dùng chung và sửa material.</summary>
+<p><img src="images/toolkit-particles.png" alt="VinaGen AI Toolkit: Particles"></p>
+</details>
+
+<details>
+<summary>MCP Bridge — Bật bridge, kiểm tra URL và đăng ký chat skill.</summary>
+<p><img src="images/toolkit-bridge.png" alt="VinaGen AI Toolkit: MCP Bridge"></p>
+</details>
+
+Xem [Cài đặt](settings.md) để hiểu từng trường và [Demo & thực hành](demos.md) để làm theo sample.
+
 ## Chọn việc đầu tiên
 
 | Bạn muốn | Bắt đầu tại |
@@ -31,6 +58,6 @@ Dự án hiện dùng **Unity 6000.3.22f1**. Công cụ UI và text cần **Unit
 
 Graph dùng **Save asset**, tài liệu UI dùng **Save**. Import Canvas tạo object trong scene; bạn cần tự lưu scene.
 
-Chat AI và tạo ảnh qua nhà cung cấp cần tài khoản, thông tin đăng nhập riêng. Cấu hình tại **Settings → AI Settings** khi cần.
+Chat AI và tạo ảnh qua nhà cung cấp cần tài khoản, thông tin đăng nhập riêng. Cấu hình tại **Open → Settings → AI Provider Settings** khi cần.
 
 [Tiếp theo: Flow & Design Graph](graphs.md)

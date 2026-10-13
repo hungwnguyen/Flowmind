@@ -31,6 +31,10 @@ Pick an effect and explore it in motion. Use **Restart** to replay it, or lower 
   <li><strong>Make it yours</strong><span>Adjust size and color, then apply your changes.</span></li>
 </ol>
 
+**Demo controls change this browser session only.** To edit a project prefab, apply changes in Unity and reload its bundle. [Web Particle](webgl-preview.md) primarily supports AI Agent testing of effects it creates, through captures and an edit–test loop.
+
+![WebGL demo with playback and particle targets](images/particle-web-demo.png)
+
 ## Offline texture library
 
 Five packs contain **403 original textures**, generated with Unity C# and usable offline.
@@ -51,6 +55,10 @@ Use **white RGB** for colored artwork; tint grayscale textures. Additive particl
 
 Open **Tools → VinaGen AI Toolkit → Open → Particles → Bundled Particle Library** to browse **78 supplied prefabs**. Assets live in `Content/Particles/ToonLibrary/`.
 
+![Prefab library paths and prompt selection preference](images/settings-prefabs.png)
+
+Expand **Prefabs**, inspect a path, then find that prefab in Project to review its modules. See [Library settings](settings.md) for partitioned texture catalogs.
+
 ## Create and check textures
 
 Open **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
@@ -63,6 +71,15 @@ Open **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
 | **FX Review** | Run Play Mode and capture effect milestones. Save scenes first. |
 
 Jobs show progress and cancellation. Wait for completion before entering Play Mode. Reports live in `Library/VinaGenNativeParticleTools/Jobs/`; visually review images after an audit.
+
+<div class="vg-pair">
+  <figure><img src="images/particle-authoring-defaults.png" alt="Particle Authoring: Defaults" loading="lazy"><figcaption>Defaults: Dataset → Generate → Audit → Register.</figcaption></figure>
+  <figure><img src="images/particle-authoring-poe.png" alt="Particle Authoring: Poe Image" loading="lazy"><figcaption>Poe Image: Brief / model / key → Generate with Poe.</figcaption></figure>
+  <figure><img src="images/particle-authoring-inspect.png" alt="Particle Authoring: Inspect" loading="lazy"><figcaption>Inspect: Prefab / PNG → analyze or validate.</figcaption></figure>
+  <figure><img src="images/particle-authoring-review.png" alt="Particle Authoring: FX Review" loading="lazy"><figcaption>FX Review: Save scenes → review → inspect captures.</figcaption></figure>
+</div>
+
+**Defaults:** choose Dataset and leave Overwrite off when filling missing files; finish generation before audit/register. **Poe Image:** requires separate account credits and is optional for offline workflows. **Inspect:** keep Preview rename plan on to inspect changes before rename/resize. **FX Review:** save scenes before running and view the captured images. See [demos](demos.md) to start and [Web Particle](webgl-preview.md) for the AI loop.
 
 ## Build an effect
 

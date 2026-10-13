@@ -1,6 +1,7 @@
 * **Start**
   * [Introduction](introduction.md)
   * [Getting Started](getting-started.md)
+  * [Demos & Practice](demos.md)
 
 * **Design & Logic**
   * [Flow & Design Graphs](graphs.md)
@@ -10,7 +11,7 @@
 
 * **Effects**
   * [Particles & Textures](particles.md)
-  * [WebGL Particle Preview](webgl-preview.md)
+  * [Web Particle: AI Testing](webgl-preview.md)
 
 * **AI & Automation**
   * [AI Chat & Providers](ai-chat.md)

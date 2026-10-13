@@ -38,7 +38,7 @@ Dùng [UI Designer](ui-designer.md) khi cần layer UI chỉnh sửa được v�
 Chọn khung Design, bấm **Document editor → Edit document & label images** trong Inspector. Có thể nhấp đúp khung để mở.
 
 <figure>
-  <img src="../images/design-document-editor.png" alt="Trình soạn đặc tả Design với tab Home và Popup, nội dung có định dạng và ảnh màn hình gắn nhãn đánh số">
+  <img src="images/design-document-editor.png" alt="Trình soạn đặc tả Design với tab Home và Popup, nội dung có định dạng và ảnh màn hình gắn nhãn đánh số">
   <figcaption>Viết hành vi màn hình bên cạnh ảnh tham chiếu và chú thích đánh số.</figcaption>
 </figure>
 

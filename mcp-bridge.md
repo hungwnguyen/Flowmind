@@ -10,6 +10,10 @@ The bridge lets an assistant read and edit toolkit content through Unity.
 
 Keep Unity open. After compilation, retry when the Editor is ready. Stop the bridge when finished.
 
+![MCP Bridge Online status, URL and chat commands](images/toolkit-bridge.png)
+
+**Apply URL** applies an edited address; **Reset to default** restores localhost. **Online** means the bridge is running. **Install chat skills** repairs `/vina` and `$vina` registration locally.
+
 ## HTTP endpoints
 
 | Endpoint | Purpose |

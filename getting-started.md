@@ -15,6 +15,33 @@ The project uses **Unity 6000.3.22f1**. UI and text tools need **Unity UI (uGUI)
   <figure><img src="images/toolkit-settings.png" alt="Toolkit Settings tab"><figcaption>Settings: configure project defaults.</figcaption></figure>
 </div>
 
+## The five toolkit tabs
+
+| Tab | Use it for |
+| --- | --- |
+| **Home** | Open Agent Chat, Flow Editor or UI Designer. |
+| **Create** | Choose a workspace for new content. |
+| **Particles** | Open libraries, manage the shared WebGL player and repair materials. |
+| **MCP Bridge** | Start the bridge, inspect its URL and register chat skills. |
+| **Settings** | Open settings assets in the Inspector. |
+
+<details>
+<summary>Create — Choose a workspace for new content.</summary>
+<p><img src="images/toolkit-create.png" alt="VinaGen AI Toolkit: Create"></p>
+</details>
+
+<details>
+<summary>Particles — Open libraries, manage the shared WebGL player and repair materials.</summary>
+<p><img src="images/toolkit-particles.png" alt="VinaGen AI Toolkit: Particles"></p>
+</details>
+
+<details>
+<summary>MCP Bridge — Start the bridge, inspect its URL and register chat skills.</summary>
+<p><img src="images/toolkit-bridge.png" alt="VinaGen AI Toolkit: MCP Bridge"></p>
+</details>
+
+See [Settings](settings.md) for each field and [Demos & practice](demos.md) to follow a sample.
+
 ## Pick a first task
 
 | Task | Start here |
@@ -31,6 +58,6 @@ Paths in this table are relative to `Assets/VinaGen AI Toolkit/`. For editor men
 
 Use **Save asset** for graphs and **Save** for UI documents. Canvas import creates scene objects; save the scene yourself.
 
-AI chat and provider image generation require your own account and credentials. Configure them in **Settings → AI Settings** when needed.
+AI chat and provider image generation require your own account and credentials. Configure them in **Open → Settings → AI Provider Settings** when needed.
 
 [Next: Flow & Design Graphs](graphs.md)

@@ -31,6 +31,10 @@ Chọn một hiệu ứng để xem chuyển động. Dùng **Phát lại** đ�
   <li><strong>Tinh chỉnh theo ý bạn</strong><span>Đổi kích thước, màu sắc rồi áp dụng thay đổi.</span></li>
 </ol>
 
+**Các điều khiển demo chỉ thay đổi phiên chạy trong trình duyệt.** Để sửa prefab dự án, áp dụng thay đổi trong Unity rồi tải lại bundle. Mục đích chính của [Web Particle](webgl-preview.md) là hỗ trợ AI Agent kiểm thử hiệu ứng agent tạo, qua ảnh chụp và vòng lặp sửa–kiểm thử.
+
+![Demo WebGL với playback và particle target](../images/particle-web-demo.png)
+
 ## Thư viện texture offline
 
 Năm pack có **403 texture gốc**, tạo bằng Unity C# và dùng được offline.
@@ -51,6 +55,10 @@ Artwork có màu dùng **RGB trắng**; texture xám có thể tint. Texture par
 
 Mở **Tools → VinaGen AI Toolkit → Open → Particles → Bundled Particle Library** để xem **78 prefab** đi kèm. Asset nằm trong `Content/Particles/ToonLibrary/`.
 
+![Thư viện prefab với đường dẫn và tùy chọn ưu tiên prompt](../images/settings-prefabs.png)
+
+Mở **Prefabs**, xem đường dẫn, rồi tìm prefab đó trong Project để kiểm tra module. Xem [Cài đặt thư viện](settings.md) để hiểu catalog texture chia partition.
+
 ## Tạo và kiểm tra texture
 
 Mở **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
@@ -63,6 +71,15 @@ Mở **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
 | **FX Review** | Chạy Play Mode và chụp các mốc hiệu ứng. Lưu scene trước. |
 
 Job hiển thị tiến trình và nút hủy. Đợi job xong rồi mới vào Play Mode. Xem báo cáo trong `Library/VinaGenNativeParticleTools/Jobs/` và kiểm tra ảnh bằng mắt sau audit.
+
+<div class="vg-pair">
+  <figure><img src="images/particle-authoring-defaults.png" alt="Particle Authoring: Defaults" loading="lazy"><figcaption>Defaults: Dataset → Generate → Audit → Register.</figcaption></figure>
+  <figure><img src="images/particle-authoring-poe.png" alt="Particle Authoring: Poe Image" loading="lazy"><figcaption>Poe Image: Brief / model / key → Generate with Poe.</figcaption></figure>
+  <figure><img src="images/particle-authoring-inspect.png" alt="Particle Authoring: Inspect" loading="lazy"><figcaption>Inspect: Prefab / PNG → analyze or validate.</figcaption></figure>
+  <figure><img src="images/particle-authoring-review.png" alt="Particle Authoring: FX Review" loading="lazy"><figcaption>FX Review: Save scenes → review → inspect captures.</figcaption></figure>
+</div>
+
+**Defaults:** chọn Dataset, giữ Overwrite tắt khi chỉ bổ sung file thiếu; tạo xong mới audit/register. **Poe Image:** cần tài khoản/điểm riêng; không cần cho workflow offline. **Inspect:** bật Preview rename plan để xem kế hoạch trước khi đổi tên/kích thước. **FX Review:** lưu scene trước khi chạy; mở ảnh kết quả để đánh giá. Xem [demo](demos.md) để bắt đầu và [Web Particle](webgl-preview.md) cho vòng lặp AI.
 
 ## Dựng hiệu ứng
 

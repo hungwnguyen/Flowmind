@@ -10,6 +10,10 @@ Bridge cho phép trợ lý đọc và chỉnh nội dung toolkit thông qua Unit
 
 Giữ Unity mở. Sau khi biên dịch, thử lại khi Editor sẵn sàng. Tắt bridge khi làm xong.
 
+![Tab MCP Bridge đang Online, URL và lệnh chat](../images/toolkit-bridge.png)
+
+**Apply URL** áp dụng địa chỉ đã sửa; **Reset to default** trở lại localhost mặc định. Khi trạng thái **Online**, bridge sẵn sàng. **Install chat skills** sửa đăng ký `/vina` và `$vina`; đây là thao tác cục bộ.
+
 ## Endpoint HTTP
 
 | Endpoint | Công dụng |

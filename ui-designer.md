@@ -39,6 +39,12 @@ Select one object before drawing/dropping an image to create its child. Clear th
 | **Canvas Group** | `CanvasGroup`: opacity, Interactable, Blocks raycasts, Ignore parent groups. |
 | **Horizontal / Vertical / Grid** | The corresponding LayoutGroup with spacing, padding and child sizes. Grid has columns and cell dimensions. |
 
+![Files tab with the bundled UI sample](images/ui-files.png)
+
+![Assets tab: choose a folder before browsing images](images/ui-assets.png)
+
+Select a sample in **Files** to open it. In **Assets**, click **Choose folder…**, pick a project image folder, then search and drag images onto the canvas. An empty Assets panel before selecting a folder is expected. [Demos](demos.md) walks through the three-screen sample.
+
 ## Select and edit several objects
 
 - **Ctrl/Cmd-click** adds/removes individual layers; **Shift-click** selects a range in Layers. You can also drag a marquee on the canvas.
@@ -87,17 +93,19 @@ Register fonts in **Settings → UI Designer Settings**. **Editors → Create UI
 
 Import runs locally with progress and Cancel. Supported: **8-bit RGB PSD**, pixel layers, groups, names, opacity, visibility and supported blend modes. Text with compatible metadata is restored as Text; unsupported content uses cached artwork and needs review.
 
-For missing fonts, choose **PSD import → Default font**; matching project fonts retain priority. PSD files do not contain font files. Each import keeps its document, images and styles in `Assets/VinaGen PSD Imports/<PSD name>/`; fonts reference shared resources.
+For missing fonts, choose **PSD import → Default font**; matching project fonts retain priority. PSD files do not contain font files. Each import keeps its document, images and styles in `Assets/VinaGen PSD Imports/<PSD name>/`; keep private source/generated fonts with that import, outside bundled defaults and toolkit packaging.
 
 Review masks, smart objects, blend modes and effects visually. PSB, CMYK and 16/32-bit PSDs are unsupported.
 
-## Export SVG, PSD and PNG
+## Export PSD, SVGPRO, SVG and PNG
 
 Open **Export** in the top bar; in a collapsed toolbar, use **More actions → Export**.
 
 1. Select canvas/Layers objects when exporting part of the document.
 2. Choose **Selected object / Selected objects** or **All objects** under **Content**.
-3. Click **Export SVG**, **Export PSD** or **Export PNG** to download the file.
+3. Click **PSD**, **SVGPRO**, **SVG** or **PNG** in the dialog to download that format.
+
+![Export dialog with PSD, SVGPRO, SVG and PNG](images/ui-export.png)
 
 | Content | Scope |
 | --- | --- |
@@ -111,9 +119,10 @@ For example, Ctrl/Cmd-click **Shop** and **Popup**, then use **Selected objects*
 | --- | --- |
 | **PNG** | Visible content combined into one transparent image at the authored 1× size. |
 | **SVG** | Browser layout with embedded images/fonts. Requires a `foreignObject`-compatible viewer; raster images and text previews are not converted into vector paths. |
+| **SVGPRO** | Whole document with images, text styles and fonts; always exports the complete document. Drop into another Unity project's Assets to import. |
 | **PSD** | One file with groups/layers, names, ordering, opacity, visibility and supported text metadata. Artwork includes raster paint; fonts are referenced, not embedded. |
 
-Export does not Save the document. PSD text is editable, but Photoshop may redraw text/effects differently; editing requires the corresponding fonts. All objects preserves the combined board arrangement; PNG/SVG includes visible overflow beyond the reference rectangle.
+PSD/SVG/PNG export does not save the document. SVGPRO saves unsaved edits first and exports the whole document package. PSD text is editable, but Photoshop may redraw text/effects differently; editing requires the corresponding fonts. All objects preserves the combined board arrangement; PNG/SVG includes visible overflow beyond the reference rectangle.
 
 Export limits: **8,192 pixels per side and 16 megapixels total**. PSD also limits **1,000 layer records** including group dividers, **512 characters per label**, and **500 MB**. Repair missing font/image resources or wait for pending previews before retrying. Keep the document unchanged during export.
 
@@ -121,13 +130,15 @@ Export limits: **8,192 pixels per side and 16 megapixels total**. PSD also limit
 
 1. Check Text type, components, images and Screen roots; **Save** the document.
 2. Select a target Canvas or its child in Unity. Without a selected Canvas, the tool creates a new **Screen Space Overlay Canvas**.
-3. Click **Canvas** in UI Designer's top bar (tooltip **Import UI to Editor**).
+3. Select **Canvas** in the top **Unity UI system** dropdown, then click the import icon immediately beside it.
 4. Inspect Hierarchy and Game View: dimensions, anchors, text and interaction.
 5. Connect Button behavior to the game and **save the scene yourself**. For reuse, save the imported root as a prefab in Unity.
 
 Alternatively, select the `VinaGenUIDocument` asset in Project, assign **Target Canvas** in its Inspector and click **Import to Canvas**.
 
 The importer validates references before creating objects. Each import creates a new hierarchy in one **Undo** group; previous imports are not automatically synchronized or removed. Undo removes imported objects while generated resources remain reusable. CanvasScaler and the **VinaGen UI Designer** Game View preset use the document's width/height.
+
+![Sample Canvas result in Unity Game View](images/ui-canvas-demo.png)
 
 ### Multiple screens and popups
 
@@ -148,6 +159,14 @@ Buttons use **UI Designer Settings → Button prefab**; the default prefab has n
 Within the same browser session, text/style/typography edits update the most recently linked imported text objects. Re-import after changing renderer or hierarchy; edits do not save the scene.
 
 In Linear projects, **VinaGenUIGammaCompositor** brings composition closer to the browser, with a render target/redraw cost per active screen. **Linear alpha → Compensate Alpha** in Settings uses compensated color/alpha with ordinary Canvas rendering. Unsupported custom/TMP materials produce a warning and fall back to ordinary rendering; check Game View on your pipeline.
+
+## Transfer to Unity UI Toolkit
+
+1. Stop Play Mode, close Prefab Mode and save the document.
+2. Choose **UI Toolkit** in the top **Unity UI system** selector, then click the matching import button. The document Inspector also offers **Import to UI Toolkit** for the saved asset.
+3. Inspect UXML in **UI Toolkit/** beside the document, and the scene **UIDocument** / **VinaGenUIToolkitScreenController**. Save the scene yourself.
+
+Each import creates new assets/objects in one Undo group; previous imports are not synchronized. Only the first authored-visible screen starts visible. Use `ShowScreen(layerId)`, `FindLayer(layerId)` and `ButtonClicked` to connect game behavior. Text gradients/outlines/curves, shapes, blending and custom uGUI/TMP components have limits/fallbacks; read warnings and compare rendering. The Canvas screenshots above do not establish UI Toolkit parity.
 
 ## Save, settings and review
 

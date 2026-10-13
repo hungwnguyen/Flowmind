@@ -39,6 +39,12 @@ Chọn đúng một object rồi vẽ/thả ảnh để tạo con bên trong nó
 | **Canvas Group** | `CanvasGroup`: opacity, Interactable, Blocks raycasts, Ignore parent groups. |
 | **Horizontal / Vertical / Grid** | LayoutGroup tương ứng, giữ spacing, padding và kích thước con. Grid có số cột và kích thước ô. |
 
+![Tab Files mở sample UI](../images/ui-files.png)
+
+![Tab Assets: chọn thư mục trước khi duyệt ảnh](../images/ui-assets.png)
+
+Trong **Files**, chọn sample để mở. Trong **Assets**, bấm **Choose folder…** và chọn thư mục ảnh trong dự án; sau đó tìm kiếm và kéo ảnh vào canvas. Nếu chưa chọn thư mục, bảng Assets trống là bình thường. [Demo](demos.md) có bài thực hành ba màn hình.
+
 ## Chọn và chỉnh nhiều đối tượng
 
 - **Ctrl/Cmd-click** thêm/bớt từng layer; **Shift-click** chọn một dải trong Layers. Có thể kéo vùng chọn trên canvas.
@@ -87,17 +93,19 @@ Text có căn ngang/dọc, xuống dòng, auto size, spacing, margin và rich te
 
 Import chạy cục bộ, có tiến trình và Cancel. Hỗ trợ **PSD RGB 8-bit**, layer pixel, nhóm, tên, opacity, ẩn/hiện và blend mode được hỗ trợ. Layer chữ có metadata phù hợp được khôi phục thành Text; phần không khôi phục được dùng ảnh và cần kiểm tra lại.
 
-Khi thiếu font, chọn **PSD import → Default font**; font đúng tên trong dự án vẫn được ưu tiên. PSD không chứa file font. Tài liệu, ảnh và style của mỗi import nằm riêng trong `Assets/VinaGen PSD Imports/<tên PSD>/`; font tham chiếu tài nguyên chung.
+Khi thiếu font, chọn **PSD import → Default font**; font đúng tên trong dự án vẫn được ưu tiên. PSD không chứa file font. Tài liệu, ảnh và style của mỗi import nằm riêng trong `Assets/VinaGen PSD Imports/<tên PSD>/`; giữ font nguồn/font sinh ra thuộc import riêng trong cùng thư mục, không đưa vào default settings hoặc package toolkit.
 
 Kiểm tra mask, smart object, blend mode và hiệu ứng bằng mắt. PSB, CMYK và PSD 16/32-bit chưa được hỗ trợ.
 
-## Export SVG, PSD và PNG
+## Export PSD, SVGPRO, SVG và PNG
 
 Trên thanh trên cùng, mở **Export**; nếu thanh được thu gọn, mở **More actions → Export**.
 
 1. Chọn object trên canvas/Layers nếu chỉ xuất một phần.
 2. Trong **Content**, chọn **Selected object / Selected objects** hoặc **All objects**.
-3. Bấm **Export SVG**, **Export PSD** hoặc **Export PNG**; file tải về máy.
+3. Bấm **PSD**, **SVGPRO**, **SVG** hoặc **PNG** trong hộp thoại để tải định dạng đó.
+
+![Hộp Export với PSD, SVGPRO, SVG và PNG](../images/ui-export.png)
 
 | Content | Phạm vi xuất |
 | --- | --- |
@@ -111,9 +119,10 @@ Ví dụ: Ctrl/Cmd-click chọn **Shop** và **Popup**, rồi chọn **Selected 
 | --- | --- |
 | **PNG** | Gộp nội dung hiển thị thành một ảnh trong suốt ở kích thước thiết kế 1×. |
 | **SVG** | Bố cục trình duyệt, ảnh và font nhúng trong file. Dùng viewer hỗ trợ `foreignObject`; ảnh raster và preview chữ không được chuyển thành vector path. |
+| **SVGPRO** | Toàn bộ tài liệu cùng ảnh, text style và font; luôn xuất cả tài liệu. Kéo vào Assets dự án Unity khác để import. |
 | **PSD** | Một file có nhóm/layer, tên, thứ tự, opacity, ẩn/hiện và metadata chữ được hỗ trợ. Artwork có dữ liệu raster; font được tham chiếu, không nhúng. |
 
-Export không tự Save tài liệu. File PSD có chữ chỉnh sửa được, nhưng Photoshop có thể dựng lại chữ/hiệu ứng khác VinaGen; cần font tương ứng khi sửa. All objects xuất bố cục chung; PNG/SVG bao gồm phần hiển thị tràn khỏi khung tham chiếu.
+PSD/SVG/PNG không tự Save tài liệu. SVGPRO lưu thay đổi chưa lưu trước khi xuất gói toàn bộ tài liệu. File PSD có chữ chỉnh sửa được, nhưng Photoshop có thể dựng lại chữ/hiệu ứng khác VinaGen; cần font tương ứng khi sửa. All objects xuất bố cục chung; PNG/SVG bao gồm phần hiển thị tràn khỏi khung tham chiếu.
 
 Giới hạn xuất: **8.192 px mỗi cạnh, tổng 16 megapixel**. PSD thêm giới hạn **1.000 bản ghi layer** gồm cả dấu phân nhóm, **512 ký tự/label** và **500 MB**. Nếu báo thiếu font/ảnh hoặc preview đang chờ, sửa/đợi xong rồi xuất lại; không sửa tài liệu trong lúc export.
 
@@ -121,13 +130,15 @@ Giới hạn xuất: **8.192 px mỗi cạnh, tổng 16 megapixel**. PSD thêm g
 
 1. Kiểm tra Text type, component, ảnh và Screen root; **Save** tài liệu.
 2. Trong Unity, chọn Canvas đích hoặc object bên trong Canvas đó. Không chọn Canvas thì công cụ tạo **Screen Space Overlay Canvas** mới.
-3. Trong UI Designer, bấm **Canvas** trên thanh trên cùng (tooltip **Import UI to Editor**).
+3. Chọn **Canvas** trong ô **Unity UI system** trên thanh trên cùng, rồi bấm icon import ngay bên cạnh.
 4. Xem Hierarchy và Game View; kiểm tra kích thước, anchor, chữ và tương tác.
 5. Nối hành vi Button với game, rồi **tự lưu scene**. Muốn dùng lại màn hình, lưu root đã import thành prefab trong Unity.
 
 Cách khác: chọn asset `VinaGenUIDocument` trong Project, gán **Target Canvas** trong Inspector rồi bấm **Import to Canvas**.
 
 Importer kiểm tra tham chiếu trước khi tạo object. Mỗi lần import tạo hierarchy mới trong một nhóm **Undo**; không tự đồng bộ/xóa các màn hình đã import trước. Undo bỏ object được tạo, còn tài nguyên sinh ra vẫn dùng lại được. CanvasScaler và preset Game View **VinaGen UI Designer** dùng width/height của tài liệu.
+
+![Kết quả Canvas của sample trong Game View](../images/ui-canvas-demo.png)
 
 ### Nhiều màn hình và popup
 
@@ -148,6 +159,14 @@ Button dùng **UI Designer Settings → Button prefab**: prefab mặc định kh
 Trong cùng phiên trình duyệt, chỉnh chữ/style/typography cập nhật đối tượng chữ vừa import gần nhất. Đổi renderer hoặc cấu trúc layer cần import lại; thay đổi này không tự lưu scene.
 
 Ở dự án Linear, **VinaGenUIGammaCompositor** giúp composition gần bản trình duyệt; tốn render target và redraw theo màn hình đang bật. **Linear alpha → Compensate Alpha** trong Settings là cách dùng màu/alpha đã bù với Canvas thường. Material tùy chỉnh/TMP không được compositor hỗ trợ sẽ có cảnh báo và dùng render thường; kiểm tra Game View trên pipeline của dự án.
+
+## Chuyển vào Unity UI Toolkit
+
+1. Dừng Play Mode, thoát Prefab Mode và lưu tài liệu.
+2. Trong ô **Unity UI system** trên thanh trên, chọn **UI Toolkit**, rồi bấm nút import tương ứng. Inspector tài liệu cũng có **Import to UI Toolkit** cho asset đã lưu.
+3. Kiểm tra UXML trong thư mục **UI Toolkit/** cạnh tài liệu, object **UIDocument** và **VinaGenUIToolkitScreenController** trong scene. Tự lưu scene.
+
+Mỗi lần import tạo asset/object mới và một nhóm Undo; không tự đồng bộ lần trước. Chỉ màn authored-visible đầu tiên bắt đầu hiển thị. Dùng `ShowScreen(layerId)`, `FindLayer(layerId)` và `ButtonClicked` để nối game. Gradient/outline/curve chữ, shape, blend và component uGUI/TMP tùy chỉnh có giới hạn/fallback; đọc cảnh báo và so sánh render. Ảnh demo Canvas ở trên không xác nhận parity UI Toolkit.
 
 ## Lưu, cài đặt và review
 

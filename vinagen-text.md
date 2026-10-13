@@ -2,6 +2,10 @@
 
 UI text with gradients, stroke, outline and extrusion. Choose Dynamic for changing content or Static Baked for fixed labels.
 
+![VinaGenText effect showcase in UI Designer](images/vinagen-text-demo.png)
+
+Open `Samples/Text Effects/ILoveYouTextShowcase.asset` to try supplied styles. [Demos](demos.md) walks through practice; [Text settings](settings.md#text-settings) shows Font Studio and bake options.
+
 ## Create a label
 
 Use **GameObject → VNT → VinaGenText**, or choose **Typography → Text type → VinaGenText** in UI Designer.
@@ -28,7 +32,7 @@ Static Baked stores all text effects in one image. It draws one quad per label, 
 
 For a whole hierarchy, select its root and use **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** returns a label to Dynamic.
 
-**Texel Scale** controls image sharpness: 1 at reference resolution, 2 for high-DPI or enlarged text, with higher texture memory. Default output: `Assets/VinaGen Text Bakes/`.
+**Texel Scale** controls image sharpness: 1 at reference resolution, 2 for high-DPI or enlarged text, with higher texture memory. This version has the legacy `Assets/VinaGen Text Bakes/` default; for toolkit/sample output, set Output Folder to `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` before baking.
 
 ## Built-in optimizations
 

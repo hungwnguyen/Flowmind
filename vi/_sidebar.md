@@ -1,6 +1,7 @@
 * **Bắt đầu**
   * [Giới thiệu](/vi/)
   * [Bắt đầu nhanh](getting-started.md)
+  * [Demo & Thực hành](demos.md)
 
 * **Thiết kế & Logic**
   * [Flow & Design Graph](graphs.md)
@@ -10,7 +11,7 @@
 
 * **Hiệu ứng**
   * [Particle & Texture](particles.md)
-  * [Xem trước Particle trên WebGL](webgl-preview.md)
+  * [Web Particle: AI kiểm thử](webgl-preview.md)
 
 * **AI & Tự động hóa**
   * [AI Chat & Nhà cung cấp](ai-chat.md)

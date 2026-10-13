@@ -4,7 +4,7 @@ Use Agent Chat to ask questions and create content with your own AI provider.
 
 ## Set up
 
-1. Open **Tools → VinaGen AI Toolkit → Settings → AI Settings**.
+1. Open **Tools → VinaGen AI Toolkit → Open → Settings → AI Provider Settings**.
 2. Select a provider and enter your credentials.
 3. Choose a model available to your account.
 4. Open **Tools → VinaGen AI Toolkit → Chat**.
@@ -12,6 +12,10 @@ Use Agent Chat to ask questions and create content with your own AI provider.
 ![Agent Chat window](images/agent-chat.png)
 
 Chat keeps sessions, history and attachments. Replies follow your latest message's language. Specify the output language when creating screen copy or graph labels.
+
+![AI Provider Settings with provider, model and collapsed API Keys](images/settings-ai.png)
+
+Expand **AI Chat**, choose **Active Provider**, then **Refresh Models / Select Model** or **Custom Model**. Credentials live in **API Keys**; this capture keeps that section closed. See [Settings](settings.md) for chat, image and particle output options.
 
 ## Costs and data
 

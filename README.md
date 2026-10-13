@@ -9,13 +9,14 @@ VinaGen AI Toolkit is a Unity Editor extension that combines flow/design graphs,
 | File | Topic |
 | --- | --- |
 | `introduction.md` | Overview, requirements and entry points (home page) |
-| `getting-started.md` | Install and first workflows |
+| `getting-started.md` | Install, five toolkit tabs and first workflows |
+| `demos.md` | Illustrated practice with UI, text, graphs and particles |
 | `graphs.md` | Flow and design content graphs |
 | `web-editor.md` | Browser Flow Editor |
 | `ui-designer.md` | UI Designer, PSD import and Canvas import |
 | `vinagen-text.md` | VinaGenText fonts, styles and gradients |
 | `particles.md` | Texture library, authoring tools and effect construction |
-| `webgl-preview.md` | WebGL particle preview and browser API |
+| `webgl-preview.md` | AI Agent particle testing loop, timed evidence and browser controls |
 | `ai-chat.md` | Agent Chat and AI providers |
 | `create-from-chat.md` | `/vina` and `$vina` chat skills |
 | `mcp-bridge.md` | Local MCP bridge |
@@ -37,7 +38,7 @@ When you add or change a page, update both the English file and its `vi/` twin. 
 
 ## Particle playground
 
-`playground/` is a copy of the toolkit's prebuilt Built-in WebGL player (`WebGLBuilds/ParticlePreview/Builtin`) plus native WebGL AssetBundles from `Samples/GeneratedParticles/Standards`, exported with the MCP action `build_particle_web_preview`. The Particles page embeds eight selected effects through `assets/js/vinagen-fx.js`; fire missile and impact are excluded from the demo picker.
+`playground/` is a copy of the toolkit's prebuilt Built-in WebGL player (current shared-player installation or author release) plus native WebGL AssetBundles from `Samples/GeneratedParticles/Standards`, exported with the MCP action `build_particle_web_preview`. The Particles page embeds eight selected effects through `assets/js/vinagen-fx.js`; fire missile and impact are excluded from the demo picker.
 
 - The `.unityweb` files are Brotli with Unity's decompression fallback, so any static host works without `Content-Encoding` headers.
 - `?fx=<name>` imports `fx/<name>.json` once; `&replay=1` restarts one-shot effects after every system finishes. `&lang=vi` translates the player controls. The docs player groups motion and developer controls into collapsible sections.
@@ -45,7 +46,7 @@ When you add or change a page, update both the English file and its `vi/` twin. 
 
 ## Screenshots
 
-Every image in `images/` is a real capture of the toolkit (Unity windows, the browser Flow Editor and UI Designer with the bundled samples) or a contact sheet built from the bundled texture PNGs.
+Every product image in `images/` is a real toolkit capture (Unity panels, browser workspaces or WebGL camera frames) or a contact sheet from bundled texture PNGs. The 13 October 2026 update captures all five toolkit tabs, settings Inspectors, four particle-authoring tabs, UI export/Canvas and text demos, plus WebGL controls and seeded timeline frames. See [capture inventory](images/CAPTURES.md) for provenance and verification scope.
 
 ## Design skill
 

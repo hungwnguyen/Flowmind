@@ -2,6 +2,10 @@
 
 Chữ UI có gradient, stroke, viền và độ nổi. Dùng Dynamic cho nội dung thay đổi, Static Baked cho label cố định.
 
+![Sample hiệu ứng VinaGenText trong UI Designer](../images/vinagen-text-demo.png)
+
+Mở `Samples/Text Effects/ILoveYouTextShowcase.asset` để thử các style có sẵn. [Demo](demos.md) hướng dẫn thực hành; [Cài đặt text](settings.md#cài-đặt-text) có ảnh Font Studio và bake.
+
 ## Tạo label
 
 Chọn **GameObject → VNT → VinaGenText**, hoặc **Typography → Text type → VinaGenText** trong UI Designer.
@@ -28,7 +32,7 @@ Static Baked gộp chữ và hiệu ứng thành một ảnh, vẽ một quad ch
 
 Muốn bake cả nhóm, chọn object gốc rồi dùng **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** đưa label về Dynamic.
 
-**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Mặc định lưu tại `Assets/VinaGen Text Bakes/`.
+**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Phiên bản này có mặc định legacy `Assets/VinaGen Text Bakes/`; với đầu ra toolkit/sample, đổi Output Folder sang `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` trước khi bake.
 
 ## Các tối ưu đã có
 

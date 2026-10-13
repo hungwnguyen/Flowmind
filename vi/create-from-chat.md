@@ -17,6 +17,17 @@ $vina tạo hiệu ứng lửa xanh lặp lại bằng texture offline
 
 Nêu kết quả cần có, phong cách và tên đầu ra. Thêm đường dẫn khi cần, ví dụ tài liệu UI mới: `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset`.
 
+## Yêu cầu agent kiểm thử particle
+
+```text
+$vina tạo một particle offline, dùng Web Particle chụp lúc bắt đầu, đỉnh
+và tắt dần; xem ảnh, sửa lỗi rồi kiểm thử lại prefab đã lưu.
+```
+
+[Web Particle](webgl-preview.md) giúp AI Agent kiểm thử trực quan hiệu ứng agent tạo. Agent cần xem ảnh và áp dụng thay đổi bền vững về Unity; giá trị live trên web không tự lưu vào prefab.
+
+![MCP Bridge với trạng thái đăng ký chat skill](../images/toolkit-bridge.png)
+
 ## Nếu chưa có lệnh
 
 Trong tab **MCP Bridge**, kiểm tra trạng thái rồi bấm **Install chat skills**. Mở lại chat của dự án. Skill do bạn tạo được giữ nguyên; tự xử lý nếu có báo trùng tên.
