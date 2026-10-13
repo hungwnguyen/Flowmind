@@ -123,16 +123,14 @@ class Workspace {
     this.styles = (await record("styles:" + this.id)) || [];
     for (const [, resource] of await records("resource:" + this.id + ":"))
       this.install(resource);
-    const font = await fetch(new URL("./fonts/Inter.ttf", import.meta.url));
-    if (!font.ok) throw Error("Bundled font could not load.");
-    this.install({
-      guid: "f10a11",
-      name: "Inter",
-      path: "Fonts/Inter.ttf",
-      type: "font",
-      blob: await font.blob(),
-      builtIn: true,
-    });
+    for (const [guid, name, file] of [
+      ["f10a11", "Inter", "Inter.ttf"],
+      ["f10a12", "Montserrat Black", "Montserrat-Black.ttf"],
+    ]) {
+      const font = await fetch(new URL("./fonts/" + file, import.meta.url));
+      if (!font.ok) throw Error("Bundled font could not load: " + name);
+      this.install({guid, name, path: "Fonts/" + file, type: "font", blob: await font.blob(), builtIn: true});
+    }
   }
   install(resource) {
     const previous = resources.get(resource.guid);
@@ -298,7 +296,7 @@ class Workspace {
         displayName: r.name,
         sourceFontGuid: r.guid,
         standalone: true,
-        isDefault: r.builtIn === true,
+        isDefault: r.guid === "f10a11",
       }));
     return {
       width: 1920,

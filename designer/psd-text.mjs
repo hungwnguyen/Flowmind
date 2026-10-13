@@ -66,6 +66,18 @@ export function readTypeTool(bytes){
  return {transform,descriptor,engine:descriptor.EngineData?readEngineData(descriptor.EngineData):null};
 }
 export function readLayerEffects(bytes){const r=new Binary(bytes);if(r.u32()!==0||r.u32()!==16)throw Error('Unsupported PSD effects version.');return r.descriptor();}
+// Artboard geometry is authored independently of layer pixel bounds. Large
+// backgrounds and hidden alternatives may extend far beyond this rectangle.
+export function readPSDArtboard(bytes){
+ const r=new Binary(bytes);if(r.u32()!==16)throw Error('Unsupported PSD artboard version.');
+ const data=r.descriptor(),rect=data.artboardRect;if(!rect)return null;
+ const scalar=value=>typeof value==='number'?value:value?.value;
+ const x=scalar(rect.Left),y=scalar(rect['Top ']),right=scalar(rect.Rght),bottom=scalar(rect.Btom),width=right-x,height=bottom-y;
+ if(![x,y,right,bottom].every(Number.isFinite)||Math.max(Math.abs(x),Math.abs(y),Math.abs(right),Math.abs(bottom))>100000||width<1||height<1||width>30000||height>30000)throw Error('Invalid PSD artboard bounds.');
+ const type=data.artboardBackgroundType,color=data['Clr '];
+ const background=type===1?'#ffffffff':type===2?'#000000ff':type===4&&color?hex([number(color['Rd  ']),number(color['Grn ']),number(color['Bl  ']),255]):null;
+ return {x,y,width,height,background};
+}
 const number=(v,fallback=0)=>Number.isFinite(v?.value)?v.value:Number.isFinite(v)?v:fallback;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hex=(values)=>'#'+values.map(v=>Math.round(clamp(v,0,255)).toString(16).padStart(2,'0')).join('');
@@ -90,7 +102,7 @@ export function photoshopText(type,effects,warnings=new Set(),bounds={width:1,he
   if(outside){style.strokeWidth=outside;style.strokeColor=strokeColor;}
   if(inside){style.innerOutlineWidth=inside;style.innerOutlineColor=strokeColor;}
  }
- if(shadow){const angle=number(shadow.lagl,120)*Math.PI/180,d=number(shadow.Dstn)*effectScale;style.extrusionX=clamp(-Math.cos(angle)*d,-128,128);style.extrusionY=clamp(Math.sin(angle)*d,-128,128);style.extrusionColor=effectColor(shadow['Clr '],number(shadow.Opct,100));if(number(shadow.blur)>0)warnings.add('Blurred Photoshop text shadows are approximated by VinaGenText extrusion.');}
+ if(shadow){const angle=number(shadow.lagl,120)*Math.PI/180,d=number(shadow.Dstn)*effectScale;style.extrusionX=clamp(-Math.cos(angle)*d,-128,128);style.extrusionY=clamp(Math.sin(angle)*d,-128,128);style.extrusionColor=effectColor(shadow['Clr '],number(shadow.Opct,100));const spread=clamp(number(shadow.Ckmt)/100,0,1),size=clamp(number(shadow.blur)*effectScale,0,64);if(spread&&size&&!stroke){style.outlineWidth=size*spread;style.outlineColor=style.extrusionColor;}if(size&&spread<1)warnings.add('Blurred Photoshop text shadows are approximated by VinaGenText extrusion.');}
  if(gradient){const ramp=psdGradient(gradient,bounds.width,bounds.height,{x:bounds.x,y:bounds.y,width:bounds.documentWidth,height:bounds.documentHeight});if(ramp){
   style.gradient=true;style.gradientMode=ramp.mode;style.gradientAngle=ramp.angle;style.gradientBlend='blend';
   const base=style.faceColor.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16));
@@ -207,6 +219,21 @@ function disk(alpha,width,height,radius,erode=false){
   }
   return result;
 }
+// Three separable box passes approximate a Gaussian with bounded, linear work.
+export function blurPSDAlpha(alpha,width,height,size){
+  const radius=Math.ceil(size/2);if(!radius)return alpha;
+  let input=Float32Array.from(alpha),output=new Float32Array(alpha.length);
+  for(let pass=0;pass<3;pass++)for(let vertical=0;vertical<2;vertical++){
+    const span=vertical?height:width,lines=vertical?width:height,step=vertical?width:1,divisor=radius*2+1;
+    for(let line=0;line<lines;line++){
+      const base=vertical?line:line*width;let sum=0;
+      for(let i=0;i<=Math.min(radius,span-1);i++)sum+=input[base+i*step];
+      for(let i=0;i<span;i++){output[base+i*step]=sum/divisor;const remove=i-radius,add=i+radius+1;if(remove>=0)sum-=input[base+remove*step];if(add<span)sum+=input[base+add*step];}
+    }
+    [input,output]=[output,input];
+  }
+  return input;
+}
 export function paintPSDText(pixels,width,height,effects,warnings=[],context={}){
   if(!effects||effects.masterFXSwitch===false)return null;
   const stroke=enabled(effects,'FrFX','frameFXMulti'),shadow=enabled(effects,'DrSh','dropShadowMulti');
@@ -222,14 +249,17 @@ export function paintPSDText(pixels,width,height,effects,warnings=[],context={})
   const outside=position==='InsF'?0:position==='CtrF'?radius/2:radius,inside=position==='InsF'?radius:position==='CtrF'?radius/2:0;
   const angle=number(shadow?.lagl,120)*Math.PI/180,distance=shadow?clamp(number(shadow.Dstn)*effectScale,0,128):0;
   const dx=Math.round(-Math.cos(angle)*distance),dy=Math.round(Math.sin(angle)*distance);
-  if(shadow&&number(shadow.blur)>0)warnings.push('Cached Photoshop text shadow blur is approximated by a sharp shadow.');
-  if(!radius&&!distance&&!ramp&&!fill)return null;
-  const left=Math.ceil(Math.max(outside,-dx,0)),top=Math.ceil(Math.max(outside,-dy,0)),right=Math.ceil(Math.max(outside,dx,0)),bottom=Math.ceil(Math.max(outside,dy,0));
+  const shadowSize=shadow?clamp(number(shadow.blur)*effectScale,0,64):0,spread=clamp(number(shadow?.Ckmt)/100,0,1),shadowRadius=shadowSize*spread;
+  const softSize=shadowSize*(1-spread),shadowPad=shadowRadius+Math.ceil(softSize*1.5);
+  if(softSize)warnings.push('Photoshop shadow soft blur uses a bounded Gaussian approximation.');
+  if(shadow&&!normal(shadow))warnings.push('Photoshop shadow blend uses a normal-blend approximation.');
+  if(!radius&&!distance&&!shadowSize&&!ramp&&!fill)return null;
+  const left=Math.ceil(Math.max(outside,shadowPad-dx,0)),top=Math.ceil(Math.max(outside,shadowPad-dy,0)),right=Math.ceil(Math.max(outside,shadowPad+dx,0)),bottom=Math.ceil(Math.max(outside,shadowPad+dy,0));
   const w=width+left+right,h=height+top+bottom;
-  if(w>8192||h>8192||w*h>16777216||w*h*(2*Math.ceil(Math.max(outside,inside))+1)>128000000){warnings.push('Text effects exceed the cached-paint processing limit; using the editable text renderer.');return {useRenderer:true};}
+  if(w>8192||h>8192||w*h>16777216||w*h*(2*Math.ceil(Math.max(outside,inside,shadowRadius))+1)>128000000){warnings.push('Photoshop effects exceed the cached-paint processing limit.');return {useRenderer:true};}
   const alpha=new Uint8Array(w*h);for(let y=0;y<height;y++)for(let x=0;x<width;x++)alpha[(y+top)*w+x+left]=pixels[(y*width+x)*4+3];
   const out=new Uint8ClampedArray(w*h*4);
-  if(shadow){const c=effectRGBA(shadow);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=x-dx,sy=y-dy;if(sx>=0&&sy>=0&&sx<w&&sy<h)over(out,(y*w+x)*4,c,alpha[sy*w+sx]/255);}}
+  if(shadow){const c=effectRGBA(shadow),shade=blurPSDAlpha(disk(alpha,w,h,shadowRadius),w,h,softSize);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=x-dx,sy=y-dy;if(sx>=0&&sy>=0&&sx<w&&sy<h)over(out,(y*w+x)*4,c,shade[sy*w+sx]/255);}}
   if(radius){const grown=disk(alpha,w,h,outside),c=effectRGBA(stroke);for(let i=0;i<alpha.length;i++)over(out,i*4,c,grown[i]/255);}
   const face=inside?disk(alpha,w,h,inside,true):alpha;
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){const p=(y*width+x)*4,i=((y+top)*w+x+left)*4,c=[pixels[p],pixels[p+1],pixels[p+2],1];if(fillColor)for(let k=0;k<3;k++)c[k]=c[k]*(1-fillColor[3])+fillColor[k]*fillColor[3];if(ramp){const g=ramp.at(x+.5,y+.5);for(let k=0;k<3;k++)c[k]=c[k]*(1-g[3])+g[k]*g[3];}over(out,i,c,face[i/4]/255);}

@@ -80,6 +80,7 @@ class Studio {
     this.search=el('input',{placeholder:'Search layers','aria-label':'Search layers',oninput:()=>this.paintLayers()});
     const searchField=el('label',{class:'search-field'});searchField.append(this.icon('search'),this.search);
     this.layerList=el('div',{class:'ui-layer-list',role:'tree',tabindex:0,'aria-label':'Layers','aria-multiselectable':'true'});
+    this.sidebarPanels.get('Layers').addEventListener('scroll',()=>{if(this.layerScrollFrame)return;this.layerScrollFrame=requestAnimationFrame(()=>{this.layerScrollFrame=0;this.paintLayerWindow();});},{passive:true});
     this.layerRootDrop=el('div',{class:'ui-layer-root-drop',role:'group','aria-label':'Screen root drop target'},'Drop here to move to Screen');
     this.layerRootDrop.ondragover=e=>this.layerDragOver(e,this.layerRootDrop,'','inside');this.layerRootDrop.ondrop=e=>this.layerDrop(e,'','inside');
     this.layerRootDrop.ondragleave=()=>this.layerRootDrop.removeAttribute('data-drop');
@@ -142,7 +143,7 @@ class Studio {
     window.addEventListener('vinagen-preferences-change',()=>this.applyAppearance());
     window.addEventListener('beforeunload',e=>{this.persistInspectorFolds();if(this.dirty){this.persist();e.preventDefault();e.returnValue='';}});
     document.querySelector('body > .topbar').addEventListener('click',e=>this.shellClick(e),true);
-    this.resizeObserver=new ResizeObserver(()=>{if(this.root.hidden||!this.ready)return;const rect=this.viewport.getBoundingClientRect();if(this.autoFit)this.fit();else if(this.viewSize){this.pan.x+=(rect.width-this.viewSize.width)/2;this.pan.y+=(rect.height-this.viewSize.height)/2;this.paint();}this.viewSize={width:rect.width,height:rect.height};});this.resizeObserver.observe(this.viewport);
+    this.resizeObserver=new ResizeObserver(()=>{if(this.root.hidden||!this.ready)return;const rect=this.viewport.getBoundingClientRect();if(this.autoFit)this.fit();else if(this.viewSize){this.pan.x+=(rect.width-this.viewSize.width)/2;this.pan.y+=(rect.height-this.viewSize.height)/2;this.paint();}this.viewSize={width:rect.width,height:rect.height};this.paintLayerWindow();});this.resizeObserver.observe(this.viewport);this.resizeObserver.observe(this.sidebarPanels.get('Layers'));
     this.setSidebar('Layers');
     this.applyAppearance();
     const pollFiles=async()=>{
@@ -206,7 +207,7 @@ class Studio {
     const actions={save:()=>this.save(),reload:()=>this.load(this.path,{reload:true}),import:()=>this.file.click(),export:()=>this.openExport(),settings:()=>this.settings(),workspace:()=>this.shell.chooseWorkspace?.(),'workspace-menu':()=>this.showSidebar('Files'),'open-files':()=>this.showSidebar('Files'),'toggle-layers':()=>this.toggleDrawer('left'),'toggle-inspector':()=>this.toggleDrawer('right')};
     const action=actions[button.id];if(!action)return;e.preventDefault();e.stopImmediatePropagation();Promise.resolve(action()).catch(error=>this.message(error,true));
   }
-  setSidebar(name){this.sidebar=name;for(const b of this.sidebarTabs.querySelectorAll('[role=tab]')){b.classList.toggle('active',b.dataset.panel===name);b.setAttribute('aria-selected',String(b.dataset.panel===name));}for(const [key,panel]of this.sidebarPanels)panel.hidden=key!==name;if(name==='Assets')this.loadSidebarAssets();if(name==='Files'&&this.ready&&!this.busy&&!this.opening)this.refreshConfig();}
+  setSidebar(name){this.sidebar=name;for(const b of this.sidebarTabs.querySelectorAll('[role=tab]')){b.classList.toggle('active',b.dataset.panel===name);b.setAttribute('aria-selected',String(b.dataset.panel===name));}for(const [key,panel]of this.sidebarPanels)panel.hidden=key!==name;if(name==='Layers'&&this.visibleLayerRows)this.paintLayerWindow();if(name==='Assets')this.loadSidebarAssets();if(name==='Files'&&this.ready&&!this.busy&&!this.opening)this.refreshConfig();}
   showSidebar(name){this.setSidebar(name);if(matchMedia('(max-width:640px)').matches)this.toggleDrawer('left',true);}
   closeDrawers(){this.left.classList.remove('mobile-open');this.right.classList.remove('mobile-open');this.backdrop.hidden=true;delete this.root.dataset.drawer;}
   toggleDrawer(side,force){const panel=side==='left'?this.left:this.right;if(side==='left'&&!matchMedia('(max-width:640px)').matches){this.root.classList.toggle('ui-sidebar-collapsed');return;}const open=force??!panel.classList.contains('mobile-open');this.closeDrawers();panel.classList.toggle('mobile-open',open);this.backdrop.hidden=!open;if(open)this.root.dataset.drawer=side;}
@@ -435,73 +436,35 @@ class Studio {
     this.world.style.transform=`translate(${this.pan.x}px,${this.pan.y}px) scale(${this.zoom})`;
     Object.assign(this.board.style,{width:this.doc.width+'px',height:this.doc.height+'px'});this.zoomLabel.textContent=Math.round(this.zoom*100)+'%';
     const full=this.renderVersion!==this.version||this.renderDocument!==this.doc;
-    const byId=this.indexes(),indexes=full?new Map(this.hierarchy.map(({layer},index)=>[layer.id,index+1])):this.layerIndexes;
-    this.layerIndexes=indexes;
-    if(full){const ids=new Set(indexes.keys());for(const [id,node] of this.elements)if(!ids.has(id)){this.styledPreview?.cancel(node.firstElementChild);node.remove();this.elements.delete(id);}}
-    const gestureLayers=this.gesture?.type==='move'?this.gesture.layers.map(item=>item.layer):this.gesture?.layer?[this.gesture.layer]:[];
-    const updated=full?this.doc.layers:gestureLayers;
-    for(const layer of updated)if(!this.elements.has(layer.id)){const node=el('div',{class:'ui-layer','data-layer-id':layer.id});node.append(el('div',{class:'ui-layer-content'}));this.elements.set(layer.id,node);}
-    for(const layer of updated) {
-      const node=this.elements.get(layer.id),parent=layer.parentId?this.elements.get(layer.parentId):this.board;
-      // Keep layer DOM and image elements alive during pointer movement.
-      if(node.parentElement!==parent)parent.append(node);
-      const geometry=[layer.x,layer.y,layer.width,layer.height,layer.rotation||0,layer.opacity??1,layer.blendMode,!!layer.clip,!!layer.locked,layer.visible!==false,indexes.get(layer.id)].join('|');
-      if(node._geometry!==geometry){node._geometry=geometry;node.hidden=layer.visible===false;
-        // A pass-through folder must not create its own stacking context: its
-        // children blend with artwork painted before the folder, including siblings.
-        const pass=layer.blendMode==='pass-through'&&['empty','group'].includes(layer.role);
-        Object.assign(node.style,{zIndex:pass?'auto':String(indexes.get(layer.id)??this.doc.layers.length),left:layer.x+'px',top:layer.y+'px',width:layer.width+'px',height:layer.height+'px',opacity:String(layer.opacity??1),transform:layer.rotation?`rotate(${layer.rotation}deg)`:'none',mixBlendMode:layer.blendMode==='pass-through'?'normal':layer.blendMode||'normal',isolation:pass?'auto':'isolate',overflow:layer.clip?'hidden':'visible',pointerEvents:layer.locked?'none':'auto'});
-      }
-      const content=node.firstElementChild;
-      // Moving changes only geometry. Keep image/TMP content and signatures untouched.
-      if(!full&&this.gesture?.type==='move')continue;
-      const renderText=layer.role==='text';
-      const sourcePaint=renderText&&importedTextPaint(layer);
-      const renderImage=!['text','group','empty'].includes(layer.role);
-      const tmpFont=renderText&&layer.textMeshPro?this.tmpFontFor(layer):null,tmpPreset=tmpFont?.materials?.find(m=>m.key===layer.tmpMaterial?.preset)||tmpFont?.materials?.[0];
-      const styleRevision=(this.config.textStyles||[]).find(s=>s.key===layer.textStyle?.preset)?.revision||'';
-      const signature=JSON.stringify([layer.role,renderText,layer.sourceTextPaint,layer.fill,layer.fillGradient,layer.image,layer.image?resourceURL(layer.image.guid):null,imageMode(layer),layer.shape,layer.stroke,layer.strokeWidth,layer.shapeSides,layer.starInnerRadius,layer.shapeFlipX,layer.shapeFlipY,...(layer.shape?[layer.width,layer.height]:[]),layer.textCurve,...(layer.textCurve?[layer.width,layer.height]:[]),layer.text,layer.textColor,layer.fontSize,layer.fontGuid,layer.textAlign,layer.bold,layer.textMeshPro,layer.standaloneText,layer.tmpFont,layer.tmpSettings,layer.tmpMaterial,layer.textStyle,styleRevision,...(renderText?[this.fontVersion]:[]),...(layer.textMeshPro?[layer.width,layer.height,tmpFont?.revision,tmpPreset?.revision]:[])]);
-      if(node._signature!==signature) {
-        // Unity uses fill as the sprite tint; a white tint must not add an opaque rectangle behind PNG alpha.
-        node._signature=signature;if(!(renderText&&layer.textStyle&&content.querySelector('.ui-styled-text-preview'))&&!(renderText&&!layer.textStyle&&layer.textMeshPro&&content.querySelector('.ui-tmp-web-preview')))content.replaceChildren();if(!layer.textStyle)this.styledPreview?.cancel(content);content.style.background=renderImage&&!layer.image&&!layer.shape?layer.fill||'transparent':'transparent';
-        if(renderImage&&!layer.image&&!layer.shape&&layer.fillGradient){content.style.backgroundColor='transparent';content.style.backgroundImage=`url("${paintURL(layer.fill,layer.fillGradient)}")`;content.style.backgroundSize='100% 100%';}
-        if(layer.shape)content.append(paintShape(layer));
-        if(renderImage&&layer.image){
-          if(imageMode(layer)==='nine_slice'){
-            const sliced=el('div',{class:'ui-sliced-image'}),source=el('img',{src:sliceMedia(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async'});
-            source.onload=async()=>{
-              const current=this.doc.layers.find(item=>item.id===layer.id);if(!current||this.elements.get(layer.id)?.querySelector('.ui-sliced-image')!==sliced)return;
-              sliced._sourceSize={width:source.naturalWidth,height:source.naturalHeight};sliced._borders=current.image.slice||this.sliceBorders(source);
-              if(!current.image.slice){
-                const doc=this.doc,reference=current.image;
-                try{const info=await this.api('ui-slice-info',{image:reference});if(this.doc!==doc||current.image!==reference)return;if(info.width&&info.height)sliced._borders=info;}catch(error){this.message(error,true);}
-                if(this.doc!==doc||current.image!==reference)return;
-                reference.slice={width:source.naturalWidth,height:source.naturalHeight,...sliced._borders};
-                this.renderVersion=-1;this.paintAll();
-              }
-              this.paintSlice(sliced,current);
-            };
-            sliced.append(source);content.append(sliced);
-          }else content.append(el('img',{src:media(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:imageMode(layer)==='none'?'fill':'contain'}}));
-          imagePaintFilter(content,content.querySelector('.ui-sliced-image')||content.querySelector('img'),layer);
-        }
-        if(sourcePaint){
-          this.styledPreview?.cancel(content);content.replaceChildren(el('img',{class:'ui-psd-text-paint',src:media(sourcePaint.image),alt:layer.text||'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:'fill',...(sourcePaint.bounds?{position:'absolute',left:sourcePaint.bounds.x+'px',top:sourcePaint.bounds.y+'px',width:sourcePaint.bounds.width+'px',height:sourcePaint.bounds.height+'px',maxWidth:'none',maxHeight:'none'}:{})}}));
-        }
-        else if(renderText&&layer.textStyle){
-          this.styledPreview??=styledTextPreview({request:(...args)=>this.api(...args),saved:layer=>{const entry=this.preview?.styledText?.[layer.id],url=previewURL({text:entry?.result?.dataUrl},'text','');return url&&entry.input&&entry.result?{...entry,result:{...entry.result,dataUrl:url}}:null;},onError:text=>this.message(text,true)});
-          this.styledPreview.paint(content,layer,JSON.stringify([styleRevision,tmpFont?.revision,'smooth-curve-v2']));
-        }
-        else if(renderText&&layer.textMeshPro){this.styledPreview?.cancel(content);this.paintWebTMP(layer,content,tmpFont,tmpPreset);}
-        else if(renderText)content.append(el('span',{},layer.text||''));
-        Object.assign(content.style,{color:layer.textColor||'#fff',fontSize:(layer.fontSize||24)+'px',fontFamily:layer.fontGuid?`"ui-${layer.fontGuid}"`:'Arial, sans-serif',textAlign:layer.textAlign||'center',fontWeight:layer.bold?'700':'400'});
-        if(renderText&&!layer.textStyle)paintTextCurve(content,layer);
-      }
-      const sliced=content.querySelector('.ui-sliced-image');if(sliced)this.paintSlice(sliced,layer);
+    const byId=this.indexes();
+    if(full){
+      // Parents precede children even when a PSD's flat records are child-first.
+      // New generations abandon queued work before it can attach stale artwork.
+      this.canvasWork?.resolve(false);
+      const layers=this.hierarchy.map(({layer})=>layer),indexes=new Map(layers.map((layer,index)=>[layer.id,index+1]));
+      this.layerIndexes=indexes;
+      for(const [id,node]of this.elements)if(!indexes.has(id)){this.styledPreview?.cancel(node.firstElementChild);node.remove();this.elements.delete(id);}
+      let resolve;const done=new Promise(finish=>resolve=finish);
+      this.canvasWork={document:this.doc,version:this.version,layers,index:0,resolve,done};
+      this.renderVersion=this.version;this.renderDocument=this.doc;
+      this.board.setAttribute('aria-busy','true');
     }
+    const work=this.canvasWork,indexes=this.layerIndexes;
+    if(work){
+      const start=performance.now();let count=0;
+      // Keep small documents immediate; cap larger passes by both time and count.
+      while(work.index<work.layers.length){
+        this.paintCanvasLayer(work.layers[work.index++],indexes,true);count++;
+        if(work.layers.length>100&&(count>=48||performance.now()-start>=5))break;
+      }
+      if(work.index===work.layers.length){this.canvasWork=null;this.board.setAttribute('aria-busy','false');work.resolve(true);}
+      else this.paint();
+    }
+    const gestureLayers=this.gesture?.type==='move'?this.gesture.layers.map(item=>item.layer):this.gesture?.layer?[this.gesture.layer]:[];
+    // Gesture geometry stays responsive while a large document is still painting.
+    for(const layer of gestureLayers)if(this.elements.has(layer.id))this.paintCanvasLayer(layer,indexes,false);
     this.comments.paint();
-    if(this.pendingLoad){this.loadProgress.watch(this.board,this.pendingLoad,{tasks:[...(this.currentFontLoads||[]),...(this.styledPreview?.pending(this.board)||[])],onError:count=>this.message(`${count} image${count===1?'':'s'} could not load.`,true)});this.pendingLoad=null;}
-    this.renderVersion=this.version;this.renderDocument=this.doc;
+    if(this.pendingLoad&&!this.canvasWork){this.loadProgress.watch(this.board,this.pendingLoad,{tasks:[...(this.currentFontLoads||[]),...(this.styledPreview?.pending(this.board)||[])],onError:count=>this.message(`${count} image${count===1?'':'s'} could not load.`,true)});this.pendingLoad=null;}
     this.guideOverlay??=el('div',{class:'ui-guide-overlay'});if(!this.guideOverlay.parentElement)this.overlay.append(this.guideOverlay);
     const guideSignature=JSON.stringify([this.guides||[],this.pan,this.zoom]);
     if(this.guideSignature!==guideSignature){this.guideSignature=guideSignature;const fragment=document.createDocumentFragment();
@@ -531,6 +494,75 @@ class Studio {
     for(const [id,outline]of this.selectionElements)if(!active.has(id)){outline.remove();this.selectionElements.delete(id);}
     this.paintSelectionGuides(byId,poses);
     this.paintHover();
+  }
+  paintCanvasLayer(layer,indexes,full){
+    let node=this.elements.get(layer.id);
+    if(!node){node=el('div',{class:'ui-layer','data-layer-id':layer.id});node.append(el('div',{class:'ui-layer-content'}));this.elements.set(layer.id,node);}
+    const parent=layer.parentId?this.elements.get(layer.parentId):this.board;
+    // Keep layer DOM and image elements alive during pointer movement.
+    if(node.parentElement!==parent)parent.append(node);
+    const geometry=[layer.x,layer.y,layer.width,layer.height,layer.rotation||0,layer.opacity??1,layer.blendMode,!!layer.clip,!!layer.locked,layer.visible!==false,indexes.get(layer.id)].join('|');
+    if(node._geometry!==geometry){node._geometry=geometry;node.hidden=layer.visible===false;
+      // A pass-through folder must not create its own stacking context: its
+      // children blend with artwork painted before the folder, including siblings.
+      const pass=layer.blendMode==='pass-through'&&['empty','group'].includes(layer.role);
+      Object.assign(node.style,{zIndex:pass?'auto':String(indexes.get(layer.id)??this.doc.layers.length),left:layer.x+'px',top:layer.y+'px',width:layer.width+'px',height:layer.height+'px',opacity:String(layer.opacity??1),transform:layer.rotation?`rotate(${layer.rotation}deg)`:'none',mixBlendMode:layer.blendMode==='pass-through'?'normal':layer.blendMode||'normal',isolation:pass?'auto':'isolate',overflow:layer.clip?'hidden':'visible',pointerEvents:layer.locked?'none':'auto'});
+    }
+    const content=node.firstElementChild;
+    // Moving changes only geometry. Keep image/TMP content and signatures untouched.
+    if(!full&&this.gesture?.type==='move')return;
+    const renderText=layer.role==='text';
+    const sourcePaint=renderText&&importedTextPaint(layer);
+    const renderImage=!['text','group','empty'].includes(layer.role);
+    const tmpFont=renderText&&layer.textMeshPro?this.tmpFontFor(layer):null,tmpPreset=tmpFont?.materials?.find(m=>m.key===layer.tmpMaterial?.preset)||tmpFont?.materials?.[0];
+    const styleRevision=(this.config.textStyles||[]).find(s=>s.key===layer.textStyle?.preset)?.revision||'';
+    const signature=JSON.stringify([layer.role,renderText,layer.sourceTextPaint,layer.fill,layer.fillGradient,layer.image,layer.image?resourceURL(layer.image.guid):null,imageMode(layer),layer.shape,layer.stroke,layer.strokeWidth,layer.shapeSides,layer.starInnerRadius,layer.shapeFlipX,layer.shapeFlipY,...(layer.shape?[layer.width,layer.height]:[]),layer.textCurve,...(layer.textCurve?[layer.width,layer.height]:[]),layer.text,layer.textColor,layer.fontSize,layer.fontGuid,layer.textAlign,layer.bold,layer.textMeshPro,layer.standaloneText,layer.tmpFont,layer.tmpSettings,layer.tmpMaterial,layer.textStyle,styleRevision,...(renderText?[this.fontVersion]:[]),...(layer.textMeshPro?[layer.width,layer.height,tmpFont?.revision,tmpPreset?.revision]:[])]);
+    if(node._signature!==signature) {
+      // Unity uses fill as the sprite tint; a white tint must not add an opaque rectangle behind PNG alpha.
+      node._signature=signature;if(!(renderText&&layer.textStyle&&content.querySelector('.ui-styled-text-preview'))&&!(renderText&&!layer.textStyle&&layer.textMeshPro&&content.querySelector('.ui-tmp-web-preview')))content.replaceChildren();if(!layer.textStyle)this.styledPreview?.cancel(content);content.style.background=renderImage&&!layer.image&&!layer.shape?layer.fill||'transparent':'transparent';
+      if(renderImage&&!layer.image&&!layer.shape&&layer.fillGradient){content.style.backgroundColor='transparent';content.style.backgroundImage=`url("${paintURL(layer.fill,layer.fillGradient)}")`;content.style.backgroundSize='100% 100%';}
+      if(layer.shape)content.append(paintShape(layer));
+      if(renderImage&&layer.image){
+        if(imageMode(layer)==='nine_slice'){
+          const sliced=el('div',{class:'ui-sliced-image'}),source=el('img',{src:sliceMedia(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async'});
+          source.onload=async()=>{
+            const current=this.doc.layers.find(item=>item.id===layer.id);if(!current||this.elements.get(layer.id)?.querySelector('.ui-sliced-image')!==sliced)return;
+            sliced._sourceSize={width:source.naturalWidth,height:source.naturalHeight};sliced._borders=current.image.slice||this.sliceBorders(source);
+            if(!current.image.slice){
+              const doc=this.doc,reference=current.image;
+              try{const info=await this.api('ui-slice-info',{image:reference});if(this.doc!==doc||current.image!==reference)return;if(info.width&&info.height)sliced._borders=info;}catch(error){this.message(error,true);}
+              if(this.doc!==doc||current.image!==reference)return;
+              reference.slice={width:source.naturalWidth,height:source.naturalHeight,...sliced._borders};
+              this.renderVersion=-1;this.paintAll();
+            }
+            this.paintSlice(sliced,current);
+          };
+          sliced.append(source);content.append(sliced);
+        }else content.append(el('img',{src:media(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:imageMode(layer)==='none'?'fill':'contain'}}));
+        imagePaintFilter(content,content.querySelector('.ui-sliced-image')||content.querySelector('img'),layer);
+      }
+      if(sourcePaint){
+        this.styledPreview?.cancel(content);content.replaceChildren(el('img',{class:'ui-psd-text-paint',src:media(sourcePaint.image),alt:layer.text||'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:'fill',...(sourcePaint.bounds?{position:'absolute',left:sourcePaint.bounds.x+'px',top:sourcePaint.bounds.y+'px',width:sourcePaint.bounds.width+'px',height:sourcePaint.bounds.height+'px',maxWidth:'none',maxHeight:'none'}:{})}}));
+      }
+      else if(renderText&&layer.textStyle){
+        this.styledPreview??=styledTextPreview({request:(...args)=>this.api(...args),saved:layer=>{const entry=this.preview?.styledText?.[layer.id],url=previewURL({text:entry?.result?.dataUrl},'text','');return url&&entry.input&&entry.result?{...entry,result:{...entry.result,dataUrl:url}}:null;},onError:text=>this.message(text,true)});
+        this.styledPreview.paint(content,layer,JSON.stringify([styleRevision,tmpFont?.revision,'smooth-curve-v2']));
+      }
+      else if(renderText&&layer.textMeshPro){this.styledPreview?.cancel(content);this.paintWebTMP(layer,content,tmpFont,tmpPreset);}
+      else if(renderText)content.append(el('span',{},layer.text||''));
+      Object.assign(content.style,{color:layer.textColor||'#fff',fontSize:(layer.fontSize||24)+'px',fontFamily:layer.fontGuid?`"ui-${layer.fontGuid}"`:'Arial, sans-serif',textAlign:layer.textAlign||'center',fontWeight:layer.bold?'700':'400'});
+      if(renderText&&!layer.textStyle)paintTextCurve(content,layer);
+    }
+    const sliced=content.querySelector('.ui-sliced-image');if(sliced)this.paintSlice(sliced,layer);
+  }
+  async whenCanvasReady(){
+    const doc=this.doc;
+    do{
+      if(this.raf)cancelAnimationFrame(this.raf);this.raf=0;
+      this.paintCanvas();
+      if(this.canvasWork)await this.canvasWork.done;
+      if(this.doc!==doc)throw Error('The document changed while rendering. Try again.');
+    }while(this.canvasWork||this.renderVersion!==this.version||this.renderDocument!==this.doc);
   }
   paintSelectionGuides(byId,poses){
     const layer=this.selected.size===1?byId.get([...this.selected][0]):null;
@@ -606,47 +638,88 @@ class Studio {
   }
   paintLayers() {
     this.restoreLayerFolds();
-    const query=this.search.value.toLowerCase();
-    if(this.layerListDocument!==this.doc||this.layerListVersion!==this.version||this.layerListQuery!==query){
+    const query=this.search.value.toLowerCase(),changedDocument=this.layerListDocument!==this.doc;
+    if(changedDocument||this.layerListVersion!==this.version||this.layerListQuery!==query){
       this.layerListVersion=this.version;this.layerListQuery=query;
       this.layerListNextSignature=JSON.stringify([query,this.doc.layers.map(l=>[l.id,l.parentId,l.name,l.role,l.visible,l.locked,l.canvasRoot])]);
     }
     const signature=this.layerListNextSignature+'|'+[...this.collapsedLayers].sort().join('|');
-    if(this.layerListDocument===this.doc&&this.layerListSignature===signature){
-      for(const row of this.layerList.children){const selected=this.selected.has(row.dataset.layerRowId);row.classList.toggle('active',selected);row.setAttribute('aria-selected',String(selected));}return;
-    }
-    this.layerListDocument=this.doc;this.layerListSignature=signature;
+    if(!changedDocument&&this.layerListSignature===signature){this.paintLayerWindow();return;}
     const focused=this.layerList.contains(document.activeElement)?document.activeElement.closest('[data-layer-row-id]')?.dataset.layerRowId:null;
-    this.layerList.replaceChildren();const byParent=new Map();
-    for(const layer of this.doc.layers){const parent=layer.parentId||'';if(!byParent.has(parent))byParent.set(parent,[]);byParent.get(parent).push(layer);}
-    const matches=new Set(),byId=this.indexes();if(query)for(const layer of this.doc.layers)if(`${layer.name} ${layer.role} ${layer.id}`.toLowerCase().includes(query)){for(let item=layer;item&&!matches.has(item.id);item=byId.get(item.parentId))matches.add(item.id);}
-    const visit=(parent,depth)=>{for(const layer of byParent.get(parent)||[]){
-      if(!query||matches.has(layer.id)){
-        const row=el('div',{class:'ui-layer-row'+(this.selected.has(layer.id)?' active':''),role:'treeitem',tabindex:0,'data-layer-row-id':layer.id,'aria-level':depth+1,'aria-selected':String(this.selected.has(layer.id)),style:{paddingLeft:(8+depth*14)+'px','--drop-indent':(8+depth*14)+'px'}});
-        const children=byParent.has(layer.id),expanded=!!query||!this.collapsedLayers.has(layer.id);
-        if(children){row.setAttribute('aria-expanded',String(expanded));const toggle=this.iconButton('chevron',(expanded?'Collapse':'Expand')+' layer '+layer.name,e=>{e.stopPropagation();this.toggleLayerFold(layer.id);});toggle.classList.add('ui-layer-toggle');toggle.setAttribute('aria-expanded',String(expanded));row.append(toggle);}else row.append(el('span',{class:'ui-layer-toggle-spacer','aria-hidden':'true'}));
-        const glyph=this.iconButton(({image:'image',button:'image',text:'text',group:'frame',empty:'frame'})[layer.role],'Focus '+layer.name,e=>{e.stopPropagation();if(e.shiftKey||e.ctrlKey||e.metaKey)this.selectLayerRow(layer.id,e);else{this.select(layer.id);this.layerActions.focus();}});glyph.classList.add('ui-layer-glyph');
-        const caption=el('span',{class:'ui-layer-row-name'},layer.name);caption.ondblclick=e=>{e.stopPropagation();this.layerActions.rename(layer.id);};
-        const screenRoot=isScreenRoot(layer,this.doc,this.doc);row.append(glyph,caption,el('small',{title:screenRoot?'Independent screen root':layer.role},screenRoot?'Screen':layer.role));
-        row.append(this.iconButton(layer.visible===false?'eyeOff':'eye',layer.visible===false?'Show layer':'Hide layer',e=>{e.stopPropagation();this.toggleLayerProperty(layer.id,'visible');}),this.iconButton(layer.locked?'lock':'unlock',layer.locked?'Unlock layer':'Lock layer',e=>{e.stopPropagation();this.toggleLayerProperty(layer.id,'locked');}));
-        row.draggable=!layer.locked;row.title='Drag to change parent or layer order';
-        row.onpointerdown=e=>{this.layerDragFromControl=!!e.target.closest('button,input');};
-        row.ondragstart=e=>this.layerDragStart(e,layer);row.ondragend=()=>this.finishLayerDrag();
-        row.ondragover=e=>this.layerDragOver(e,row,layer.id,this.layerDropPlacement(e,row,layer));
-        row.ondragleave=e=>{if(!row.contains(e.relatedTarget))this.clearLayerDrop();};
-        row.ondrop=e=>this.layerDrop(e,layer.id,this.layerDropPlacement(e,row,layer));
-        row.onclick=e=>this.selectLayerRow(layer.id,e);row.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();this.selectLayerRow(layer.id,e);}};this.layerList.append(row);
-      }if(query||!this.collapsedLayers.has(layer.id))visit(layer.id,depth+1);
-    }};visit('',0);
-    const parents=[...byParent.keys()].filter(Boolean),all=parents.length>0&&parents.every(id=>this.collapsedLayers.has(id));this.collapseLayersButton.setAttribute('aria-label',all?'Expand all layers':'Collapse all layers');this.collapseLayersButton.title=all?'Expand all layers':'Collapse all layers';this.collapseLayersButton.disabled=!parents.length;
-    if(focused)this.focusLayerRow(focused,false);
+    if(changedDocument){this.layerRows=new Map();this.layerList.replaceChildren();}
+    this.layerListDocument=this.doc;this.layerListSignature=signature;
+    const byId=this.indexes(),parents=new Set(this.doc.layers.map(layer=>layer.parentId).filter(Boolean)),matches=new Set();
+    if(query)for(const layer of this.doc.layers)if(`${layer.name} ${layer.role} ${layer.id}`.toLowerCase().includes(query)){
+      for(let item=layer;item&&!matches.has(item.id);item=byId.get(item.parentId))matches.add(item.id);
+    }
+    const rows=[];let foldedDepth=Infinity;
+    for(const {layer,depth}of this.hierarchy){
+      if(depth>foldedDepth&&!query)continue;
+      foldedDepth=Infinity;
+      if(query&&!matches.has(layer.id))continue;
+      const children=parents.has(layer.id),expanded=!!query||!this.collapsedLayers.has(layer.id);
+      rows.push({layer,depth,children,expanded});if(children&&!expanded)foldedDepth=depth;
+    }
+    this.visibleLayerRows=rows;
+    this.layerList.dataset.virtual=String(rows.length>200);
+    const all=parents.size>0&&[...parents].every(id=>this.collapsedLayers.has(id));
+    this.collapseLayersButton.setAttribute('aria-label',all?'Expand all layers':'Collapse all layers');this.collapseLayersButton.title=all?'Expand all layers':'Collapse all layers';this.collapseLayersButton.disabled=!parents.size;
+    this.paintLayerWindow();if(focused)this.focusLayerRow(focused,false);
+  }
+  paintLayerWindow(){
+    const entries=this.visibleLayerRows||[],panel=this.sidebarPanels.get('Layers'),virtual=entries.length>200;
+    this.layerRows??=new Map();
+    let start=0,end=entries.length;
+    if(virtual){
+      const top=panel.getBoundingClientRect().top+panel.clientTop-this.layerList.getBoundingClientRect().top;
+      start=Math.max(0,Math.min(entries.length-1,Math.floor(top/32))-10);
+      end=Math.min(entries.length,start+Math.max(40,Math.ceil(panel.clientHeight/32)+24));
+    }
+    this.layerList.style.paddingTop=(start*32)+'px';this.layerList.style.paddingBottom=((entries.length-end)*32)+'px';
+    const active=new Set();let cursor=this.layerList.firstElementChild;
+    for(let i=start;i<end;i++){
+      const entry=entries[i],{layer,depth,children,expanded}=entry;
+      const signature=JSON.stringify([depth,children,expanded,layer.name,layer.role,layer.visible,layer.locked,layer.canvasRoot,isScreenRoot(layer,this.doc,this.doc)]);
+      let row=this.layerRows.get(layer.id);
+      if(!row||row._signature!==signature){const previous=row;row=this.createLayerRow(entry);row._signature=signature;this.layerRows.set(layer.id,row);if(previous){if(cursor===previous)cursor=row;previous.replaceWith(row);}}
+      row._layer=layer;active.add(layer.id);Object.assign(row.style,{position:'',top:'',left:'',right:''});
+      const selected=this.selected.has(layer.id);if(row.getAttribute('aria-selected')!==String(selected)){row.classList.toggle('active',selected);row.setAttribute('aria-selected',String(selected));}
+      if(row===cursor)cursor=cursor.nextElementSibling;else this.layerList.insertBefore(row,cursor);
+    }
+    for(const [id,row]of this.layerRows)if(!active.has(id)){
+      // Retain the native drag source and an active rename control while scrolling.
+      const pinned=virtual&&(this.layerDrag?.ids.includes(id)||row.contains(document.activeElement)),index=pinned?entries.findIndex(entry=>entry.layer.id===id):-1;
+      if(index>=0)Object.assign(row.style,{position:'absolute',top:(index*32)+'px',left:'0',right:'0'});
+      else{row.remove();this.layerRows.delete(id);}
+    }
+  }
+  createLayerRow({layer,depth,children,expanded}){
+    const row=el('div',{class:'ui-layer-row'+(this.selected.has(layer.id)?' active':''),role:'treeitem',tabindex:0,'data-layer-row-id':layer.id,'aria-level':depth+1,'aria-selected':String(this.selected.has(layer.id)),style:{paddingLeft:(8+depth*14)+'px','--drop-indent':(8+depth*14)+'px'}});
+
+    if(children){row.setAttribute('aria-expanded',String(expanded));const toggle=this.iconButton('chevron',(expanded?'Collapse':'Expand')+' layer '+layer.name,e=>{e.stopPropagation();this.toggleLayerFold(layer.id);});toggle.classList.add('ui-layer-toggle');toggle.setAttribute('aria-expanded',String(expanded));row.append(toggle);}else row.append(el('span',{class:'ui-layer-toggle-spacer','aria-hidden':'true'}));
+    const glyph=this.iconButton(({image:'image',button:'image',text:'text',group:'frame',empty:'frame'})[layer.role],'Focus '+layer.name,e=>{e.stopPropagation();if(e.shiftKey||e.ctrlKey||e.metaKey)this.selectLayerRow(layer.id,e);else{this.select(layer.id);this.layerActions.focus();}});glyph.classList.add('ui-layer-glyph');
+    const caption=el('span',{class:'ui-layer-row-name'},layer.name);caption.ondblclick=e=>{e.stopPropagation();this.layerActions.rename(layer.id);};
+    const screenRoot=isScreenRoot(layer,this.doc,this.doc);row.append(glyph,caption,el('small',{title:screenRoot?'Independent screen root':layer.role},screenRoot?'Screen':layer.role));
+    row.append(this.iconButton(layer.visible===false?'eyeOff':'eye',layer.visible===false?'Show layer':'Hide layer',e=>{e.stopPropagation();this.toggleLayerProperty(layer.id,'visible');}),this.iconButton(layer.locked?'lock':'unlock',layer.locked?'Unlock layer':'Lock layer',e=>{e.stopPropagation();this.toggleLayerProperty(layer.id,'locked');}));
+    row.draggable=!layer.locked;row.title='Drag to change parent or layer order';
+    row.onpointerdown=e=>{this.layerDragFromControl=!!e.target.closest('button,input');};
+    row.ondragstart=e=>this.layerDragStart(e,row._layer);row.ondragend=()=>this.finishLayerDrag();
+    row.ondragover=e=>this.layerDragOver(e,row,layer.id,this.layerDropPlacement(e,row,row._layer));
+    row.ondragleave=e=>{if(!row.contains(e.relatedTarget))this.clearLayerDrop();};
+    row.ondrop=e=>this.layerDrop(e,layer.id,this.layerDropPlacement(e,row,row._layer));
+    row.onclick=e=>this.selectLayerRow(layer.id,e);row.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();this.selectLayerRow(layer.id,e);}};return row;
   }
   restoreLayerFolds(){const key='vinagen-ui-layer-folds:v1:'+ (this.shell.projectId||this.shell.project||'')+':'+(this.path||'draft');if(this.layerFoldsKey===key)return;this.layerFoldsKey=key;try{const values=JSON.parse(localStorage.getItem(key)||'[]');this.collapsedLayers=new Set(Array.isArray(values)?values.filter(id=>typeof id==='string'):[]);}catch{this.collapsedLayers=new Set();}}
   persistLayerFolds(){try{localStorage.setItem(this.layerFoldsKey,JSON.stringify([...this.collapsedLayers]));}catch{}}
   toggleLayerFold(id){this.restoreLayerFolds();if(this.collapsedLayers.has(id))this.collapsedLayers.delete(id);else this.collapsedLayers.add(id);this.persistLayerFolds();this.paintLayers();}
   collapseAllLayers(){this.restoreLayerFolds();const parents=new Set(this.doc.layers.map(layer=>layer.parentId).filter(Boolean)),all=[...parents].every(id=>this.collapsedLayers.has(id));this.collapsedLayers=all?new Set():parents;this.persistLayerFolds();this.paintLayers();}
   scrollLayerRow(id){
-    const panel=this.sidebarPanels.get('Layers'),row=[...this.layerList.children].find(row=>row.dataset.layerRowId===id);
+    const panel=this.sidebarPanels.get('Layers');let row=this.layerRows?.get(id);
+    if(!row&&this.layerList.dataset.virtual==='true'&&!panel.hidden){
+      const index=this.visibleLayerRows.findIndex(entry=>entry.layer.id===id);if(index<0)return;
+      const top=this.layerList.getBoundingClientRect().top-panel.getBoundingClientRect().top-panel.clientTop+panel.scrollTop;
+      panel.scrollTo({top:top+index*32-panel.clientHeight/2,behavior:'instant'});this.paintLayerWindow();row=this.layerRows.get(id);
+    }
     if(!row||panel.hidden||!panel.clientHeight)return;
     // A newer selection must stop an older animation, even if its row is visible.
     panel.scrollTo({top:panel.scrollTop,behavior:'instant'});
@@ -659,11 +732,11 @@ class Studio {
     for(let parent=byId.get(id)?.parentId;parent;parent=byId.get(parent)?.parentId)changed=this.collapsedLayers.delete(parent)||changed;
     if(changed)this.persistLayerFolds();this.paintLayers();this.scrollLayerRow(id);
   }
-  focusLayerRow(id,scroll=true){const row=[...this.layerList.children].find(row=>row.dataset.layerRowId===id);row?.focus({preventScroll:true});if(scroll)this.scrollLayerRow(id);}
+  focusLayerRow(id,scroll=true){if(!this.layerRows?.has(id)||scroll)this.scrollLayerRow(id);this.layerRows?.get(id)?.focus({preventScroll:true});}
   selectLayerRow(id,event){
     this.lastPick=null;
     if(this.layerSelectionDocument!==this.doc){this.layerSelectionDocument=this.doc;this.layerSelectionAnchor=null;}
-    const ids=[...this.layerList.children].map(row=>row.dataset.layerRowId),result=selectLayerIds(ids,this.selected,this.layerSelectionAnchor,id,event);
+    const ids=(this.visibleLayerRows||[]).map(entry=>entry.layer.id),result=selectLayerIds(ids,this.selected,this.layerSelectionAnchor,id,event);
     this.layerSelectionAnchor=result.anchor;this.selected=result.selected;this.paintLayers();this.paintInspector();this.paint();this.focusLayerRow(id,false);
   }
   toggleLayerProperty(id,key){
@@ -675,7 +748,7 @@ class Studio {
     const layers=this.doc.layers.filter(layer=>this.selected.has(layer.id)),source=layers.find(layer=>layer.visible!==false)||layers[0];
     if(source)this.toggleLayerProperty(source.id,'visible');
   }
-  navigateLayers(direction){const ids=[...this.layerList.children].map(row=>row.dataset.layerRowId),focused=document.activeElement.closest('[data-layer-row-id]')?.dataset.layerRowId,id=nextLayerId(ids,focused,this.selected,direction);if(id){this.select(id);this.focusLayerRow(id);}}
+  navigateLayers(direction){const ids=(this.visibleLayerRows||[]).map(entry=>entry.layer.id),focused=document.activeElement.closest('[data-layer-row-id]')?.dataset.layerRowId,id=nextLayerId(ids,focused,this.selected,direction);if(id){this.select(id);this.focusLayerRow(id);}}
   closeGroupMenu(){this.layerActions.close();}
   groupSelection(type='rect'){this.closeGroupMenu();this.edit(()=>this.selected=new Set(groupLayers(this.doc,this.selected,type)));}
   openGroupMenu(e,id){this.layerActions.open(e,id);}
@@ -691,7 +764,7 @@ class Studio {
     this.paintInspector();this.paint();
   }
   clearLayerDrop(){for(const node of this.root.querySelectorAll('[data-drop],[data-drop-parent]')){node.removeAttribute('data-drop');node.removeAttribute('data-drop-parent');}}
-  finishLayerDrag(){this.layerDrag=null;delete this.root.dataset.layerDrag;this.clearLayerDrop();for(const row of this.layerList.children)row.classList.remove('ui-layer-dragging');}
+  finishLayerDrag(){this.layerDrag=null;delete this.root.dataset.layerDrag;this.clearLayerDrop();for(const row of this.layerList.children)row.classList.remove('ui-layer-dragging');this.paintLayerWindow();}
   layerDragOver(e,row,targetId,placement){
     if(!this.layerDrag)return;e.stopPropagation();this.clearLayerDrop();
     try{if(this.busy||this.layerDrag.document!==this.doc||this.layerDrag.version!==this.version)throw Error('The document changed during dragging.');layerDropPlan(this.doc,this.layerDrag.ids,targetId,placement);e.preventDefault();e.dataTransfer.dropEffect='move';row.dataset.drop=placement;const parentId=placement==='inside'?targetId:this.doc.layers.find(l=>l.id===targetId)?.parentId;const parentRow=[...this.layerList.children].find(r=>r.dataset.layerRowId===parentId);if(parentRow)parentRow.dataset.dropParent='true';}
@@ -1608,7 +1681,7 @@ class Studio {
             recalculateAnchors(draft,!!this.config.autoAdjustAnchors);
             for(const layer of draft.layers)if(layer.sourceTextPaint)layer.sourceTextPaint.signature=textPaintSignature(layer);
             status.lastElementChild.textContent=`${importedLayers} / ${totalLayers} layers imported · Rendering preview…`;
-            this.paintLayers();this.paintCanvas();
+            this.paintLayers();await this.whenCanvasReady();
             const textLoads=[...(this.currentFontLoads||[]),...(this.styledPreview?.pending(this.board)||[])];
             let renderedTexts=0;
             await Promise.all(textLoads.map(async load=>{await load;if(cancelled)return;heartbeat();status.lastElementChild.textContent=`${importedLayers} / ${totalLayers} layers imported · Rendering preview… Text: ${++renderedTexts} / ${textLoads.length}`;progress.value=95+2*renderedTexts/textLoads.length;}));
@@ -1669,7 +1742,7 @@ class Studio {
         };
         worker.onerror=e=>fail(Error(e.message));
         worker.onmessage=e=>{if(cancelled)return;heartbeat();const data=e.data;if(data.error){fail(Error(data.error));return;}
-          if(data.type==='progress'){status.lastElementChild.textContent=data.stage==='hash'?`Checking PSD file... ${Math.round(data.readBytes/data.sourceBytes*100)}%`:'Reading PSD layer metadata...';return;}
+          if(data.type==='progress'){status.lastElementChild.textContent=data.stage==='hash'?`Checking PSD file… ${Math.round(data.readBytes/data.sourceBytes*100)}%`:'Reading PSD layer metadata…';return;}
           if(data.type!=='plan')return;
           (async()=>{
             sourceDocument=data.document;sourceFileKey=data.fileKey;worker.terminate();workers.delete(worker);for(const note of sourceDocument.warnings)notes.add(note);

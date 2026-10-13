@@ -14,9 +14,12 @@ export function psdLayerBounds(layer,pose,padding=0) {
 }
 export async function exportPSD(studio,{onProgress=()=>{},selectedIds=null}={}) {
   const original=studio.doc,version=studio.version;validateDocument(original);
+  await studio.whenCanvasReady?.();
+  if(studio.doc!==original||studio.version!==version)throw Error('UI changed during PSD export. Export again once editing stops.');
   const doc=imageExportDocument(original,selectedIds),sources=doc.layers.filter(layer=>!layer.parentId).map(layer=>studio.elements.get(layer.id));
   if(!doc.layers.length)throw Error('Add UI layers before exporting PSD.');
-  await Promise.all(studio.currentFontLoads||[]);await document.fonts.ready;
+  await Promise.all(studio.currentFontLoads||[]);await document.fonts.ready;await studio.whenCanvasReady?.();
+  if(studio.doc!==original||studio.version!==version)throw Error('UI changed during PSD export. Export again once editing stops.');
   const previews=selectedIds?sources.flatMap(source=>studio.styledPreview?.pending(source)||[]):studio.styledPreview?.pending(studio.board)||[];
   let timeout;
   try{await Promise.race([Promise.all(previews),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error('Text previews are still pending. Wait and export again.')),15000);})]);}finally{clearTimeout(timeout);}

@@ -1,14 +1,15 @@
 import {cacheKey,fileCacheKey,projectCache,blobBase64,cachedBlob} from './ui-project-cache.mjs';
 import {readPSD,readPSDFile,preparePSDImport,decodeChannel,solidPixelColor} from './psd-reader.mjs';
 import {paintPSDText} from './psd-text.mjs';
+import {paintPSDRaster} from './psd-raster-effects.mjs';
 import {streamPSDTiles,PSD_TILE_SIZE} from './psd-stream.mjs';
 let document,index=0,byId,source,tiled,channelCache,total=0,fileKey,paintCacheKey;
-async function postPaint(layer,png){
+async function postPaint(layer,png,rasterBounds){
   // Hash off the UI thread. Identical encoded artwork shares one upload even
   // when different branches reach it at the same time.
   let paintKey;
   if(globalThis.crypto?.subtle){const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',await png.arrayBuffer()));paintKey=Array.from(hash,b=>b.toString(16).padStart(2,'0')).join('');}
-  if(paintCacheKey&&!tiled)await projectCache('psd-paint',paintCacheKey,{layer,png:await blobBase64(png),paintKey,warnings:document.warnings});
+  if(paintCacheKey&&!tiled)await projectCache('psd-paint',paintCacheKey,{layer,png:await blobBase64(png),paintKey,rasterBounds,warnings:document.warnings});
   postMessage({type:'layer',layer,png,paintKey});
 }
 async function nextTile(){
@@ -33,12 +34,13 @@ async function next() {
     if(!record.width||!record.height){if(!record.section)continue;}
     const group=record.section===1||record.section===2;
     const parent=byId.get(record.parentId);
-    const layer={id:record.id,parentId:record.parentId,name:record.name,role:group?'empty':'image',x:record.x-(parent?.x||0),y:record.y-(parent?.y||0),width:record.width,height:record.height,opacity:record.opacity,visible:record.visible,blendMode:record.blendMode,fill:group?'#ffffff00':'#ffffff',...(record.screen?{canvasRoot:true,anchor:'stretch'}:{}),...record.text};
+    const layer={id:record.id,parentId:record.parentId,name:record.name,role:group?'empty':'image',x:record.x-(parent?.x||0),y:record.y-(parent?.y||0),width:record.width,height:record.height,opacity:record.opacity,visible:record.visible,blendMode:record.blendMode,fill:record.fill||(group?'#ffffff00':'#ffffff'),...(record.screen?{canvasRoot:true,anchor:'stretch'}:{}),...(record.artboard?{clip:true}:{}),...record.text};
     const textBox=layer.psdTextBox,textPaint=layer.psdTextPaint;delete layer.psdTextBox;delete layer.psdTextPaint;
     if(textBox)Object.assign(layer,{x:textBox.x-(parent?.x||0),y:textBox.y-(parent?.y||0),width:textBox.width,height:textBox.height,rotation:textBox.rotation,fill:'#ffffff00'});
     // Preserve Photoshop's cached paint alongside editable TySh data.
     if(record.text&&!record.channels.some(c=>c.id===0)){postMessage({type:'layer',layer});return;}
     if(group){postMessage({type:'layer',layer});return;}
+    if(record.fill){postMessage({type:'layer',layer});return;}
     if(record.width>8192||record.height>8192||record.width*record.height>16777216||record.mask&&(record.mask.width>8192||record.mask.height>8192||record.mask.width*record.mask.height>16777216)){
       if(!record.channels.some(c=>c.id===0))continue;
       const count=Math.ceil(record.width/PSD_TILE_SIZE)*Math.ceil(record.height/PSD_TILE_SIZE);total+=count;
@@ -49,9 +51,16 @@ async function next() {
       tiled={layer,stream:streamPSDTiles(source,record,progress=>postMessage({type:'progress',stage:'raster',name:record.name,index,total,...progress}))};
       postMessage({type:'progress',stage:'layer',name:record.name,index,total});postMessage({type:'layer',layer});return;
     }
-    paintCacheKey=fileKey?await cacheKey('psd-paint-v2:'+fileKey+':'+record.id):null;
+    paintCacheKey=fileKey?await cacheKey('psd-paint-v5:'+fileKey+':'+record.id):null;
     const cached=paintCacheKey?await projectCache('psd-paint',paintCacheKey):null;
-    if(cached?.png&&cached.layer?.id===layer.id){try{const png=cachedBlob(cached.png);document.warnings.push(...(cached.warnings||[]));postMessage({type:'layer',layer:cached.layer,png,paintKey:cached.paintKey,cacheHit:true});return;}catch{}}
+    if(cached?.png&&cached.layer?.id===layer.id){try{
+      const png=cachedBlob(cached.png);document.warnings.push(...(cached.warnings||[]));
+      // Paint is reusable, but parent-local geometry belongs to the current plan.
+      // In particular, authored artboards change the root's origin and clipping.
+      const current={...cached.layer,...layer};if(cached.layer.sourceTextPaint)current.sourceTextPaint=cached.layer.sourceTextPaint;
+      if(cached.rasterBounds)Object.assign(current,{x:layer.x+cached.rasterBounds.x,y:layer.y+cached.rasterBounds.y,width:cached.rasterBounds.width,height:cached.rasterBounds.height});
+      postMessage({type:'layer',layer:current,png,paintKey:cached.paintKey,cacheHit:true});return;
+    }catch{}}
     // Read adjacent compressed channels together, bounded to one layer. Avoid
     // four or five Blob/OS reads per raster without loading the whole PSD.
     channelCache=null;
@@ -69,22 +78,26 @@ async function next() {
     if(!record.channels.some(c=>c.id===0))continue;
     let nonempty=false;for(let p=3;p<pixels.length;p+=4)if(pixels[p]){nonempty=true;break;}if(!nonempty){if(record.text){postMessage({type:'layer',layer});return;}total--;continue;}
     const solid=solidPixelColor(pixels);
-    if(solid&&!record.text){layer.fill=solid;postMessage({type:'layer',layer});return;}
-    let effectPaint=record.textEffects?paintPSDText(pixels,record.width,record.height,record.textEffects,document.warnings,{x:record.x,y:record.y,width:document.sourceWidth||document.width,height:document.sourceHeight||document.height}):null;
+    if(solid&&!record.text&&!record.rasterEffects){layer.fill=solid;postMessage({type:'layer',layer});return;}
+    const effects=record.textEffects||record.rasterEffects;
+    let effectPaint=effects?(record.text?paintPSDText:paintPSDRaster)(pixels,record.width,record.height,effects,document.warnings,{x:record.x,y:record.y,width:document.sourceWidth||document.width,height:document.sourceHeight||document.height}):null;
+    if(record.rasterEffects?.masterFXSwitch!==false&&['ChFX','patternFill'].some(key=>record.rasterEffects?.[key]?.enab))document.warnings.push('Raster layer '+record.name+' has Photoshop satin or pattern effects that need visual review.');
     for(const effects of record.textGroupEffects||[]){if(effectPaint?.useRenderer)break;const next=paintPSDText(effectPaint?.pixels||pixels,effectPaint?.width||record.width,effectPaint?.height||record.height,effects,document.warnings);if(next){if(!next.useRenderer){next.bounds.x+=effectPaint?.bounds.x||0;next.bounds.y+=effectPaint?.bounds.y||0;}effectPaint=next;}}
-    if(effectPaint?.useRenderer){postMessage({type:'layer',layer});return;}
+    if(effectPaint?.useRenderer){if(record.text){postMessage({type:'layer',layer});return;}effectPaint=null;}
+    const rasterBounds=!record.text&&effectPaint?.bounds;
+    if(rasterBounds)Object.assign(layer,{x:layer.x+rasterBounds.x,y:layer.y+rasterBounds.y,width:rasterBounds.width,height:rasterBounds.height});
     let canvas=new OffscreenCanvas(effectPaint?.width||record.width,effectPaint?.height||record.height);canvas.getContext('2d').putImageData(new ImageData(effectPaint?.pixels||pixels,canvas.width,canvas.height),0,0);
     if(textBox&&textPaint){
       // PSD caches world-axis paint. Put it back in the authored text rectangle's
       // local coordinates so its padding never stretches or rotates twice.
       const local=new OffscreenCanvas(textPaint.width,textPaint.height),ctx=local.getContext('2d');
       ctx.translate(-textPaint.x+textBox.width/2,-textPaint.y+textBox.height/2);ctx.rotate(-textBox.rotation*Math.PI/180);
-      ctx.drawImage(canvas,record.x-textBox.x-textBox.width/2,record.y-textBox.y-textBox.height/2);canvas.width=canvas.height=1;canvas=local;
+      ctx.drawImage(canvas,record.x+(effectPaint?.bounds.x||0)-textBox.x-textBox.width/2,record.y+(effectPaint?.bounds.y||0)-textBox.y-textBox.height/2);canvas.width=canvas.height=1;canvas=local;
     }
     const png=await canvas.convertToBlob({type:'image/png'});
     if(record.text&&png.size>5*1024*1024){canvas.width=canvas.height=1;document.warnings.push('Large Photoshop text paint uses the editable text renderer.');postMessage({type:'layer',layer});return;}
     if(png.size>5*1024*1024){const count=Math.ceil(canvas.width/1024)*Math.ceil(canvas.height/1024);total+=count;if(total>1000){canvas.width=canvas.height=1;throw Error('PSD raster tiles exceed the 1000-object import limit.');}tiled={canvas,layer,x:0,y:0};postMessage({type:'progress',stage:'layer',name:record.name,index,total});postMessage({type:'layer',layer:{...layer,fill:'#ffffff00'}});return;}
-    canvas.width=canvas.height=1;if(textBox&&textPaint)layer.sourceTextPaint={bounds:textPaint};else if(effectPaint)layer.sourceTextPaint={bounds:effectPaint.bounds};await postPaint(layer,png);return;
+    canvas.width=canvas.height=1;if(textBox&&textPaint)layer.sourceTextPaint={bounds:textPaint};else if(record.text&&effectPaint)layer.sourceTextPaint={bounds:effectPaint.bounds};await postPaint(layer,png,rasterBounds);return;
   }
   postMessage({type:'done',warnings:document.warnings});document=null;byId=null;source=null;tiled=null;channelCache=null;
 }
@@ -95,7 +108,7 @@ self.onmessage=event=>{requests=requests.then(async()=>{try {
   if(event.data.type==='branch'){source=event.data.file;fileKey=event.data.fileKey;document=event.data.document;byId=new Map(document.records.map(r=>[r.id,r]));index=0;total=document.records.length;}
   else if(event.data.type==='read'){
     source=event.data.file||null;fileKey=source?await fileCacheKey(source,progress=>postMessage({type:'progress',stage:'hash',...progress})):null;
-    const key=fileKey?await cacheKey('psd-plan-v3:'+fileKey):null,cached=key?await projectCache('psd-plan',key):null;
+    const key=fileKey?await cacheKey('psd-plan-v6:'+fileKey):null,cached=key?await projectCache('psd-plan',key):null;
     document=cached?.document;
     if(!document){document=source?await readPSDFile(source,progress=>postMessage({type:'progress',...progress})):readPSD(event.data.bytes);document=preparePSDImport(document);if(key)await projectCache('psd-plan',key,{document});}
     if(event.data.plan){postMessage({type:'plan',document,fileKey});document=null;source=null;return;}

@@ -61,8 +61,10 @@ export function imageExportDocument(doc,selectedIds=null){
 }
 export async function captureScreens(studio,request){
   validateCaptureIdentity(studio,request);
+  await studio.whenCanvasReady?.();
   await Promise.allSettled([...studio.fontLoads.values()]);
   await document.fonts.ready;
+  await studio.whenCanvasReady?.();
   const doc=studio.doc,version=studio.version,prepared=canvasImportDocument(doc),ids=request.rootIds;
   validateCaptureIdentity(studio,request);
   const roots=doc.layers.filter(layer=>isScreenRoot(layer,doc,doc)&&(!ids||ids.includes(layer.id)));
@@ -128,6 +130,8 @@ export function layerImageBounds(doc,root,includeChildren=true,padding=()=>0,pai
 }
 export async function captureLayerPNG(studio,layerId,{includeChildren=true,imagesOnly=false,bakeRootAppearance=true,selectedIds=null,format='png',onProgress=()=>{}}={}){
   const doc=studio.doc,version=studio.version;validateDocument(doc);
+  await studio.whenCanvasReady?.();
+  if(studio.doc!==doc||studio.version!==version)throw Error('UI changed during PNG export. Export again once editing stops.');
   if(!['png','svg'].includes(format))throw Error('Choose PNG or SVG for image capture.');
   const scope=imageExportDocument(doc,layerId?null:selectedIds),all=!layerId;
   let root=doc.layers.find(layer=>layer.id===layerId),source=studio.elements.get(layerId),boundsDoc=doc;
@@ -136,7 +140,7 @@ export async function captureLayerPNG(studio,layerId,{includeChildren=true,image
   const current=()=>{if(studio.doc!==doc||studio.version!==version)throw Error('UI changed during PNG export. Export again once editing stops.');};
   const paint=layer=>!imagesOnly||['image','button'].includes(layer.role);
   const initial=layerImageBounds(boundsDoc,root,includeChildren,()=>0,paint),contents=[...initial.ids].filter(id=>paint(boundsDoc.layers.find(layer=>layer.id===id))).map(id=>studio.elements.get(id)?.firstElementChild).filter(Boolean);
-  if(!imagesOnly){await Promise.all(studio.currentFontLoads||[]);await document.fonts.ready;}
+  if(!imagesOnly){await Promise.all(studio.currentFontLoads||[]);await document.fonts.ready;await studio.whenCanvasReady?.();current();}
   const deadline=Date.now()+15000;
   while(contents.some(node=>node.querySelector('[data-styled-text-status="pending"]'))){if(Date.now()>deadline)throw Error('Text previews are still pending. Wait and export again.');await new Promise(resolve=>setTimeout(resolve,50));current();}
   if(contents.some(node=>node.querySelector('[data-styled-text-status="error"]')))throw Error('A text preview failed. Repair it before exporting PNG.');

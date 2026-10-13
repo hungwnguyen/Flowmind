@@ -173,7 +173,7 @@ while queue:
 
 fonts=source.parents[1]/'VinaTextPro'/'Fonts'/'GoogleFonts'
 (target/'fonts').mkdir(exist_ok=True)
-for original,name in [('Inter[opsz,wght].ttf','Inter.ttf'),('inter-OFL.txt','Inter-OFL.txt')]:
+for original,name in [('Inter[opsz,wght].ttf','Inter.ttf'),('inter-OFL.txt','Inter-OFL.txt'),('Montserrat-Black.ttf','Montserrat-Black.ttf'),('montserrat-OFL.txt','Montserrat-OFL.txt')]:
     if name.endswith('.txt'):
         (target/'fonts'/name).write_text('\n'.join(line.rstrip() for line in (fonts/original).read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')
     else:shutil.copyfile(fonts/original,target/'fonts'/name)

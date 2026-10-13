@@ -1,6 +1,6 @@
 // Bounded PSD v1 reader based on Adobe's published file format specification.
 // No provider, executable, CDN, or third-party artwork is bundled.
-import {readTypeTool,readLayerEffects,photoshopText,inheritPSDTextGroupEffects} from './psd-text.mjs';
+import {readTypeTool,readLayerEffects,readPSDArtboard,photoshopText,inheritPSDTextGroupEffects} from './psd-text.mjs';
 const blendNames={norm:'normal',pass:'pass-through','mul ':'multiply',scrn:'screen',over:'overlay',dark:'darken',lite:'lighten','div ':'color-dodge',idiv:'color-burn',hLit:'hard-light',sLit:'soft-light',diff:'difference',smud:'exclusion','hue ':'hue','sat ':'saturation',colr:'color','lum ':'luminosity'};
 // Compatibility export: file size is bounded by the file API, not a product cap.
 export const PSD_MAX_SOURCE_BYTES=Infinity;
@@ -53,12 +53,16 @@ function* parsePSD(size) {
     r=yield* take(4);const maskLength=r.u32();need(maskLength);const maskEnd=offset+maskLength;let mask=null;
     if(maskLength>=18){r=yield* take(18);const top=r.i32(),left=r.i32(),bottom=r.i32(),right=r.i32(),defaultColor=r.u8(),flags=r.u8();mask={x:left,y:top,width:right-left,height:bottom-top,defaultColor,flags};if(mask.width<0||mask.height<0||mask.width>PSD_MAX_DIMENSION||mask.height>PSD_MAX_DIMENSION)throw Error('Invalid PSD mask dimensions.');}
     if(maskLength)warnings.add('Feathered and vector masks need visual review.');offset=maskEnd;offset=yield* section();
-    r=yield* take(1);const nameLength=r.u8();r=yield* take(nameLength);let name=r.text(nameLength);const padding=(4-(nameLength+1)%4)%4;need(padding);offset+=padding;let sectionType=0,type=null,effects=null,rasterEffects=false;
+    r=yield* take(1);const nameLength=r.u8();r=yield* take(nameLength);let name=r.text(nameLength);const padding=(4-(nameLength+1)%4)%4;need(padding);offset+=padding;let sectionType=0,type=null,effects=null,artboard=null,rasterEffects=false;
     while(offset+12<=extraEnd) {
       r=yield* take(12);const signature=r.text(4);if(signature!=='8BIM'&&signature!=='8B64')break;
       const key=r.text(4),length=r.u32(),end=offset+length;need(length);
       if(key==='luni'){r=yield* take(4);const n=r.u32();if(n>4096||4+n*2>length)throw Error('Invalid PSD layer name.');r=yield* take(n*2);let text='';for(let c=0;c<n;c++)text+=String.fromCharCode(r.u16());name=text;}
       if(key==='lsct'||key==='lsdk'){if(length<4)throw Error('Invalid PSD layer section.');r=yield* take(4);sectionType=r.u32();if(length>=12){r=yield* take(8);if(r.text(4)==='8BIM')blend=r.text(4);}}
+      if(['artb','artd','abdd'].includes(key)){
+        if(length>16*1024*1024)throw Error('PSD artboard metadata exceeds 16 MB per layer.');
+        r=yield* take(length);try{artboard=readPSDArtboard(r.bytes)||artboard;}catch{warnings.add('Unsupported Photoshop artboard data; using layer bounds.');}
+      }
       if(key==='TySh'||key==='lfx2'||key==='lmfx'||key==='lfxs'){
         if(length>16*1024*1024)throw Error('PSD text/effect metadata exceeds 16 MB per layer.');
         r=yield* take(length);
@@ -74,8 +78,7 @@ function* parsePSD(size) {
     if(w<0||h<0||w>PSD_MAX_DIMENSION||h>PSD_MAX_DIMENSION)throw Error('Invalid PSD layer dimensions.');
     if(!blendNames[blend])warnings.add('Unsupported Photoshop blend mode '+blend+' uses normal blending; review its appearance.');
     const text=type?photoshopText(type,effects,warnings,{x:left,y:top,width:w||1,height:h||1,documentWidth:width,documentHeight:height}):null;
-    if(rasterEffects&&!text)warnings.add('Raster layer effects use Photoshop cached pixels; review their appearance.');
-    records.push({index,name:name||'Layer '+(index+1),x:left,y:top,width:w,height:h,opacity,visible:!(flags&2),blendMode:blendNames[blend]||'normal',section:sectionType,text,...(text&&effects&&!text.psdTextBox?{textEffects:effects}:{}),...(sectionType&&effects?{groupEffects:effects}:{}),mask,channels:channelInfo});
+    records.push({index,name:name||'Layer '+(index+1),x:left,y:top,width:w,height:h,opacity,visible:!(flags&2),blendMode:blendNames[blend]||'normal',section:sectionType,text,...(artboard?{artboard}:{}),...(text&&effects&&!text.psdTextBox?{textEffects:effects}:{}),...(!text&&!sectionType&&effects?{rasterEffects:effects}:{}),...(sectionType&&effects?{groupEffects:effects}:{}),mask,channels:channelInfo});
   }
   // Total decoded area is deliberately unrestricted: only one layer is decoded
   // at a time. A compressed, many-layer file need not fit in RAM as one bitmap.
@@ -89,7 +92,7 @@ function* parsePSD(size) {
   const ordered=[];
   const visit=record=>{
     ordered.push(record);const nested=children.get(record.id)||[];for(const child of nested)visit(child);
-    if(record.section){const bounds=nested.filter(c=>c.width&&c.height);if(bounds.length){record.x=Math.min(...bounds.map(c=>c.x));record.y=Math.min(...bounds.map(c=>c.y));record.width=Math.max(...bounds.map(c=>c.x+c.width))-record.x;record.height=Math.max(...bounds.map(c=>c.y+c.height))-record.y;}else{record.width=record.height=1;}}
+    if(record.section){if(record.artboard)Object.assign(record,{x:record.artboard.x,y:record.artboard.y,width:record.artboard.width,height:record.artboard.height});else{const bounds=nested.filter(c=>c.width&&c.height);if(bounds.length){record.x=Math.min(...bounds.map(c=>c.x));record.y=Math.min(...bounds.map(c=>c.y));record.width=Math.max(...bounds.map(c=>c.x+c.width))-record.x;record.height=Math.max(...bounds.map(c=>c.y+c.height))-record.y;}else{record.width=record.height=1;}}}
   };
   for(const record of children.get('')||[])visit(record);
   inheritPSDTextGroupEffects(ordered,warnings);
@@ -127,6 +130,7 @@ export function preparePSDImport(doc) {
   for(const r of children.get('')||[])collect(r);
   const bounds=items=>{if(!items.length)return null;const x=Math.min(...items.map(r=>r.x)),y=Math.min(...items.map(r=>r.y));return{x,y,width:Math.max(...items.map(r=>r.x+r.width))-x,height:Math.max(...items.map(r=>r.y+r.height))-y};};
   const region=r=>{
+    if(r.artboard)return r.artboard;
     const all=leaves.get(r.id)||[],visible=all.filter(l=>states.get(l.id)?.visible),pool=visible.length?visible:all;
     // Repeated large backgrounds identify a screen more reliably than hidden
     // alternatives or a text/effect extending a few pixels beyond the frame.
@@ -136,6 +140,7 @@ export function preparePSDImport(doc) {
   const roots=[];
   const split=r=>{
     if(!r.section||!leaves.get(r.id)?.length)return;
+    if(r.artboard){roots.push({...r,...r.artboard,opacity:states.get(r.id).opacity,visible:states.get(r.id).visible,screen:true,channels:[]});return;}
     const nested=(children.get(r.id)||[]).filter(c=>c.section&&leaves.get(c.id)?.length),rect=region(r);
     const candidates=nested.map(r=>({r,rect:region(r)})).filter(c=>c.rect&&c.rect.width*c.rect.height>=rect.width*rect.height*.5);
     const overlap=(a,b)=>Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));
@@ -146,12 +151,12 @@ export function preparePSDImport(doc) {
   // A document-sized loose background plus smaller folders is one screen
   // (header, popup, footer, etc.), rather than a separate Canvas per folder.
   const canvasBackground=(children.get('')||[]).some(r=>content(r)&&!r.text&&r.width>=doc.width*.95&&r.height>=doc.height*.95);
-  if(canvasBackground&&!roots.some(r=>r.width>=doc.width*.95&&r.height>=doc.height*.95))roots.length=0;
+  if(canvasBackground&&!roots.some(r=>r.artboard)&&!roots.some(r=>r.width>=doc.width*.95&&r.height>=doc.height*.95))roots.length=0;
   const reference=roots.filter(r=>states.get(r.id)?.visible).reduce((sizes,r)=>{const key=r.width+','+r.height;const item=sizes.get(key)||{width:r.width,height:r.height,count:0};item.count++;sizes.set(key,item);return sizes;},new Map());
   const common=[...reference.values()].sort((a,b)=>b.count-a.count||b.width*b.height-a.width*a.height)[0];
   // Off-canvas hidden screens may contain a document-wide color fill. Prefer a
   // matching authored background over expanding that screen to the whole sheet.
-  if(common)for(const root of roots)if(!states.get(root.id)?.visible){const match=(leaves.get(root.id)||[]).find(l=>!l.text&&l.width===common.width&&l.height===common.height);if(match)Object.assign(root,{x:match.x,y:match.y,width:match.width,height:match.height});}
+  if(common)for(const root of roots)if(!root.artboard&&!states.get(root.id)?.visible){const match=(leaves.get(root.id)||[]).find(l=>!l.text&&l.width===common.width&&l.height===common.height);if(match)Object.assign(root,{x:match.x,y:match.y,width:match.width,height:match.height});}
   const rootById=new Map(roots.map(r=>[r.id,r])),assignments=new Map(),unassigned=[];
   for(const r of doc.records){
     if(!content(r))continue;
@@ -162,7 +167,10 @@ export function preparePSDImport(doc) {
   }
   if(unassigned.length){
     // A flat PSD is one authored screen, rather than one screen for every icon.
-    const root={id:'psd-import-screen',name:'Screen',...(roots.length?bounds(unassigned):{x:0,y:0,width:doc.width,height:doc.height}),opacity:1,visible:true,section:1,screen:true,channels:[],parentId:''};
+    const rect=roots.length?bounds(unassigned):{x:0,y:0,width:doc.width,height:doc.height},artboards=roots.some(r=>r.artboard);
+    const outside=artboards&&(rect.x+rect.width<=0||rect.y+rect.height<=0||rect.x>=doc.width||rect.y>=doc.height);
+    const root={id:'psd-import-screen',name:'Screen',...rect,opacity:1,visible:!outside,section:1,screen:true,channels:[],parentId:''};
+    if(outside)doc.warnings.push('Loose artwork outside the Photoshop canvas is retained in a hidden screen.');
     roots.push(root);for(const r of unassigned)assignments.set(r.id,root);
   }
   const retained=new Map();
@@ -176,7 +184,10 @@ export function preparePSDImport(doc) {
     if(emitted.has(r.id))return;
     let p=r.parentId;while(p&&p!==root.id&&!retained.has(p))p=byId.get(p)?.parentId;
     const parent=p&&retained.has(p)?byId.get(p):root;
-    if(parent.id===root.id){if(!emitted.has(root.id)){output.push({...root,parentId:'',blendMode:root.blendMode||'normal'});emitted.add(root.id);}}
+    if(parent.id===root.id){if(!emitted.has(root.id)){
+      output.push({...root,parentId:'',blendMode:root.blendMode||'normal'});emitted.add(root.id);
+      if(root.artboard?.background)output.push({id:root.id+'-background',name:'Artboard background',parentId:root.id,x:root.x,y:root.y,width:root.width,height:root.height,fill:root.artboard.background,opacity:1,visible:true,blendMode:'normal',section:0,channels:[]});
+    }}
     else emit(parent,root);
     const state=states.get(r.id),parentState=states.get(parent.id)||{opacity:1};
     output.push({...r,parentId:parent.id,blendMode:r.blendMode||(r.section?'pass-through':'normal'),opacity:parentState.opacity?Math.min(1,state.opacity/parentState.opacity):r.opacity,visible:state.visible});emitted.add(r.id);

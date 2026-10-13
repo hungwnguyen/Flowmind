@@ -55,7 +55,8 @@ body[data-workspace="ui"] .ui-unity-import .studio-launch:hover { background:var
 .ui-sidebar-content:not(.studio-files) .search-field { margin-bottom:14px; }
 .ui-sidebar-content .search-field input { width:100%; background:transparent; padding:0; outline:0; }
 .ui-panel-title { color:var(--muted); font-size:10px; font-weight:500; letter-spacing:.5px; margin:4px 4px 14px; }
-.ui-layer-list { margin:0 -8px; }
+.ui-layer-list { margin:0 -8px; position:relative; }
+.ui-layer-list[data-virtual=true] > .ui-layer-row { height:32px; min-height:32px; box-sizing:border-box; }
 .ui-layer-row { display:flex; align-items:center; gap:7px; min-height:32px; padding-right:6px; border:1px solid transparent; cursor:pointer; }
 .ui-layer-row { position:relative; }
 .ui-layer-row[draggable=true] { cursor:grab; }
