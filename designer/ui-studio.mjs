@@ -431,7 +431,7 @@ class Studio {
   paintCanvas() {
     // Imported artwork already has a PNG in the browser. Keep it for this document
     // instead of sending it back through Unity's GPU readback/PNG encoder.
-    if(this.psdPaints&&this.psdPaints.document!==this.doc){for(const entry of this.psdPaints.images.values())if(entry.url.startsWith('blob:'))URL.revokeObjectURL(entry.url);this.psdPaints=null;}
+    if(this.psdPaints&&this.psdPaints.document!==this.doc){for(const entry of this.psdPaints.images.values())if(entry.owned)URL.revokeObjectURL(entry.url);this.psdPaints=null;}
     this.loadFonts();
     this.world.style.transform=`translate(${this.pan.x}px,${this.pan.y}px) scale(${this.zoom})`;
     Object.assign(this.board.style,{width:this.doc.width+'px',height:this.doc.height+'px'});this.zoomLabel.textContent=Math.round(this.zoom*100)+'%';
@@ -1649,9 +1649,9 @@ class Studio {
     validatePSDSourceSize(file.size);
     this.closeTextBubble();document.activeElement?.blur();this.cancelGesture();this.persist();
     const origin={document:this.doc,path:this.path,version:this.version};
-    const mode=await this.choose('Import Photoshop document','Replace the current screen, or insert the PSD beside existing layers while keeping their layout.',[['Replace','replace'],['Insert','insert']]);
+    const mode=this.doc.layers.length?await this.choose('Import Photoshop document','Replace the current screen, or insert the PSD beside existing layers while keeping their layout.',[['Replace','replace'],['Insert','insert']]):'replace';
     if(!mode||origin.document!==this.doc||origin.path!==this.path||origin.version!==this.version)return false;
-    if(mode==='replace'&&this.dirty){const replace=await this.choose('Replace current screen?','Save the current draft or discard it when the new PSD finishes importing.',[['Save and import','save'],['Import and discard','discard'],['Cancel','cancel']]);if(!replace||replace==='cancel')return false;if(replace==='save'&&(!await this.save()||this.dirty))return false;}
+    if(mode==='replace'&&this.dirty&&this.doc.layers.length){const replace=await this.choose('Replace current screen?','Save the current draft or discard it when the new PSD finishes importing.',[['Save and import','save'],['Import and discard','discard'],['Cancel','cancel']]);if(!replace||replace==='cancel')return false;if(replace==='save'&&(!await this.save()||this.dirty))return false;}
     this.busy=true;this.message('Reading PSD in a background worker…');
     const worker=new Worker(new URL('./psd-worker.mjs',import.meta.url),{type:'module'}),workers=new Set([worker]);const stopWorkers=()=>{for(const w of workers)w.terminate();workers.clear();};let cancelled=false,cancellationRequested=false,layerPaintTimer;
     const progressDialog=el('dialog',{id:'ui-psd-progress-dialog',class:'ui-dialog ui-psd-progress'});this.root.append(progressDialog);
@@ -1717,7 +1717,7 @@ class Studio {
                   // matches and over-budget paints stream the canonical source
                   // file, bypassing Unity GPU readback and a second PNG encode.
                   const local=!asset.visualMatch&&cache.bytes+data.png.size<=32*1024*1024;
-                  cache.images.set(key,{url:local?URL.createObjectURL(data.png):sliceMedia(layer.image),revision:layer.image.revision||''});
+                  cache.images.set(key,{url:local?URL.createObjectURL(data.png):sliceMedia(layer.image),owned:local,revision:layer.image.revision||''});
                   if(local)cache.bytes+=data.png.size;
                 }
                 if(layer.role==='text')layer.sourceTextPaint={...layer.sourceTextPaint,signature:textPaintSignature(layer)};

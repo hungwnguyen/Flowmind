@@ -106,7 +106,7 @@ const { chromium } = require(
   });
   assert.ok(fixture.sourceBytes > 500 * 1024 * 1024);
   assert.ok(fixture.pixels > 16777216);
-  await page.getByRole("button", { name: "Replace", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: "Replace", exact: true }).count(),0,"Empty canvas imports directly");
   const imported = await page.evaluate(() =>
     Promise.race([
       largeImport,

@@ -12,7 +12,7 @@ Paths below are relative to the toolkit root.
 | `Content/UI/Documents/`, `Content/UI/Images/` | Default UI documents and uploaded images. |
 | `Content/Particles/ToonLibrary/` | Bundled particle prefabs and dependencies. |
 | `Images/Particles/` | Particle textures and manifests. |
-| `VinaTextPro/Fonts/`, `VinaTextPro/Text Styles/` | Fonts and reusable text styles. |
+| `VinaTextPro/Fonts/` | Fonts used by bundled samples and settings. |
 | `Samples/Graphs/` | Flow and Design graph examples. |
 | `Samples/Example VinaGenUIDocument/` | Complete UI sample. |
 | `Samples/GeneratedParticles/` | Generated particle prefabs, materials, textures and captures. |
@@ -21,6 +21,7 @@ Paths below are relative to the toolkit root.
 
 ## Output outside the toolkit
 
+- **Text styles, gradients and fonts:** `Assets/VinaGenGenerated/Text Styles/`, `Text Gradients/` and `Fonts/VinaGenText/`. Styles and gradients left in the toolkit's old `VinaTextPro` folders move here automatically with references preserved. See [VinaGenText](vinagen-text.md#create-a-label).
 - **Private PSD imports:** `Assets/VinaGen PSD Imports/<PSD name>/` keeps each import's document, images, styles, fonts and bakes together.
 - **Baked text:** this version has the legacy `Assets/VinaGen Text Bakes/` default. For toolkit/sample output, choose `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` in Text Settings.
 - **Caches and jobs:** `Library/`; review reports may use `Builds/`.

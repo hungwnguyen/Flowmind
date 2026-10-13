@@ -12,7 +12,7 @@ Các đường dẫn dưới đây tính từ thư mục toolkit.
 | `Content/UI/Documents/`, `Content/UI/Images/` | Mặc định lưu tài liệu UI và ảnh tải lên. |
 | `Content/Particles/ToonLibrary/` | Prefab particle đi kèm và asset liên quan. |
 | `Images/Particles/` | Texture particle và manifest. |
-| `VinaTextPro/Fonts/`, `VinaTextPro/Text Styles/` | Font và style chữ dùng lại được. |
+| `VinaTextPro/Fonts/` | Font mà sample và settings đi kèm sử dụng. |
 | `Samples/Graphs/` | Mẫu Flow và Design graph. |
 | `Samples/Example VinaGenUIDocument/` | Mẫu UI hoàn chỉnh. |
 | `Samples/GeneratedParticles/` | Prefab particle được tạo, material, texture và ảnh chụp. |
@@ -21,6 +21,7 @@ Các đường dẫn dưới đây tính từ thư mục toolkit.
 
 ## Đầu ra ngoài toolkit
 
+- **Style, gradient và font chữ:** `Assets/VinaGenGenerated/Text Styles/`, `Text Gradients/` và `Fonts/VinaGenText/`. Style và gradient còn sót trong thư mục `VinaTextPro` cũ của toolkit được tự động chuyển về đây, giữ nguyên tham chiếu. Xem [VinaGenText](vinagen-text.md#tạo-label).
 - **PSD riêng:** `Assets/VinaGen PSD Imports/<tên PSD>/` giữ tài liệu, ảnh, style, font và bake của từng lần import.
 - **Chữ đã bake:** bản này có mặc định legacy `Assets/VinaGen Text Bakes/`. Với đầu ra toolkit/sample, đặt `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` tại Text Settings.
 - **Cache và job:** nằm trong `Library/`; báo cáo review có thể dùng `Builds/`.

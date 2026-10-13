@@ -4,6 +4,17 @@ import { newDocument } from "./ui-model.mjs";
 import { demoDocument } from "./demo.mjs";
 import { icon } from "./icons.mjs";
 import { showDesignerSettings } from "./settings.mjs";
+// Ctrl+wheel and trackpad pinch belong to the canvas. Capture the gesture before
+// toolbar buttons, inspector fields or popovers can let it reach browser zoom.
+window.addEventListener("wheel", (event) => {
+  if (!event.ctrlKey && !event.metaKey) return;
+  event.preventDefault();
+  const studio = getUIStudio();
+  if (studio?.ready && studio.viewport.contains(event.target)) {
+    studio.changeZoom(studio.zoom * Math.exp(-event.deltaY * .0015), event.clientX, event.clientY);
+    event.stopPropagation();
+  }
+}, {capture: true, passive: false});
 for (const button of document.querySelectorAll(".topbar [data-icon]")) {
   button.prepend(icon(button.dataset.icon));
 }
