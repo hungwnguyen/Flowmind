@@ -13,6 +13,8 @@
 
 **VinaGen AI Toolkit** combines graph editors, UI Designer, VinaGenText and particle tools. Editing tools run locally; AI chat and image generation use your own account.
 
+[VinaGen AI Toolkit on the Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). The first release is being prepared.
+
 ## Choose a tool
 
 <div class="vg-workspaces">

@@ -8,12 +8,22 @@ Import toolkit, mở workspace rồi thử một mẫu có sẵn.
 2. Đợi Unity biên dịch xong.
 3. Mở **Tools → VinaGen AI Toolkit → Open**.
 
+Trang sản phẩm: [VinaGen AI Toolkit trên Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). Bản đầu tiên hiện chưa được phát hành.
+
 Dự án hiện dùng **Unity 6000.3.22f1**. Công cụ UI và text cần **Unity UI (uGUI)**; TMP Essentials được import từ package Unity đã cài khi cần. Các editor web chạy bằng server bên trong Unity.
 
 <div class="vg-pair">
   <figure><img src="images/toolkit-home.png" alt="Tab Home của toolkit"><figcaption>Home: mở workspace.</figcaption></figure>
   <figure><img src="images/toolkit-settings.png" alt="Tab Settings của toolkit"><figcaption>Settings: chỉnh mặc định của dự án.</figcaption></figure>
 </div>
+
+## Cập nhật
+
+[Xem cập nhật trên Unity Asset Store](https://assetstore.unity.com/packages/slug/375862)
+
+Toolkit đọc [thông tin phiên bản](https://vinagen.onrender.com/updateAvailable.json) ở chế độ nền khi Unity sẵn sàng, tối đa một lần mỗi sáu giờ. Mỗi phiên bản mới đã phát hành chỉ được thông báo một lần cho mỗi tài khoản hệ điều hành, kể cả khi mở lại Unity hoặc chuyển project. Khi mất mạng, kiểm tra tự động không hiện lỗi; các công cụ chỉnh sửa vẫn hoạt động.
+
+Trong Unity, **Open Package Manager** chọn asset này để bạn tải/import bản cập nhật. **View on Asset Store** mở trang sản phẩm trên trình duyệt. Các nút chỉ mở nơi cập nhật, không tự cài đặt. Bạn cũng có thể vào **Tools → VinaGen AI Toolkit → Help → Check for Updates** hoặc **Update in Package Manager**.
 
 ## Năm tab của toolkit
 

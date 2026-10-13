@@ -13,6 +13,8 @@
 
 **VinaGen AI Toolkit** gồm editor graph, UI Designer, VinaGenText và công cụ particle. Các công cụ chỉnh sửa chạy cục bộ; chat và tạo ảnh AI dùng tài khoản của bạn.
 
+[VinaGen AI Toolkit trên Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). Bản phát hành đầu tiên đang được chuẩn bị.
+
 ## Chọn công cụ
 
 <div class="vg-workspaces">

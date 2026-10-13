@@ -4,6 +4,16 @@ Source for the **VinaGen AI Toolkit** documentation website, a [Docsify](https:/
 
 VinaGen AI Toolkit is a Unity Editor extension that combines flow/design graphs, a browser UI Designer with Canvas import, the VinaGenText styled-text renderer, native particle authoring with an offline texture library, a WebGL particle preview and a local MCP bridge for Claude Code, Codex and other assistants.
 
+Product page: [Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). First release is in preparation.
+
+## Toolkit release announcements
+
+`updateAvailable.json` is served directly at `https://vinagen.onrender.com/updateAvailable.json`. It currently contains version `1.0.0` and `published: false`; this is a draft, so users receive no update announcement.
+
+For a real release, update `CurrentVersion` in the toolkit's `Editor/Core/VinaGenToolkitUpdates.cs` before packaging. Only after that version is publicly available on the Asset Store, set the same version and `published: true` in this site's JSON and deploy it. Keep the Asset Store link pointed at product `375862`.
+
+Existing installations compare the feed with their bundled version. Unity checks quietly in the background at most every six hours and stores one notification flag per release in `EditorPrefs`. Dismissed releases do not repeat after domain reload, restart or another project; a later release gets its own announcement. Missing/invalid feeds and unpublished releases do not show automatic dialogs. Manual updates open Unity Package Manager for this product; store links open the browser.
+
 ## Pages
 
 The **Web Designer** tab opens the independent static application in `designer/`.

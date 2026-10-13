@@ -8,12 +8,22 @@ Import the toolkit, open a workspace and try a bundled sample.
 2. Wait for Unity to finish compiling.
 3. Open **Tools → VinaGen AI Toolkit → Open**.
 
+Product page: [VinaGen AI Toolkit on the Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). The first release is not published yet.
+
 The project uses **Unity 6000.3.22f1**. UI and text tools need **Unity UI (uGUI)**; TMP Essentials are imported from the installed Unity package when needed. The local editors run inside Unity.
 
 <div class="vg-pair">
   <figure><img src="images/toolkit-home.png" alt="Toolkit Home tab"><figcaption>Home: open a workspace.</figcaption></figure>
   <figure><img src="images/toolkit-settings.png" alt="Toolkit Settings tab"><figcaption>Settings: configure project defaults.</figcaption></figure>
 </div>
+
+## Updates
+
+[View updates on the Unity Asset Store](https://assetstore.unity.com/packages/slug/375862)
+
+The toolkit checks [release information](https://vinagen.onrender.com/updateAvailable.json) in the background when Unity is ready, at most once every six hours. It announces each newer published version once per OS user, across Unity restarts and projects. Offline checks stay quiet; editing tools continue to work.
+
+In Unity, **Open Package Manager** selects this asset so you can download/import its update. **View on Asset Store** opens the product page in your browser. These actions open the update destination; they do not install automatically. You can also use **Tools → VinaGen AI Toolkit → Help → Check for Updates** or **Update in Package Manager**.
 
 ## The five toolkit tabs
 
