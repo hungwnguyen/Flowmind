@@ -42,11 +42,22 @@ Bấm **Import** để thêm font TTF, OTF, WOFF hoặc WOFF2, rồi chọn tron
 
 Phím tắt: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse, **K** Scale, **Shift+1** Fit, **Ctrl/Cmd+S** Save, **Ctrl/Cmd+Z** Undo, **Ctrl/Cmd+Shift+Z** Redo, **Ctrl/Cmd+D** Duplicate. Chuột phải lên layer để copy, paste, tạo nhóm và dùng các lệnh khác. Nên thiết kế trên màn hình lớn; mobile dùng nút Layers và Inspector để mở panel.
 
+## Ảnh và component dùng chung
+
+1. Mở **Assets**, bấm **Add images...** để mở File Explorer chọn PNG/JPEG từ bất kỳ thư mục nào; có thể chọn nhiều file. Gallery hiện toàn bộ ảnh đã nhập vào workspace, không yêu cầu gõ tên một thư mục cố định. Ảnh nguồn vẫn nằm trên thiết bị.
+2. Bấm/kéo thumbnail vào canvas. Inspector **Choose image from files / Replace image from files** mở hộp chọn file trực tiếp; **Browse imported images** chọn ảnh trong gallery.
+3. Object có ảnh cùng kích thước và pixel tự dùng chung một component, kể cả khác tên file hoặc metadata PNG. Inspector hiện số instance. Thay nguồn ảnh, tint, gradient hay image mode cập nhật mọi instance trong tài liệu. Vị trí, kích thước, góc xoay và cây cha/con vẫn riêng. Remove image hoặc xóa object chỉ tác động instance đó.
+4. **Undo/Redo** khôi phục thay đổi chung trong một bước. Lưu `.svgpro` để giữ liên kết. Thay bằng ảnh đã dùng ở object khác sẽ gộp các instance. Ảnh glyph của text không tham gia component ảnh.
+
+![Assets: chọn file ảnh từ mọi thư mục](../images/web-designer/assets.png)
+
+![Inspector: component ảnh dùng chung](../images/web-designer/components.png)
+
 ## Nhập và xuất PSD
 
 **Import → chọn PSD → Replace hoặc Insert.** Replace hỏi lưu/bỏ bản nháp nếu tài liệu hiện tại có thay đổi. Insert giữ màn hình hiện tại và thêm cây layer PSD bên cạnh. Có thể hủy trong hộp tiến trình; tài liệu trước đó được khôi phục, tài nguyên đã giải mã còn trong cache cục bộ.
 
-Hỗ trợ PSD v1, RGB 8-bit, channel raw/RLE/ZIP; tối đa 500 MB file nguồn, 1000 layer sau nhập, 8192 px mỗi chiều và 16 MP cho canvas/layer. Không hỗ trợ PSB, CMYK và PSD 16/32-bit. Giữ nhóm, thứ tự layer, hiện/ẩn, opacity và blend mode được hỗ trợ. Smart object và vector/effect phức tạp có thể thành ảnh raster hoặc có ghi chú cần kiểm tra.
+Hỗ trợ PSD v1, RGB 8-bit, channel raw/RLE/ZIP; không còn trần 500 MB hay 8192 px / 16 MP khi nhập canvas, layer và mask. Bản thân PSD v1 có giới hạn định dạng 30.000 px mỗi chiều. Layer lớn được giải mã theo hàng thành tile 1024 px, dùng một worker; khả năng thực tế phụ thuộc RAM và dung lượng lưu trữ. Tài liệu vẫn có giới hạn riêng 1000 object, tính cả tile. Ảnh chữ raster rất lớn giữ metadata nguồn nhưng trở thành nhóm tile, không phải label chỉnh sửa được. Giới hạn xuất/chụp là riêng. Đã kiểm thử PSD 575 MB, 15.360 x 12.288 px (188,7 MP) trong Chromium. Không hỗ trợ PSB, CMYK và PSD 16/32-bit. Giữ nhóm, thứ tự layer, hiện/ẩn, opacity và blend mode được hỗ trợ. Smart object và vector/effect phức tạp có thể thành ảnh raster hoặc có ghi chú cần kiểm tra.
 
 PSD chỉ chứa tên font, không chứa file font. Hãy nhập riêng font phù hợp. Thiếu font sẽ có cảnh báo fallback; ảnh chữ gốc từ Photoshop được giữ đến khi bạn sửa nội dung, font, kích thước hoặc style. Render chữ, định dạng hỗn hợp, mask và effect Photoshop phức tạp có thể khác; kiểm tra trước khi chia sẻ. Rich-text tag hiện được chuyển thành chữ thường trong renderer styled text; dùng nhiều layer chữ nếu cần định dạng khác nhau.
 

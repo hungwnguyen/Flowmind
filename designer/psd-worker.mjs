@@ -1,6 +1,7 @@
 import {cacheKey,fileCacheKey,projectCache,blobBase64,cachedBlob} from './ui-project-cache.mjs';
 import {readPSD,readPSDFile,preparePSDImport,decodeChannel,solidPixelColor} from './psd-reader.mjs';
 import {paintPSDText} from './psd-text.mjs';
+import {streamPSDTiles,PSD_TILE_SIZE} from './psd-stream.mjs';
 let document,index=0,byId,source,tiled,channelCache,total=0,fileKey,paintCacheKey;
 async function postPaint(layer,png){
   // Hash off the UI thread. Identical encoded artwork shares one upload even
@@ -11,6 +12,12 @@ async function postPaint(layer,png){
   postMessage({type:'layer',layer,png,paintKey});
 }
 async function nextTile(){
+  if(tiled.stream){
+    const result=await tiled.stream.next();
+    if(result.done){tiled=null;await next();return;}
+    const {x,y,width,height,png}=result.value,layer=tiled.layer;
+    await postPaint({id:layer.id+'-tile-'+x+'-'+y,parentId:layer.id,name:layer.name+' ('+x+', '+y+')',role:'image',x,y,width,height,opacity:1,visible:true,fill:'#ffffff'},png);return;
+  }
   const {canvas,layer,x,y}=tiled,width=Math.min(1024,canvas.width-x),height=Math.min(1024,canvas.height-y),tile=new OffscreenCanvas(width,height);
   tile.getContext('2d').drawImage(canvas,x,y,width,height,0,0,width,height);
   const png=await tile.convertToBlob({type:'image/png'});tile.width=tile.height=1;
@@ -32,6 +39,16 @@ async function next() {
     // Preserve Photoshop's cached paint alongside editable TySh data.
     if(record.text&&!record.channels.some(c=>c.id===0)){postMessage({type:'layer',layer});return;}
     if(group){postMessage({type:'layer',layer});return;}
+    if(record.width>8192||record.height>8192||record.width*record.height>16777216||record.mask&&(record.mask.width>8192||record.mask.height>8192||record.mask.width*record.mask.height>16777216)){
+      if(!record.channels.some(c=>c.id===0))continue;
+      const count=Math.ceil(record.width/PSD_TILE_SIZE)*Math.ceil(record.height/PSD_TILE_SIZE);total+=count;
+      if(total>1000)throw Error('PSD raster tiles exceed the 1000-object document limit. Split the PSD into fewer screens.');
+      if(record.text){layer.psdSourceText=record.text;for(const key of ['textRenderer','textStyle','textMeshPro','standaloneText','tmpFont','tmpSettings','tmpMaterial','fontGuid','sourceTextPaint','psdFontName'])delete layer[key];document.warnings.push('Large text raster preserves Photoshop pixels and its source metadata; its tile group is not an editable text label.');}
+      if(record.textEffects||record.textGroupEffects?.length)document.warnings.push('Large text effects use cached Photoshop pixels; review their appearance.');
+      Object.assign(layer,{role:'empty',x:record.x-(parent?.x||0),y:record.y-(parent?.y||0),width:record.width,height:record.height,rotation:0,text:'',fill:'#ffffff00'});
+      tiled={layer,stream:streamPSDTiles(source,record,progress=>postMessage({type:'progress',stage:'raster',name:record.name,index,total,...progress}))};
+      postMessage({type:'progress',stage:'layer',name:record.name,index,total});postMessage({type:'layer',layer});return;
+    }
     paintCacheKey=fileKey?await cacheKey('psd-paint-v2:'+fileKey+':'+record.id):null;
     const cached=paintCacheKey?await projectCache('psd-paint',paintCacheKey):null;
     if(cached?.png&&cached.layer?.id===layer.id){try{const png=cachedBlob(cached.png);document.warnings.push(...(cached.warnings||[]));postMessage({type:'layer',layer:cached.layer,png,paintKey:cached.paintKey,cacheHit:true});return;}catch{}}
@@ -77,8 +94,8 @@ let requests=Promise.resolve();
 self.onmessage=event=>{requests=requests.then(async()=>{try {
   if(event.data.type==='branch'){source=event.data.file;fileKey=event.data.fileKey;document=event.data.document;byId=new Map(document.records.map(r=>[r.id,r]));index=0;total=document.records.length;}
   else if(event.data.type==='read'){
-    source=event.data.file||null;fileKey=source?await fileCacheKey(source):null;
-    const key=fileKey?await cacheKey('psd-plan-v2:'+fileKey):null,cached=key?await projectCache('psd-plan',key):null;
+    source=event.data.file||null;fileKey=source?await fileCacheKey(source,progress=>postMessage({type:'progress',stage:'hash',...progress})):null;
+    const key=fileKey?await cacheKey('psd-plan-v3:'+fileKey):null,cached=key?await projectCache('psd-plan',key):null;
     document=cached?.document;
     if(!document){document=source?await readPSDFile(source,progress=>postMessage({type:'progress',...progress})):readPSD(event.data.bytes);document=preparePSDImport(document);if(key)await projectCache('psd-plan',key,{document});}
     if(event.data.plan){postMessage({type:'plan',document,fileKey});document=null;source=null;return;}

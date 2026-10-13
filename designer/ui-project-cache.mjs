@@ -6,12 +6,16 @@ export async function cacheKey(value) {
     .map((x) => x.toString(16).padStart(2, "0"))
     .join("");
 }
-export async function fileCacheKey(file) {
+export async function fileCacheKey(file,onProgress=()=>{}) {
   const hashes = [];
-  for (let offset = 0; offset < file.size; offset += 4194304)
+  let last=0;
+  for (let offset = 0; offset < file.size; offset += 4194304){
     hashes.push(
       await cacheKey(await file.slice(offset, offset + 4194304).arrayBuffer()),
     );
+    const now=performance.now();if(now-last>100){last=now;onProgress({readBytes:Math.min(file.size,offset+4194304),sourceBytes:file.size});}
+  }
+  onProgress({readBytes:file.size,sourceBytes:file.size});
   return cacheKey(file.size + ":" + hashes.join(":"));
 }
 export async function projectCache(

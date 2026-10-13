@@ -1,12 +1,7 @@
-import {resourceURL} from './workspace.mjs';
-// Shared folder picker, search and thumbnails. Inactive panels never request images.
-export const validAssetFolder = (folder) =>
-  typeof folder === "string" &&
-  (!folder.startsWith("/") && !folder.includes(":")) &&
-  !folder.split("/").some((part) => !part || part === ".." || part === ".") &&
-  !/[:\\\0]/.test(folder);
+import { resourceURL, workspace } from "./workspace.mjs";
+// Standalone image catalog and device file explorer.
 import { html as node } from "./dom-controls.mjs";
-const source = image => resourceURL(image.guid);
+const source = (image) => resourceURL(image.guid);
 export function projectAssets({
   projectKey,
   api,
@@ -15,51 +10,32 @@ export function projectAssets({
   attach,
   onError,
 }) {
-  const storageKey = () => `vinagen-ui-assets-folder:${projectKey()}`,
+  const storageKey = () => `vinagen-web-images:${workspace.id}`,
     browsers = new Set(),
     cache = new Map();
-  let folder = "",
-    search = "",
+  let search = "",
     picking = false,
     restoredKey = "";
   const restore = () => {
     const key = storageKey();
     if (key === restoredKey) return;
     restoredKey = key;
-    folder = "";
     search = "";
     cache.clear();
-    try {
-      const saved = localStorage.getItem(key);
-      if (validAssetFolder(saved)) folder = saved;
-    } catch {}
   };
   const refresh = () => {
     restore();
+    cache.clear();
     for (const browser of browsers) {
       browser.sync();
       browser.load();
     }
   };
-  const setFolder = (value) => {
-    if (!validAssetFolder(value))
-      throw Error("Choose a folder inside your workspace.");
-    folder = value;
-    try {
-      localStorage.setItem(storageKey(), value);
-    } catch {}
-    refresh();
-    document.dispatchEvent(
-      new CustomEvent("vinagen-project-assets-changed", {
-        detail: { key: storageKey(), folder },
-      }),
-    );
-  };
   const read = async () => {
-    const key = JSON.stringify([folder, search]),
+    const key = search,
       entry = cache.get(key);
     if (entry && entry.expires > Date.now()) return entry.promise;
-    const promise = api("ui-assets", { folder, search })
+    const promise = api("ui-assets", { search })
       .then((result) => {
         if (cache.get(key)?.promise === promise)
           cache.get(key).expires = Date.now() + 2000;
@@ -69,7 +45,7 @@ export function projectAssets({
         if (cache.get(key)?.promise === promise) cache.delete(key);
         throw error;
       });
-    // Keep an in-flight read shared even when Unity takes longer than the cache TTL.
+    // Share in-flight reads between the sidebar and image dialog.
     cache.set(key, { promise, expires: Infinity });
     if (cache.size > 32) cache.delete(cache.keys().next().value);
     return promise;
@@ -79,25 +55,17 @@ export function projectAssets({
     picking = true;
     for (const browser of browsers) browser.sync();
     try {
-      const result = await api("ui-choose-assets-folder", { folder });
-      if (!result.cancelled) setFolder(result.folder);
-      return result.cancelled ? null : result.folder;
+      const result = await api("ui-choose-images");
+      if (!result.cancelled) {
+        cache.clear();
+        refresh();
+      }
+      return result.cancelled ? null : result.imported;
     } finally {
       picking = false;
       for (const browser of browsers) browser.sync();
     }
   };
-  document.addEventListener("vinagen-project-assets-changed", (event) => {
-    if (
-      event.detail?.key === storageKey() &&
-      event.detail.folder !== folder &&
-      validAssetFolder(event.detail.folder)
-    ) {
-      folder = event.detail.folder;
-      cache.clear();
-      refresh();
-    }
-  });
   const create = ({
     active,
     targetId,
@@ -120,7 +88,7 @@ export function projectAssets({
     const folderName = node("span"),
       folderButton = button("", () => choose().catch(onError));
     folderButton.className = "ui-asset-folder";
-    folderButton.setAttribute("aria-label", "Choose assets folder");
+    folderButton.setAttribute("aria-label", "Add images from files");
     folderButton.append(icon("folder"), folderName, icon("chevron"));
     controls.append(field, folderButton);
     const status = node("p", {
@@ -145,12 +113,12 @@ export function projectAssets({
       root,
       sync: () => {
         input.value = search;
-        input.disabled = !folder;
+        input.disabled = false;
         folderButton.disabled = picking;
         folderName.textContent = picking
-          ? "Choosing folder…"
-          : folder || "Choose folder…";
-        folderButton.title = folder || "Choose a project folder";
+          ? "Importing images..."
+          : "Add images...";
+        folderButton.title = "Browse PNG / JPEG files anywhere on this device";
       },
       invalidate,
       load: async () => {
@@ -158,12 +126,6 @@ export function projectAssets({
         browser.sync();
         invalidate();
         if (!active()) return;
-        if (!folder) {
-          status.textContent = "Choose a folder to load its images.";
-          signature = "";
-          grid.replaceChildren();
-          return;
-        }
         const current = sequence,
           project = storageKey(),
           query = search;
@@ -206,7 +168,7 @@ export function projectAssets({
             ? `${result.images.length} images${result.images.length >= result.limit ? " · Narrow your search to see more." : ""}`
             : query
               ? "No images match your search."
-              : "No images in this folder.";
+              : "Add images from your device, or import a PSD / SVGPRO.";
         } catch (error) {
           if (current === sequence && active())
             status.textContent = error.message;

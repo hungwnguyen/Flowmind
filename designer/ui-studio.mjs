@@ -1,3 +1,5 @@
+import {imageInstances,syncImageComponents} from './image-components.mjs';
+import {pickImageFiles} from './image-picker.mjs';
 import {roles,groupTypes,canonicalRole,reflowGroups,anchorPresets,anchorRange,imageModes,imageMode,setImageMode,sliceImageRects,copy,uid,newDocument,newLayer,validateDocument,descendants,layerIndex,roots,duplicate,groupLayers,worldRect,layerDropPlan,moveLayers,autoLayout,shortcutMatches,alignLayers,imagePlacement,canvasBounds,resizeLayerRect,rotatePoint,moveSnapContext,snapMove} from './ui-model.mjs';
 import {tmpSettingNumbers,tmpWebMaterialMetrics,layerHierarchy,layerHitStack,marqueeLayerIds,imageSourcePoint,snapResize,scaleLayerTree,sliceExportLayers} from './ui-model.mjs';
 import {textRenderers,textRenderer,setTextRenderer,blendModes} from './ui-model.mjs';
@@ -210,7 +212,7 @@ class Studio {
   toggleDrawer(side,force){const panel=side==='left'?this.left:this.right;if(side==='left'&&!matchMedia('(max-width:640px)').matches){this.root.classList.toggle('ui-sidebar-collapsed');return;}const open=force??!panel.classList.contains('mobile-open');this.closeDrawers();panel.classList.toggle('mobile-open',open);this.backdrop.hidden=!open;if(open)this.root.dataset.drawer=side;}
   async loadSidebarAssets(){
     const panel=this.sidebarPanels.get('Assets');if(!this.config)return;
-    if(!this.sidebarAssets){this.sidebarAssets=this.assetBrowser({sidebar:true});panel.replaceChildren(el('div',{class:'ui-panel-title'},'PROJECT ASSETS'),this.sidebarAssets.root);}
+    if(!this.sidebarAssets){this.sidebarAssets=this.assetBrowser({sidebar:true});panel.replaceChildren(el('div',{class:'ui-panel-title'},'IMAGES'),this.sidebarAssets.root);}
     this.sidebarAssets.sync();await this.sidebarAssets.load();
   }
   assetBrowser({sidebar=false,targetId}={}){
@@ -382,7 +384,7 @@ class Studio {
   snapshotOf(doc){return JSON.stringify(doc);}
   snapshot(){return this.snapshotOf(this.doc);}
   restoreSnapshot(snapshot){return JSON.parse(snapshot);}
-  remember(before,coalesce=false,preserveGeometry=false){if(before===this.snapshot())return;try{validateDocument(this.doc);if(!preserveGeometry)reflowGroups(this.doc);if(this.config.autoAdjustAnchors)adjustAnchors(this.doc,this.restoreSnapshot(before));screenAnchors(this.doc);validateDocument(this.doc);}catch(error){this.doc=this.restoreSnapshot(before);this.message(error,true);this.paintAll();return;}if(!coalesce)this.undo.push(before);let size=this.undo.reduce((n,s)=>n+s.length,0);while(this.undo.length>60||size>4*1024*1024){size-=this.undo.shift().length;}this.redo=[];this.dirty=true;this.version++;this.paintAll();this.queueDraft();}
+  remember(before,coalesce=false,preserveGeometry=false){if(before===this.snapshot())return;try{syncImageComponents(this.restoreSnapshot(before),this.doc);validateDocument(this.doc);if(!preserveGeometry)reflowGroups(this.doc);if(this.config.autoAdjustAnchors)adjustAnchors(this.doc,this.restoreSnapshot(before));screenAnchors(this.doc);validateDocument(this.doc);}catch(error){this.doc=this.restoreSnapshot(before);this.message(error,true);this.paintAll();return;}if(!coalesce)this.undo.push(before);let size=this.undo.reduce((n,s)=>n+s.length,0);while(this.undo.length>60||size>4*1024*1024){size-=this.undo.shift().length;}this.redo=[];this.dirty=true;this.version++;this.paintAll();this.queueDraft();}
   edit(fn,coalesce=false){if(this.busy){this.message('Wait for the current import to finish.');return;}const before=this.snapshot();try{fn();this.remember(before,coalesce);}catch(error){this.doc=this.restoreSnapshot(before);this.message(error,true);this.paintAll();}}
   history(direction){if(this.busy)return;const from=direction<0?this.undo:this.redo,to=direction<0?this.redo:this.undo;if(!from.length)return;to.push(this.snapshot());this.doc=this.restoreSnapshot(from.pop());this.selected=new Set([...this.selected].filter(id=>this.doc.layers.some(l=>l.id===id)));this.dirty=true;this.version++;this.paintAll();this.queueDraft();}
   queueDraft(){clearTimeout(this.draftTimer);this.draftTimer=setTimeout(()=>this.persist(),600);}
@@ -725,7 +727,7 @@ class Studio {
       if(this.liveProperty&&this.liveProperty.control!==control){const previous=this.liveProperty;this.liveProperty=null;this.remember(previous.before);}
       const before=this.snapshot();this.liveProperty??={control,before,dirty:this.dirty};
       try{
-        change(value);validateDocument(this.doc);reflowGroups(this.doc);if(this.config.autoAdjustAnchors)adjustAnchors(this.doc,this.restoreSnapshot(before));screenAnchors(this.doc);validateDocument(this.doc);
+        change(value);syncImageComponents(this.restoreSnapshot(before),this.doc);validateDocument(this.doc);reflowGroups(this.doc);if(this.config.autoAdjustAnchors)adjustAnchors(this.doc,this.restoreSnapshot(before));screenAnchors(this.doc);validateDocument(this.doc);
         if(before===this.snapshot())return;
         this.version++;this.dirty=true;control._uiEditing=!committing;this.paintAll();control._uiEditing=false;this.queueDraft();
         if(!control.dataset.numberScrubbing&&this.snapshot()===this.liveProperty.before){this.dirty=this.liveProperty.dirty;this.liveProperty=null;this.paintShell();}
@@ -745,7 +747,7 @@ class Studio {
     input.setAttribute('aria-label',label);
     if(type==='number'){
       input.step='any';
-      const bounds={Width:[1,8192],Height:[1,8192],W:[1,8192],H:[1,8192],X:[-100000,100000],Y:[-100000,100000],Rotation:[-3600,3600],Opacity:[0,1,.01],'Font size':[1,512],Columns:[1,1000],Spacing:[0,8192],Padding:[0,8192],'Cell width':[1,8192],'Cell height':[1,8192],'Stroke width':[0,256],Thickness:[0,256],Points:[3,64,1],'Inner radius':[.01,.99,.01]}[label];
+      const bounds={Width:[1,30000],Height:[1,30000],W:[1,30000],H:[1,30000],X:[-100000,100000],Y:[-100000,100000],Rotation:[-3600,3600],Opacity:[0,1,.01],'Font size':[1,512],Columns:[1,1000],Spacing:[0,8192],Padding:[0,8192],'Cell width':[1,8192],'Cell height':[1,8192],'Stroke width':[0,256],Thickness:[0,256],Points:[3,64,1],'Inner radius':[.01,.99,.01]}[label];
       if(bounds)Object.assign(input,{min:bounds[0],max:bounds[1],step:bounds[2]??'any'});
       if(['Columns','Padding','Points'].includes(label)){input.dataset.integer='true';input.step=1;}
     }
@@ -1121,14 +1123,14 @@ class Studio {
           if(layer.textMeshPro)this.tmpInspector(layer,designSection);
           if(layer.textStyle)this.styledTextInspector(layer,designSection);
         }
-        if(layer.role!=='text'){const image=designSection('Image');if(!['group','empty'].includes(layer.role))image.append(this.button(layer.image?'Replace image':'Choose project image',()=>this.assets(layer.id)));if(layer.image){
+        if(layer.role!=='text'){const image=designSection('Image');if(!['group','empty'].includes(layer.role))image.append(this.button(layer.image?'Replace image from files':'Choose image from files',()=>this.chooseImage(layer.id)),this.button('Browse imported images',()=>this.assets(layer.id)));if(layer.image){
           image.append(this.field('Image mode',imageMode(layer),v=>setImageMode(layer,v),'text',imageModes));
           if(imageMode(layer)==='nine_slice'){
             image.append(el('div',{class:'ui-slice-guide','aria-label':'Automatic 9-slice bands',title:'Repeated pixel bands; color tolerance 3/255, margin 2 px, center 2 px. Save includes each shared image once in the document package.'}));
             const slice=this.elements.get(layer.id)?.querySelector('.ui-sliced-image');if(slice?._sourceSize)queueMicrotask(()=>this.paintSliceGuide(layer,slice._sourceSize,slice._borders));
           }
         }
-        if(layer.image){image.append(el('img',{class:'ui-inspector-image',src:media(layer.image),alt:layer.image.name||'Layer image'}),el('p',{class:'ui-hint'},layer.image.path||''),this.button('Reset to image size',async()=>{const reference=layer.image;const asset=await this.api('ui-resolve-image',{path:reference.path});if(layer.image!==reference||!this.doc.layers.includes(layer))return;if(asset.image.guid!==reference.guid||String(asset.image.localId||'')!==String(reference.localId||''))throw Error('Choose this sprite from Project Assets to restore its original size.');this.edit(()=>{layer.width=asset.width;layer.height=asset.height;});}),this.button('Remove image',()=>this.edit(()=>delete layer.image)));this.imageResizeControl(layer,image);}
+        if(layer.image){image.append(el('p',{class:'ui-hint ui-image-component'},`Shared image component: ${imageInstances(this.doc,layer).length} instances. Source, tint and image mode update together; position and size stay independent.`));image.append(el('img',{class:'ui-inspector-image',src:media(layer.image),alt:layer.image.name||'Layer image'}),el('p',{class:'ui-hint'},layer.image.path||''),this.button('Reset to image size',async()=>{const reference=layer.image;const asset=await this.api('ui-resolve-image',{path:reference.path});if(layer.image!==reference||!this.doc.layers.includes(layer))return;if(asset.image.guid!==reference.guid||String(asset.image.localId||'')!==String(reference.localId||''))throw Error('Choose this sprite from Project Assets to restore its original size.');this.edit(()=>{layer.width=asset.width;layer.height=asset.height;});}),this.button('Remove image',()=>this.edit(()=>delete layer.image)));this.imageResizeControl(layer,image);}
         const fusion=this.button('Fusion images',()=>this.fusionImages(layer.id));fusion.disabled=this.busy||this.pngExporting||this.psdExporting||this.imageFusing;
         fusion.title='Merge visible child images into this object. Text stays editable. Undo restores the original layers.';image.append(fusion);}
 
@@ -1260,7 +1262,7 @@ class Studio {
       this.guides=result.guides;
     }
     if(g.type==='resize'){const delta=rotatePoint({x:dx,y:dy},-g.parentRotation),result=snapResize(g.snapContext,g.rect,delta,g.corner,{zoom:this.zoom,enabled:this.snap&&!e.altKey,preserveAspect:e.shiftKey||g.scale,parentRotation:g.parentRotation});Object.assign(g.layer,result.rect);this.guides=result.guides;if(g.scale){const factor=scaleLayerTree(this.doc,g.scaled,g.layer.id,g.rect,result.rect,g.corner);if(Math.abs(factor-result.rect.width/g.rect.width)>1e-7)this.guides=[];this.renderVersion=-1;}}
-    if(g.type==='create'&&(Math.abs(dx)+Math.abs(dy))*this.zoom>3){const start=this.creationPoint(g.start,g.creationParent),local=this.creationPoint(point,g.creationParent),dx=local.x-start.x,dy=local.y-start.y;let end={...local};const linear=['line','arrow'].includes(g.layer.shape);if(e.shiftKey){if(linear){const angle=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*Math.PI/4,length=Math.hypot(dx,dy);end={x:start.x+Math.cos(angle)*length,y:start.y+Math.sin(angle)*length};}else{const size=Math.max(Math.abs(dx),Math.abs(dy));end={x:start.x+(dx<0?-size:size),y:start.y+(dy<0?-size:size)};}}g.layer.x=Math.min(end.x,start.x);g.layer.y=Math.min(end.y,start.y);g.layer.width=Math.min(8192,Math.max(1,Math.abs(end.x-start.x)));g.layer.height=Math.min(8192,Math.max(1,Math.abs(end.y-start.y)));if(linear){g.layer.shapeFlipX=end.x<start.x;g.layer.shapeFlipY=end.y<start.y;}}
+    if(g.type==='create'&&(Math.abs(dx)+Math.abs(dy))*this.zoom>3){const start=this.creationPoint(g.start,g.creationParent),local=this.creationPoint(point,g.creationParent),dx=local.x-start.x,dy=local.y-start.y;let end={...local};const linear=['line','arrow'].includes(g.layer.shape);if(e.shiftKey){if(linear){const angle=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*Math.PI/4,length=Math.hypot(dx,dy);end={x:start.x+Math.cos(angle)*length,y:start.y+Math.sin(angle)*length};}else{const size=Math.max(Math.abs(dx),Math.abs(dy));end={x:start.x+(dx<0?-size:size),y:start.y+(dy<0?-size:size)};}}g.layer.x=Math.min(end.x,start.x);g.layer.y=Math.min(end.y,start.y);g.layer.width=Math.min(30000,Math.max(1,Math.abs(end.x-start.x)));g.layer.height=Math.min(30000,Math.max(1,Math.abs(end.y-start.y)));if(linear){g.layer.shapeFlipX=end.x<start.x;g.layer.shapeFlipY=end.y<start.y;}}
     if(g.type==='marquee'){g.end=point;this.selected=new Set([...g.previous,...marqueeLayerIds(this.doc,g.start,point)]);}
     if(this.config.autoAdjustAnchors&&['move','resize','create'].includes(g.type)){
       const byId=this.indexes();for(const layer of g.layers?.map(item=>item.layer)||[g.layer])layer.anchor=screenSized(layer,this.doc)?'stretch':automaticAnchor(layer,byId.get(layer.parentId)||this.doc,this.doc);
@@ -1516,9 +1518,17 @@ class Studio {
     return rendered;
   }
   settings(){window.dispatchEvent(new Event('vinagen-open-settings'));}
+  async chooseImage(targetId) {
+    if(this.busy)return;
+    const files=await pickImageFiles();if(!files.length)return;
+    const doc=this.doc,version=this.version;this.busy=true;this.paintShell();
+    try{const asset=await this.upload(files[0]);if(doc!==this.doc||version!==this.version)throw Error('The document changed while choosing an image. Choose it again.');
+      this.busy=false;this.edit(()=>this.attach(asset,targetId));this.refreshAssetBrowsers();this.message('Updated shared image component. Undo restores all instances.');
+    }finally{this.busy=false;this.paintShell();}
+  }
   async assets(targetId) {
     const browser=this.assetBrowser({targetId});
-    const {body,actions}=dialogShell(this.dialog,{title:'Project Assets',description:'Browse artwork in your selected workspace.',wide:true,kind:'assets'});body.append(browser.root);actions.append(this.button('Close',()=>this.dialog.close()));
+    const {body,actions}=dialogShell(this.dialog,{title:'Project Assets',description:'Choose existing artwork, or add image files from any folder on this device.',wide:true,kind:'assets'});body.append(browser.root);actions.append(this.button('Close',()=>this.dialog.close()));
     this.dialog.addEventListener('close',()=>browser.dispose(),{once:true});this.dialog.showModal();await browser.load();
   }
   attach(asset,targetId,point,parentId) {
@@ -1617,7 +1627,7 @@ class Studio {
         };
         let sourceDocument,sourceFileKey;
         const launch=()=>{
-          while(!cancelled&&active<3&&nextJob<jobs.length){
+          while(!cancelled&&active<(sourceDocument.records.some(r=>r.width>8192||r.height>8192||r.width*r.height>16777216||r.mask&&(r.mask.width>8192||r.mask.height>8192||r.mask.width*r.mask.height>16777216))?1:3)&&nextJob<jobs.length){
             const job=jobs[nextJob++],w=new Worker(new URL('./psd-worker.mjs',import.meta.url),{type:'module'});workers.add(w);job.worker=w;active++;
             w.onerror=e=>fail(Error(e.message));
             const settle=()=>{if(cancelled||!job.done||job.pending||job.finished)return;job.finished=true;finished++;active--;w.terminate();workers.delete(w);launch();finish();};
@@ -1659,7 +1669,7 @@ class Studio {
         };
         worker.onerror=e=>fail(Error(e.message));
         worker.onmessage=e=>{if(cancelled)return;heartbeat();const data=e.data;if(data.error){fail(Error(data.error));return;}
-          if(data.type==='progress'){status.lastElementChild.textContent='Reading PSD layer metadata…';return;}
+          if(data.type==='progress'){status.lastElementChild.textContent=data.stage==='hash'?`Checking PSD file... ${Math.round(data.readBytes/data.sourceBytes*100)}%`:'Reading PSD layer metadata...';return;}
           if(data.type!=='plan')return;
           (async()=>{
             sourceDocument=data.document;sourceFileKey=data.fileKey;worker.terminate();workers.delete(worker);for(const note of sourceDocument.warnings)notes.add(note);

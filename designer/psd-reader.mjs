@@ -2,9 +2,11 @@
 // No provider, executable, CDN, or third-party artwork is bundled.
 import {readTypeTool,readLayerEffects,photoshopText,inheritPSDTextGroupEffects} from './psd-text.mjs';
 const blendNames={norm:'normal',pass:'pass-through','mul ':'multiply',scrn:'screen',over:'overlay',dark:'darken',lite:'lighten','div ':'color-dodge',idiv:'color-burn',hLit:'hard-light',sLit:'soft-light',diff:'difference',smud:'exclusion','hue ':'hue','sat ':'saturation',colr:'color','lum ':'luminosity'};
-export const PSD_MAX_SOURCE_BYTES=500*1024*1024;
+// Compatibility export: file size is bounded by the file API, not a product cap.
+export const PSD_MAX_SOURCE_BYTES=Infinity;
+export const PSD_MAX_DIMENSION=30000;
 export function validatePSDSourceSize(size) {
-  if(size>PSD_MAX_SOURCE_BYTES)throw Error('PSD files support up to 500 MB.');
+  if(!Number.isSafeInteger(size)||size<26)throw Error('Truncated or invalid PSD file size.');
 }
 export function solidPixelColor(pixels) {
   if(!pixels.length||pixels.length%4)return null;
@@ -35,7 +37,7 @@ function* parsePSD(size) {
   if(r.text(4)!=='8BPS'||r.u16()!==1)throw Error('Only Photoshop PSD v1 is supported; PSB is not supported.');
   r.skip(6);const channels=r.u16(),height=r.u32(),width=r.u32(),depth=r.u16(),mode=r.u16();
   if(depth!==8||mode!==3||channels<3||channels>56)throw Error('Export the PSD in 8-bit RGB mode.');
-  if(!width||!height||width>8192||height>8192||width*height>16777216)throw Error('PSD supports up to 8192 pixels per side and 16 megapixels.');
+  if(!width||!height||width>PSD_MAX_DIMENSION||height>PSD_MAX_DIMENSION)throw Error('PSD v1 dimensions must be 1–30000 pixels. Larger Photoshop documents use PSB.');
   offset=yield* section();offset=yield* section();const layerMaskEnd=yield* section();
   if(layerMaskEnd===offset)throw Error('PSD has no editable layers.');
   limit=layerMaskEnd;const layerEnd=yield* section();limit=layerEnd;r=yield* take(2);const count=Math.abs(r.i16());
@@ -49,7 +51,7 @@ function* parsePSD(size) {
     if(r.text(4)!=='8BIM')throw Error('Invalid PSD layer signature.');
     let blend=r.text(4);const opacity=r.u8()/255;r.skip(1);const flags=r.u8();r.skip(1);const extraLength=r.u32();need(extraLength);const extraEnd=offset+extraLength;limit=extraEnd;
     r=yield* take(4);const maskLength=r.u32();need(maskLength);const maskEnd=offset+maskLength;let mask=null;
-    if(maskLength>=18){r=yield* take(18);const top=r.i32(),left=r.i32(),bottom=r.i32(),right=r.i32(),defaultColor=r.u8(),flags=r.u8();mask={x:left,y:top,width:right-left,height:bottom-top,defaultColor,flags};if(mask.width<0||mask.height<0||mask.width>8192||mask.height>8192||mask.width*mask.height>16777216)throw Error('PSD mask dimensions exceed the import limits.');}
+    if(maskLength>=18){r=yield* take(18);const top=r.i32(),left=r.i32(),bottom=r.i32(),right=r.i32(),defaultColor=r.u8(),flags=r.u8();mask={x:left,y:top,width:right-left,height:bottom-top,defaultColor,flags};if(mask.width<0||mask.height<0||mask.width>PSD_MAX_DIMENSION||mask.height>PSD_MAX_DIMENSION)throw Error('Invalid PSD mask dimensions.');}
     if(maskLength)warnings.add('Feathered and vector masks need visual review.');offset=maskEnd;offset=yield* section();
     r=yield* take(1);const nameLength=r.u8();r=yield* take(nameLength);let name=r.text(nameLength);const padding=(4-(nameLength+1)%4)%4;need(padding);offset+=padding;let sectionType=0,type=null,effects=null,rasterEffects=false;
     while(offset+12<=extraEnd) {
@@ -69,7 +71,7 @@ function* parsePSD(size) {
     }
     if(offset>extraEnd)throw Error('Invalid PSD layer metadata.');offset=extraEnd;limit=layerEnd;
     const w=right-left,h=bottom-top;
-    if(w<0||h<0||w>8192||h>8192||w*h>16777216)throw Error('PSD layer dimensions exceed the import limits.');
+    if(w<0||h<0||w>PSD_MAX_DIMENSION||h>PSD_MAX_DIMENSION)throw Error('Invalid PSD layer dimensions.');
     if(!blendNames[blend])warnings.add('Unsupported Photoshop blend mode '+blend+' uses normal blending; review its appearance.');
     const text=type?photoshopText(type,effects,warnings,{x:left,y:top,width:w||1,height:h||1,documentWidth:width,documentHeight:height}):null;
     if(rasterEffects&&!text)warnings.add('Raster layer effects use Photoshop cached pixels; review their appearance.');

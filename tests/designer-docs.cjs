@@ -22,7 +22,7 @@ const { chromium } = require(
       .waitFor();
     await page.waitForFunction(
       () =>
-        [...document.querySelectorAll(".markdown-section img")].length === 5 &&
+        [...document.querySelectorAll(".markdown-section img")].length === 7 &&
         [...document.querySelectorAll(".markdown-section img")].every(
           (image) => image.complete && image.naturalWidth > 0,
         ),
@@ -44,7 +44,7 @@ const { chromium } = require(
     await page.close();
   }
   console.log(
-    "English/Vietnamese guide navigation, five images, launch link and mobile layout passed.",
+    "English/Vietnamese guide navigation, seven images, launch link and mobile layout passed.",
   );
   await browser.close();
 })().catch((error) => {

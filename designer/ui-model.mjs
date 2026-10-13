@@ -131,7 +131,7 @@ export function validateDocument(doc) {
   if (doc?.schema!=='vinagen_ui' || doc.schemaVersion!==1 || !Array.isArray(doc.layers) || doc.layers.length>1000) throw Error('Expected a VinaGen UI JSON document with up to 1000 layers.');
   validateComments(doc.comments);
   const ids=new Map();
-  for(const key of ['width','height']) if(!Number.isFinite(doc[key]) || doc[key]<1 || doc[key]>8192) throw Error('Canvas dimensions must be 1–8192.');
+  for(const key of ['width','height']) if(!Number.isFinite(doc[key]) || doc[key]<1 || doc[key]>30000) throw Error('Canvas dimensions must be 1–30000.');
   for(const layer of doc.layers) {
     if(layer)layer.role=canonicalRole(layer.role);
     if(!layer?.id || ids.has(layer.id) || !roles.includes(layer.role)) throw Error('Layer IDs must be unique and labels must be valid.');
@@ -159,7 +159,7 @@ export function validateDocument(doc) {
       if(['horizontal','vertical','grid'].includes(layer.groupType)&&layout.direction!==layer.groupType)throw Error('Group type and layout must match.');
     }
     for(const key of ['interactable','blocksRaycasts','ignoreParentGroups','canvasGroup'])if(layer[key]!==undefined&&typeof layer[key]!=='boolean')throw Error('Invalid '+key+' flag.');
-    for(const key of ['x','y','width','height']) if(!Number.isFinite(layer[key]) || Math.abs(layer[key])>100000 || (['width','height'].includes(key) && (layer[key]<1 || layer[key]>8192))) throw Error('Invalid layer dimensions.');
+    for(const key of ['x','y','width','height']) if(!Number.isFinite(layer[key]) || Math.abs(layer[key])>100000 || (['width','height'].includes(key) && (layer[key]<1 || layer[key]>30000))) throw Error('Invalid layer dimensions.');
     for(const [key,min,max] of [['opacity',0,1],['rotation',-3600,3600],['fontSize',1,512]]) if(layer[key]!==undefined&&(!Number.isFinite(layer[key])||layer[key]<min||layer[key]>max)) throw Error('Invalid '+key+'.');
   }
   for(const layer of doc.layers) { let p=layer.parentId; const seen=new Set([layer.id]); while(p) { const parent=ids.get(p); if(!parent || !parentRoles.includes(parent.role) || seen.has(p) || seen.size>64) throw Error('Invalid layer hierarchy.'); if(layer.canvasRoot&&parent.canvasRoot)throw Error('Canvas Roots cannot be nested. Remove the label from the parent or child.'); seen.add(p); p=parent.parentId; } }

@@ -42,11 +42,22 @@ Choose **Import** to add your own TTF, OTF, WOFF or WOFF2 font, then select it i
 
 Shortcuts: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse, **K** Scale, **Shift+1** Fit, **Ctrl/Cmd+S** Save, **Ctrl/Cmd+Z** Undo, **Ctrl/Cmd+Shift+Z** Redo, **Ctrl/Cmd+D** Duplicate. Right-click a layer for copy, paste, grouping and other actions. A larger screen is recommended for editing; mobile uses the Layers and Inspector drawer buttons.
 
+## Image files and shared components
+
+1. Open **Assets** and click **Add images...** to open the device file explorer. Select PNG/JPEG files from any folder, including several files at once. The gallery shows all images imported into this workspace; it no longer asks you to type a fixed folder name. Source files stay on your device.
+2. Click or drag a thumbnail onto the canvas. In the Image inspector, **Choose image from files / Replace image from files** opens the file explorer directly; **Browse imported images** uses the existing gallery.
+3. Objects with identical decoded pixels and dimensions automatically share one image component, even when filenames or PNG metadata differ. The inspector shows the instance count. Changing the source, tint, gradient or image mode updates every instance in the current document. Position, size, rotation and hierarchy remain independent. Removing an image or deleting an object affects that instance only.
+4. **Undo/Redo** restores a shared edit across all instances in one step. Save `.svgpro` to keep the shared references. Replacing a component with an image already used elsewhere joins their instances. Text glyph paint is excluded.
+
+![Assets: browse image files from any folder](images/web-designer/assets.png)
+
+![Image inspector: shared component and independent instance geometry](images/web-designer/components.png)
+
 ## PSD import and export
 
 **Import → choose PSD → Replace or Insert.** Replace offers a save/discard choice if the current document has unsaved changes. Insert keeps the current screen and adds the imported hierarchy beside it. The progress dialog can cancel; the previous document is restored and already decoded resources remain in local cache.
 
-Supported: PSD v1, 8-bit RGB, raw/RLE/ZIP channels; up to 500 MB source, 1000 resulting layer records, 8192 px per side and 16 MP per canvas/layer. PSB, CMYK and 16/32-bit PSD are unsupported. Groups, stacking, visibility, opacity and supported blend modes are retained. Smart objects and unsupported vector/effect details become raster artwork or carry review notes.
+Supported: PSD v1, 8-bit RGB, raw/RLE/ZIP channels. Source import no longer has the 500 MB or 8192 px / 16 MP caps. PSD v1 itself permits up to 30,000 px per side. Large layers and masks stream by scanline into 1024 px image tiles, with one decoder worker; available memory and local storage still determine practical capacity. The document has a separate 1000-object limit, including tile objects. Very large text rasters retain source metadata but become raster tile groups rather than editable labels. Export and capture limits remain separate from source import limits. A 575 MB, 15,360 x 12,288 px PSD (188.7 MP) was verified in Chromium. PSB, CMYK and 16/32-bit PSD are unsupported. Groups, stacking, visibility, opacity and supported blend modes are retained. Smart objects and unsupported vector/effect details become raster artwork or carry review notes.
 
 PSD stores font names, not font files. Import the matching font separately. Missing fonts show a fallback warning; the cached Photoshop glyph image is preserved until you edit text, font, size or style. Browser text rendering, mixed formatting, masks and complex Photoshop effects may differ; inspect the result before sharing. Rich-text tags currently produce plain text in the styled browser renderer; use separate text layers for different formatting.
 

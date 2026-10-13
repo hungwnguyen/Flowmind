@@ -60,7 +60,7 @@ def studio(text):
 """)
     text=text.replace('this.tab.append(this.tabButton,close)','this.tab.append(this.tabButton)')
     text=text.replace('styledTextPreview,liveStyledText,','styledTextPreview,')
-    text=re.sub(r"          const binding=.*?\n          this.styledPreview\?\?=",'          this.styledPreview??=',text,flags=re.S)
+    text=re.sub(r"^(?P<indent>[ \t]*)const binding=.*?\n(?P=indent)this.styledPreview\?\?=",r'\g<indent>this.styledPreview??=',text,flags=re.S|re.M)
     text=text.replace("native:()=>this.showInEditor(),'ui-studio-open':()=>this.importUnity(),",'')
     text=text.replace("settings:()=>this.settings(),","settings:()=>this.settings(),workspace:()=>this.shell.chooseWorkspace?.(),")
     text=text.replace("this.anchorPicker(layer)","el('span')")
@@ -112,7 +112,10 @@ def studio(text):
     return text
 
 def transform(name,text):
-    if name=='ui-studio.mjs':return studio(text)
+    if name=='ui-studio.mjs':
+        generated=studio(text)
+        from sync_designer_images import web_images
+        return web_images(generated)
     if name=='ui-model.mjs':
         text=text.replace('Unity group type','layout type')
         text=text.replace("[['text','Text'],['textMeshPro','TextMesh Pro'],['vinaGenText','VinaGenText']]","[['text','Text'],['vinaGenText','Styled Text']]")
@@ -153,7 +156,7 @@ def transform(name,text):
         text=text[:text.index('// Live updates have their own queue')]
     return text
 
-custom={'workspace.mjs','zip.mjs','web-text.mjs','idb.mjs','ui-project-cache.mjs'}
+custom={'workspace.mjs','zip.mjs','web-text.mjs','idb.mjs','ui-project-cache.mjs','project-assets.mjs','image-components.mjs','image-picker.mjs'}
 queue=['ui-studio.mjs','preferences.js','editor.css','workspace-controls.css']
 seen=set()
 while queue:

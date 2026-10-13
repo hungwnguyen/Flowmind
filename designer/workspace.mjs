@@ -5,6 +5,7 @@ import { validateDocument, copy } from "./ui-model.mjs";
 import { resolvedTextStyle, textPaintSignature } from "./ui-styled-text.mjs";
 import { renderText } from "./web-text.mjs";
 import { detectSliceBorders } from "./ui-slice.mjs";
+import { pickImageFiles } from "./image-picker.mjs";
 const resources = new Map();
 export function resourceURL(guid) {
   return resources.get(guid)?.url || "";
@@ -35,6 +36,18 @@ async function dimensions(blob) {
   )
     throw Error("Images must be at most 8192 px per side and 16 megapixels.");
   return result;
+}
+async function imageContentKey(blob) {
+  const bitmap = await createImageBitmap(blob);
+  try {
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(bitmap, 0, 0);
+    const pixels = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    return `${bitmap.width}x${bitmap.height}:${await cacheKey(pixels)}`;
+  } finally {
+    bitmap.close();
+  }
 }
 function mime(name) {
   return /\.jpe?g$/i.test(name)
@@ -131,6 +144,33 @@ class Workspace {
   async add(resource) {
     await record("resource:" + this.id + ":" + resource.guid, resource);
     return this.install(resource);
+  }
+  async matchingImage(contentKey) {
+    for (const resource of resources.values()) {
+      if (resource.type !== "image") continue;
+      resource.contentKey ||= await imageContentKey(resource.blob);
+      if (resource.contentKey === contentKey) return resource;
+    }
+  }
+  async linkImageComponents(doc) {
+    const byContent = new Map();
+    for (const layer of doc.layers || []) {
+      if (layer.role === "text" || !layer.image) continue;
+      const resource = resources.get(layer.image.guid);
+      if (!resource || resource.type !== "image") continue;
+      resource.contentKey ||= await imageContentKey(resource.blob);
+      const shared = byContent.get(resource.contentKey);
+      if (shared)
+        layer.image = {
+          ...layer.image,
+          guid: shared.guid,
+          localId: "",
+          name: shared.name,
+          path: shared.path,
+        };
+      else byContent.set(resource.contentKey, resource);
+    }
+    return doc;
   }
   async choose() {
     if (!window.showDirectoryPicker)
@@ -360,7 +400,9 @@ class Workspace {
     const bytes = await blob.arrayBuffer();
     if (new Uint8Array(bytes)[0] !== 80) {
       if (blob.size > 8 * 1024 * 1024) throw Error("JSON exceeds 8 MB.");
-      return this.normalize(JSON.parse(new TextDecoder().decode(bytes)));
+      return this.linkImageComponents(
+        this.normalize(JSON.parse(new TextDecoder().decode(bytes))),
+      );
     }
     const entries = await readZip(bytes),
       manifest = jsonEntry(entries, "manifest.json");
@@ -435,7 +477,7 @@ class Workspace {
     }
     doc = this.normalize(doc);
     for (const resource of staged) await this.add(resource);
-    return doc;
+    return this.linkImageComponents(doc);
   }
   async read(path) {
     const entry = this.documents.get(path);
@@ -450,7 +492,11 @@ class Workspace {
         revision = await cacheKey(await file.arrayBuffer());
       return { path, document, revision };
     }
-    return { path, document: copy(entry.document), revision: entry.revision };
+    return {
+      path,
+      document: await this.linkImageComponents(copy(entry.document)),
+      revision: entry.revision,
+    };
   }
   async save({ path, document, revision = "" }) {
     safePath(path);
@@ -631,23 +677,38 @@ class Workspace {
             type: mime(p.fileName || "image.png"),
           }),
           size = await dimensions(blob),
-          guid = await cacheKey(await blob.arrayBuffer()),
+          contentKey = await imageContentKey(blob),
+          match = await this.matchingImage(contentKey),
+          baseGuid = await cacheKey("image:" + contentKey),
+          guid =
+            match?.guid ||
+            (resources.has(baseGuid)
+              ? await cacheKey(baseGuid + ":" + crypto.randomUUID())
+              : baseGuid),
           path =
             (p.psdImportFolder || "Images") +
             "/" +
             cleanName(p.fileName?.replace(/\.[^.]+$/, "")) +
             (blob.type === "image/jpeg" ? ".jpg" : ".png"),
-          resource = await this.add({
-            guid,
-            name: p.fileName || "Image",
-            path,
-            type: "image",
-            blob,
-            ...size,
-            bounds: p.fusionBounds,
-          });
+          resource =
+            match ||
+            (await this.add({
+              guid,
+              contentKey,
+              name: p.fileName || "Image",
+              path,
+              type: "image",
+              blob,
+              ...size,
+              bounds: p.fusionBounds,
+            }));
         return {
-          image: { guid, localId: "", name: resource.name, path },
+          image: {
+            guid,
+            localId: "",
+            name: resource.name,
+            path: resource.path,
+          },
           ...size,
         };
       }
@@ -657,7 +718,14 @@ class Workspace {
         const blob = cachedBlob(p.dataBase64),
           size = await dimensions(blob),
           revision = await cacheKey(await blob.arrayBuffer());
-        await this.add({ ...old, blob, ...size, revision, slice: null });
+        await this.add({
+          ...old,
+          blob,
+          ...size,
+          revision,
+          contentKey: await imageContentKey(blob),
+          slice: null,
+        });
         for (const [key] of await records("fusion:" + this.id + ":"))
           await record(key, null);
         return {
@@ -689,7 +757,6 @@ class Workspace {
             .filter(
               (r) =>
                 r.type === "image" &&
-                (!p.folder || r.path.startsWith(p.folder + "/")) &&
                 (!p.search ||
                   r.name.toLowerCase().includes(p.search.toLowerCase())),
             )
@@ -700,14 +767,18 @@ class Workspace {
             })),
           limit: 4000,
         };
-      case "ui-choose-assets-folder": {
-        const folder = prompt(
-          "Workspace image folder (Images or Imported)",
-          p.folder || "Images",
-        );
-        if (!folder) return { cancelled: true };
-        safePath(folder);
-        return { folder };
+      case "ui-choose-assets-folder": // Older standalone adapters.
+      case "ui-choose-images": {
+        const files = await pickImageFiles();
+        if (!files.length) return { cancelled: true };
+        const workspaceID = this.id;
+        for (const file of files) {
+          const dataBase64 = await blobBase64(file);
+          if (this.id !== workspaceID)
+            throw Error("Workspace changed. Add the images again.");
+          await this.api("ui-image", { fileName: file.name, dataBase64 });
+        }
+        return { cancelled: false, folder: "", imported: files.length };
       }
       case "ui-resolve-image": {
         const r = [...resources.values()].find((r) => r.path === p.path);
@@ -725,7 +796,10 @@ class Workspace {
       case "ui-psd-fonts":
         return this.config();
       case "ui-psd-complete":
-        return { document: this.normalize(p.document), config: this.config() };
+        return {
+          document: await this.linkImageComponents(this.normalize(p.document)),
+          config: this.config(),
+        };
       case "ui-styled-text-preview":
         return renderText(p.layer, this.config(), resourceURL);
       case "ui-text-style-save": {
