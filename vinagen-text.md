@@ -6,6 +6,33 @@ UI text with gradients, stroke, outline and extrusion. Choose Dynamic for changi
 
 Open `Samples/Text Effects/ILoveYouTextShowcase.asset` to try supplied styles. [Demos](demos.md) walks through practice; [Text settings](settings.md#text-settings) shows Font Studio and bake options.
 
+## What the component can do
+
+| Area | Features |
+| --- | --- |
+| Text and layout | Font, size, bold/italic, alignment, wrapping, overflow, auto size (min/max), kerning, spacing, margins and curved text (−360° to 360°). Works with Layout Groups through preferred size. |
+| Rich text | Ordinary formatting tags: `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>`… |
+| Face color | Single, Horizontal, Vertical and Four Corners gradients; 2–8 color and alpha keys; Blend or Fixed. |
+| Effects | Inner Outline, Stroke, Outer Outline (0–64 px) and 3D Extrusion (−128 to 128 px). |
+| Opacity | 0–1, fading text and effects together; multiplied by CanvasGroup. |
+| Shared styles | Styles are ScriptableObjects; one edit updates every label using it, including at runtime. |
+| Output | Canvas (masks, raycasts, CanvasGroup) or Mesh Renderer for scene text. |
+| Editing | UI Designer, Inspector or code (`text`, `color`, `opacity`, `style`…). |
+
+The runtime does not depend on the TextMesh Pro assembly; TMP is used only in the Editor to create or convert fonts.
+
+## Limitations
+
+- **Static font atlas:** characters missing from the atlas do not render. Built-in sets are Latin, Latin + Vietnamese or Custom. Not suited to user input in arbitrary languages (CJK, emoji…).
+- **Rich text:** tags that reference named resources are not supported: `<font>`, `<material>`, `<sprite>`, `<style>`.
+- **Not a full TMP replacement:** it offers a UI label component API only. TMP fonts must be converted to VinaGen fonts first.
+- **Static Baked:** baking runs in the Editor only. At runtime, text and style edits on a baked label are ignored; call `SwitchToDynamic()` first. Labels larger than 1024 px use their own texture instead of the shared atlas.
+- **Opacity below 1:** costs one draw call per label; the temporary render is capped at 2048 px per side and larger labels are downscaled. Masks apply to the final result.
+- **Effects cost more:** Stroke, Outline and Extrusion draw extra silhouettes (about three times the vertices) and render slower than plain text. Use them for short UI labels, not body copy.
+- **Dynamic vs TMP:** slower for text changes, first activation, Layout Groups and auto size; see [Benchmark](vinagen-text.md?id=benchmark-200-labels).
+- **Draw calls:** masks, fallback fonts and Canvas ordering can still split batches; one draw call per scene is not guaranteed.
+- Changing **Text type** in UI Designer requires importing into the Canvas again.
+
 ## Create a label
 
 Use **GameObject → VNT → VinaGenText**, or choose **Typography → Text type → VinaGenText** in UI Designer.
@@ -43,7 +70,7 @@ Static Baked stores all text effects in one image. It draws one quad per label, 
 
 For a whole hierarchy, select its root and use **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** returns a label to Dynamic.
 
-**Texel Scale** controls image sharpness: 1 at reference resolution, 2 for high-DPI or enlarged text, with higher texture memory. This version has the legacy `Assets/VinaGen Text Bakes/` default; for toolkit/sample output, set Output Folder to `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` before baking.
+**Texel Scale** controls image sharpness: 1 at reference resolution, 2 for high-DPI or enlarged text, with higher texture memory. Baked images are saved to `Assets/VinaGen Text Bakes/`; change **Output Folder** in Text Settings to save elsewhere.
 
 ## Built-in optimizations
 
@@ -90,18 +117,6 @@ UGUI and TMP use plain text as a reference. **Plain** is VinaGenText with a face
 <tr><th scope="row">Vertices</th><td>9,964</td><td>10,764</td><td>9,964</td><td>29,884</td><td>804</td></tr>
 <tr><th scope="row">Draw calls (idle)</th><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
 </tbody></table></div>
-
-Compared with the previous version on the same player:
-
-| 200 labels | Before | Now |
-| --- | ---: | ---: |
-| First activation, Styled | 12.56 ms | 10.49 ms (−17%) |
-| Re-activation, Styled | 4.55 ms | 1.32 ms (−71%) |
-| Curved text, change color, Styled | 15.47 ms, 26 MB/frame | 3.79 ms, ~0 allocation |
-| Curved text, change angle, Styled | 20.23 ms | 12.06 ms |
-| Edit a shared style's face color, Styled | 5.64 ms | 1.47 ms |
-| Edit a shared style's gradient stop | 3.84 ms | 0.53 ms |
-| Mesh Batch, `Refresh()` every label each frame | 0.28 ms | 0.20 ms |
 
 Static Baked remains the cheapest choice for fixed text. VinaGenText Dynamic is faster than TMP for color changes and re-activation, but slower for text changes, first activation, layout groups and autosize; the effects differ, so TMP is only a reference. Styled labels cost more to render while idle (three times the vertices plus effect shaders). The first label in a new process also pays about **29 + 59 ms** of one-time font and shader initialization.
 

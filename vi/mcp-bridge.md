@@ -40,6 +40,8 @@ Ví dụ gửi tới `POST /call`:
 
 | Công việc | Action |
 | --- | --- |
+| Flow graph | `create_block_diagram`, `fix_block_diagram`, `import_mock_flow_graph` |
+| Design graph | `create_white_frame`, `update_white_frame`, `check_white_frame`, `patch_design_content_graph` |
 | Tài liệu UI | `list_ui_documents`, `create_ui_document`, `read_ui_document`, `save_ui_document` |
 | Particle | `plan_particle_system`, `create_particle_system`, `review_particle_system` |
 | Texture | `list_particle_textures`, `inspect_particle_texture`, `audit_particle_textures` |

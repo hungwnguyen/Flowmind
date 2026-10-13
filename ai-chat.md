@@ -9,6 +9,16 @@ Use Agent Chat to ask questions and create content with your own AI provider.
 3. Choose a model available to your account.
 4. Open **Tools → VinaGen AI Toolkit → Chat**.
 
+### Get an API key
+
+| Provider | Where to get a key | Environment variable |
+| --- | --- | --- |
+| Gemini | [Google AI Studio → API keys](https://aistudio.google.com/app/apikey) | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
+| OpenAI | [OpenAI Platform → API keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` |
+| Poe | [Poe → API key](https://poe.com/api_key) | `POE_API_KEY` |
+
+Sign in, create a key and paste it into that provider's **API Keys** section. The **Get API Key** button in Settings also opens the provider's page. OpenAI bills by usage and needs credit on the account before API calls work.
+
 ![Agent Chat window](images/agent-chat.png)
 
 Chat keeps sessions, history and attachments. Replies follow your latest message's language. Specify the output language when creating screen copy or graph labels.

@@ -40,6 +40,8 @@ Example request to `POST /call`:
 
 | Task | Actions |
 | --- | --- |
+| Flow graph | `create_block_diagram`, `fix_block_diagram`, `import_mock_flow_graph` |
+| Design graph | `create_white_frame`, `update_white_frame`, `check_white_frame`, `patch_design_content_graph` |
 | UI documents | `list_ui_documents`, `create_ui_document`, `read_ui_document`, `save_ui_document` |
 | Particles | `plan_particle_system`, `create_particle_system`, `review_particle_system` |
 | Textures | `list_particle_textures`, `inspect_particle_texture`, `audit_particle_textures` |

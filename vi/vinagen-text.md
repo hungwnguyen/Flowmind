@@ -6,6 +6,33 @@ Chữ UI có gradient, stroke, viền và độ nổi. Dùng Dynamic cho nội d
 
 Mở `Samples/Text Effects/ILoveYouTextShowcase.asset` để thử các style có sẵn. [Demo](demos.md) hướng dẫn thực hành; [Cài đặt text](settings.md#cài-đặt-text) có ảnh Font Studio và bake.
 
+## Component làm được gì
+
+| Nhóm | Chức năng |
+| --- | --- |
+| Chữ và bố cục | Font, cỡ chữ, đậm/nghiêng, căn lề, xuống dòng, overflow, auto size (min/max), kerning, khoảng cách, margin, chữ cong (−360° đến 360°). Hỗ trợ Layout Group qua kích thước preferred. |
+| Rich text | Thẻ định dạng thông thường: `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>`... |
+| Màu mặt chữ | Gradient Single, Horizontal, Vertical, Four Corners; 2–8 key màu và alpha; chế độ Blend hoặc Fixed. |
+| Hiệu ứng | Inner Outline, Stroke, Outer Outline (0–64 px) và 3D Extrusion (−128 đến 128 px). |
+| Opacity | 0–1, làm mờ cả chữ và hiệu ứng cùng lúc; nhân thêm với CanvasGroup. |
+| Style dùng chung | Style là ScriptableObject; sửa một lần cập nhật mọi label dùng nó, kể cả lúc chạy. |
+| Hiển thị | Canvas (mask, raycast, CanvasGroup) hoặc Mesh Renderer cho chữ trong scene. |
+| Chỉnh sửa | Trong UI Designer, Inspector hoặc code (`text`, `color`, `opacity`, `style`...). |
+
+Runtime không phụ thuộc assembly TextMesh Pro; TMP chỉ dùng trong Editor để tạo/chuyển font.
+
+## Giới hạn
+
+- **Font atlas tĩnh:** ký tự chưa có trong atlas sẽ không hiển thị. Bộ ký tự có sẵn là Latin, Latin + tiếng Việt hoặc Custom. Không phù hợp cho chữ người dùng nhập bằng ngôn ngữ bất kỳ (CJK, emoji…).
+- **Rich text:** không hỗ trợ thẻ trỏ tới tài nguyên có tên: `<font>`, `<material>`, `<sprite>`, `<style>`.
+- **Không thay thế toàn bộ TMP:** chỉ có API của một component label UI. Font TMP phải chuyển sang font VinaGen trước khi dùng.
+- **Static Baked:** chỉ bake được trong Editor. Lúc chạy, sửa chữ hoặc style của label đã bake bị bỏ qua; gọi `SwitchToDynamic()` trước. Label lớn hơn 1024 px không vào atlas chung mà dùng texture riêng.
+- **Opacity dưới 1:** mỗi label tốn một draw call; ảnh render tạm tối đa 2048 px mỗi chiều, lớn hơn sẽ bị thu nhỏ. Mask áp lên kết quả cuối.
+- **Hiệu ứng tốn chi phí:** Stroke, Outline và Extrusion vẽ thêm nhiều lớp viền (khoảng gấp ba số đỉnh), tốn render hơn chữ trơn. Dùng cho label UI ngắn, không dùng cho đoạn văn dài.
+- **Dynamic so với TMP:** chậm hơn khi đổi chữ, kích hoạt lần đầu, Layout Group và auto size; xem [Benchmark](vinagen-text.md?id=benchmark-200-label).
+- **Draw call:** mask, font fallback và thứ tự Canvas vẫn có thể tách batch; không đảm bảo một draw call cho cả scene.
+- Đổi **Text type** trong UI Designer cần import lại vào Canvas.
+
 ## Tạo label
 
 Chọn **GameObject → VNT → VinaGenText**, hoặc **Typography → Text type → VinaGenText** trong UI Designer.
@@ -43,7 +70,7 @@ Static Baked gộp chữ và hiệu ứng thành một ảnh, vẽ một quad ch
 
 Muốn bake cả nhóm, chọn object gốc rồi dùng **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** đưa label về Dynamic.
 
-**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Phiên bản này có mặc định legacy `Assets/VinaGen Text Bakes/`; với đầu ra toolkit/sample, đổi Output Folder sang `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` trước khi bake.
+**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Ảnh bake lưu tại `Assets/VinaGen Text Bakes/`; đổi **Output Folder** trong Text Settings nếu muốn lưu chỗ khác.
 
 ## Các tối ưu đã có
 
@@ -90,18 +117,6 @@ UGUI và TMP dùng chữ trơn để đối chứng. **Plain** là VinaGenText v
 <tr><th scope="row">Số đỉnh</th><td>9.964</td><td>10.764</td><td>9.964</td><td>29.884</td><td>804</td></tr>
 <tr><th scope="row">Draw call (đứng yên)</th><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
 </tbody></table></div>
-
-So với phiên bản trước, trên cùng player:
-
-| 200 label | Trước | Hiện tại |
-| --- | ---: | ---: |
-| Kích hoạt lần đầu, Styled | 12.56 ms | 10.49 ms (−17%) |
-| Kích hoạt lại, Styled | 4.55 ms | 1.32 ms (−71%) |
-| Chữ cong, đổi màu, Styled | 15.47 ms, 26 MB/frame | 3.79 ms, ~0 cấp phát |
-| Chữ cong, đổi góc, Styled | 20.23 ms | 12.06 ms |
-| Sửa màu mặt chữ của style dùng chung, Styled | 5.64 ms | 1.47 ms |
-| Sửa stop gradient của style dùng chung | 3.84 ms | 0.53 ms |
-| Mesh Batch, `Refresh()` mọi label mỗi frame | 0.28 ms | 0.20 ms |
 
 Static Baked vẫn là lựa chọn rẻ nhất cho chữ cố định. VinaGenText Dynamic nhanh hơn TMP khi đổi màu và kích hoạt lại, nhưng chậm hơn khi đổi chữ, kích hoạt lần đầu, layout group và autosize; hiệu ứng hai bên khác nhau nên TMP chỉ để đối chứng. Label Styled tốn render hơn khi đứng yên (gấp ba số đỉnh, cộng shader hiệu ứng). Label đầu tiên trong một process mới còn tốn khoảng **29 + 59 ms** khởi tạo font và shader một lần.
 

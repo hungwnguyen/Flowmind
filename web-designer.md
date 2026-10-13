@@ -23,6 +23,17 @@ If direct folder access is unavailable, use **Import folder** for read-only inpu
 
 Only the chosen folder is accessible. Paths must be relative, without `..`, drive letters or backslashes. An existing file is overwritten only when its revision matches the opened file. If another application changed it, reload or save with a new filename. Drafts are separated by workspace; browser storage is recovery, so export before clearing site data or changing browser/device.
 
+## Work online across devices
+
+Web Designer has no file server, but you can keep your workspace in the cloud with a folder-sync app:
+
+1. Install the desktop app for [Google Drive](https://www.google.com/drive/download/), [OneDrive](https://www.microsoft.com/microsoft-365/onedrive/download) or [Dropbox](https://www.dropbox.com/install) and sign in.
+2. Create your design folder inside the synced folder, for example `Google Drive/My Drive/Designs`.
+3. In Web Designer, choose **Choose folder** and pick that folder. Each **Save** writes the `.svgpro`, and the app uploads it automatically.
+4. On another computer, install the same app, wait for sync to finish, then choose the same folder.
+
+**Note:** Set the folder to **always keep on this device** (available offline) so the browser can read it. Don't edit the same file on two devices at once; if another device changed it, the editor blocks the overwrite — reload or save with a new name.
+
 ## Design tools
 
 Click **Demo** for a small editable screen made from shapes and text. Select its
@@ -51,9 +62,7 @@ Shortcuts: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse, *
 3. Objects with identical decoded pixels and dimensions automatically share one image component, even when filenames or PNG metadata differ. The inspector shows the instance count. Changing the source, tint, gradient or image mode updates every instance in the current document. Position, size, rotation and hierarchy remain independent. Removing an image or deleting an object affects that instance only.
 4. **Undo/Redo** restores a shared edit across all instances in one step. Save `.svgpro` to keep the shared references. Replacing a component with an image already used elsewhere joins their instances. Text glyph paint is excluded.
 
-![Assets: browse image files from any folder](images/web-designer/assets.png)
-
-![Image inspector: shared component and independent instance geometry](images/web-designer/components.png)
+![Assets gallery and the shared image component in the inspector](images/web-designer/assets.png)
 
 ## PSD import and export
 
@@ -86,7 +95,7 @@ Existing VinaGen SVGPRO v2 packages can be opened. Unity-only references, native
 
 ![Theme, snap and comment author settings](images/web-designer/settings.png)
 
-**Settings** uses the same popup and Light / Dark / System preview cards as the local editor. Adjust the light canvas background, enhanced contrast, grid snapping and local comment display name. Changes apply immediately and are saved in this browser. Change canvas dimensions in the Screen inspector; import fonts through Import. There is no cloud collaboration, automatic upload or cross-device synchronization.
+**Settings** uses the same popup and Light / Dark / System preview cards as the local editor. Adjust the light canvas background, enhanced contrast, grid snapping and local comment display name. Changes apply immediately and are saved in this browser. Change canvas dimensions in the Screen inspector; import fonts through Import. There is no built-in cloud collaboration or sync; to work across devices, see [Work online across devices](web-designer.md?id=work-online-across-devices).
 
 ## Relation to the Unity toolkit
 

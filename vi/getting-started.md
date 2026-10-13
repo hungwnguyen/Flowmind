@@ -8,17 +8,9 @@ Import toolkit, mở workspace rồi thử một mẫu có sẵn.
 2. Đợi Unity biên dịch xong.
 3. Mở **Tools → VinaGen AI Toolkit → Open**.
 
-Trang sản phẩm: [VinaGen AI Toolkit trên Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). Bản đầu tiên hiện chưa được phát hành.
+**Yêu cầu:** Unity 2022.3 LTS trở lên (đã kiểm thử từ 2022.3.62f2), có **Unity UI (uGUI)** và **TextMesh Pro**. Import **TMP Essentials** khi được nhắc.
 
-Dùng **Unity 2022.3 LTS trở lên** trên **Windows, macOS hoặc Linux**, đáp ứng [yêu cầu hệ thống của phiên bản Unity đã chọn](https://docs.unity3d.com/2022.3/Documentation/Manual/system-requirements.html). Công cụ UI và text cần **Unity UI (uGUI)** và **TextMesh Pro** chính thức (package riêng trong Unity 2022); import **TMP Essentials** khi được nhắc. Các editor cục bộ chạy bên trong Unity. Preview particle dùng player dựng sẵn và hiệu ứng portable `.vgfx.json`.
-
-Phiên bản thấp nhất đã kiểm thử là **2022.3.62f2** trên Windows; xem phạm vi xác minh bên dưới. Web Designer **Miễn phí vĩnh viễn · Free forever**, dùng trực tiếp trên trình duyệt mà không cần cài Unity.
-
-## Phạm vi kiểm thử tương thích
-
-Ngày **13/10/2026**, hai dự án riêng trên Windows dùng **Unity 2022.3.62f2** (uGUI 1.0.0 + TMP 3.0.9 chính thức) và **6000.3.22f1** (uGUI 2.0.0 chính thức, có TMP) đã compile cả sáu assembly toolkit, không có lỗi C#. Cả hai qua kiểm tra import text Canvas giữ chế độ không xuống dòng, Undo/Redo, tạo mesh text đậm giữ dữ liệu SDF/bold trong UV, và xuất/đọc lại particle JSON portable. Chỉ import thư mục toolkit và dependency Unity chính thức, không cài developer tools hay plugin bên thứ ba.
-
-Package Manager trên máy này lỗi trước khi import toolkit. Vì vậy lần kiểm tra dùng host offline (`-noUpm`), source package chính thức và TMP Essentials, với define nhận diện package do host cung cấp. Chưa xác minh quy trình cài UPM thông thường, chạy trên macOS/Linux, các bản vá Unity khác hoặc build game hoàn chỉnh.
+Web Designer **Miễn phí vĩnh viễn**, chạy trên trình duyệt, không cần Unity.
 
 <div class="vg-pair">
   <figure><img src="images/toolkit-home.png" alt="Tab Home của toolkit"><figcaption>Home: mở workspace.</figcaption></figure>
@@ -29,9 +21,7 @@ Package Manager trên máy này lỗi trước khi import toolkit. Vì vậy l�
 
 [Xem cập nhật trên Unity Asset Store](https://assetstore.unity.com/packages/slug/375862)
 
-Toolkit đọc [thông tin phiên bản](https://vinagen.onrender.com/updateAvailable.json) ở chế độ nền khi Unity sẵn sàng, tối đa một lần mỗi sáu giờ. Mỗi phiên bản mới đã phát hành chỉ được thông báo một lần cho mỗi tài khoản hệ điều hành, kể cả khi mở lại Unity hoặc chuyển project. Khi mất mạng, kiểm tra tự động không hiện lỗi; các công cụ chỉnh sửa vẫn hoạt động.
-
-Trong Unity, **Open Package Manager** chọn asset này để bạn tải/import bản cập nhật. **View on Asset Store** mở trang sản phẩm trên trình duyệt. Các nút chỉ mở nơi cập nhật, không tự cài đặt. Bạn cũng có thể vào **Tools → VinaGen AI Toolkit → Help → Check for Updates** hoặc **Update in Package Manager**.
+Toolkit tự kiểm tra phiên bản mới ở chế độ nền. Để cập nhật, vào **Tools → VinaGen AI Toolkit → Help → Check for Updates** hoặc tải bản mới trong Package Manager.
 
 ## Năm tab của toolkit
 

@@ -2,32 +2,39 @@
 
 Toolkit được cài tại `Assets/VinaGen AI Toolkit/`.
 
-## Thư mục chính
+## Thư mục trong toolkit
 
 Các đường dẫn dưới đây tính từ thư mục toolkit.
 
 | Thư mục | Nội dung |
 | --- | --- |
 | `Editor/`, `Runtime/` | Công cụ Editor, component runtime và shader. |
-| `Content/UI/Documents/`, `Content/UI/Images/` | Mặc định lưu tài liệu UI và ảnh tải lên. |
-| `Content/Particles/ToonLibrary/` | Prefab particle đi kèm và asset liên quan. |
-| `Images/Particles/` | Texture particle và manifest. |
-| `VinaTextPro/Fonts/` | Font mà sample và settings đi kèm sử dụng. |
+| `MockGraph/` | Kiểu dữ liệu Flow và Design graph. |
+| `StandaloneText/` | VinaGenText: component, shader, font và editor. |
+| `VinaTextPro/Fonts/` | Font dùng cho sample và settings đi kèm. |
+| `DesignCaptureStudio/` | Công cụ chụp màn hình và scene trong Editor. |
+| `Content/UI/` | Prefab UI đi kèm. Tài liệu UI mới lưu ở `Documents/`, ảnh tải lên ở `Images/`. |
+| `Content/Particles/` | Thư viện particle đi kèm (`ToonLibrary/`), material, mesh và recipe. |
+| `Images/Particles/` | Texture particle theo bộ và manifest. |
 | `Samples/Graphs/` | Mẫu Flow và Design graph. |
 | `Samples/Example VinaGenUIDocument/` | Mẫu UI hoàn chỉnh. |
-| `Samples/GeneratedParticles/` | Prefab particle được tạo, material, texture và ảnh chụp. |
-| `Settings/`, `Skills/`, `Documentation/` | Cài đặt, hướng dẫn trợ lý và tài liệu tham khảo. |
-| `Samples/GeneratedParticles/Preview/Scenes/` | Scene preview particle của dự án. |
+| `Samples/Particles/`, `Samples/Text Effects/` | Mẫu particle và hiệu ứng chữ. |
+| `Samples/GeneratedParticles/` | Particle do trợ lý tạo: prefab, `Materials/`, `Textures/`, scene preview trong `Preview/Scenes/`. |
+| `Settings/` | Asset cài đặt, gồm AI Provider Settings. |
+| `Skills/`, `Documentation/` | Hướng dẫn cho trợ lý AI và tài liệu tham khảo. |
 
 ## Đầu ra ngoài toolkit
 
-- **Style, gradient và font chữ:** `Assets/VinaGenGenerated/Text Styles/`, `Text Gradients/` và `Fonts/VinaGenText/`. Style và gradient còn sót trong thư mục `VinaTextPro` cũ của toolkit được tự động chuyển về đây, giữ nguyên tham chiếu. Xem [VinaGenText](vinagen-text.md#tạo-label).
-- **PSD riêng:** `Assets/VinaGen PSD Imports/<tên PSD>/` giữ tài liệu, ảnh, style, font và bake của từng lần import.
-- **Chữ đã bake:** bản này có mặc định legacy `Assets/VinaGen Text Bakes/`. Với đầu ra toolkit/sample, đặt `Assets/VinaGen AI Toolkit/Samples/Text Effects/Bakes/` tại Text Settings.
-- **Cache và job:** nằm trong `Library/`; báo cáo review có thể dùng `Builds/`.
+| Đường dẫn | Nội dung |
+| --- | --- |
+| `Assets/VinaGenGraphs/BlockDiagrams/`, `WhiteFrames/` | Flow và Design graph tạo qua MCP khi không chỉ định đường dẫn. |
+| `Assets/VinaGenGenerated/` | `Text Styles/`, `Text Gradients/`, `Fonts/VinaGenText/` của VinaGenText và `Code/` do chat tạo. Xem [VinaGenText](vinagen-text.md?id=tạo-label). |
+| `Assets/VinaGen PSD Imports/<tên PSD>/` | Tài liệu, ảnh, style, font và bake của từng lần import PSD. |
+| `Assets/VinaGen Text Bakes/` | Chữ đã bake; đổi nơi lưu trong Text Settings. |
+| `Library/VinaGen/` | Cache, bản khôi phục UI và bundle preview particle (`ParticlePreview/<Pipeline>/fx/`). |
 
-Mặc định UI và particle trong bảng khớp code hiện tại. Chọn nơi lưu graph khi tạo; dự án cũ có thể còn đường dẫn output legacy.
+Player WebGL dùng cho [Web Particle](webgl-preview.md) được tải một lần cho mỗi máy, lưu tại `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer` trên Windows, hoặc `~/.local/share/VinaGen/AIToolkit/WebGLPlayer` trên macOS/Linux.
 
-Player WebGL được tải một lần, dùng chung trên máy tại `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Bundle dự án nằm trong `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Builder dành cho tác giả nằm riêng tại `Assets/VinaGen Developer Tools/`; người dùng dùng player dựng sẵn. Xem [Web Particle](webgl-preview.md).
+Dự án cũ có thể còn file ở đường dẫn đời trước, ví dụ `VinaTextPro/Text Styles/` (tự chuyển sang `Assets/VinaGenGenerated/`) hoặc `Assets/VinaGenParticles/` (vẫn đọc được).
 
 [Tiếp theo: Hỏi đáp & Xử lý sự cố](faq.md)

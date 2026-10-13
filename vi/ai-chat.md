@@ -9,6 +9,16 @@ Dùng Agent Chat để hỏi và tạo nội dung bằng tài khoản AI của b
 3. Chọn model mà tài khoản của bạn dùng được.
 4. Mở **Tools → VinaGen AI Toolkit → Chat**.
 
+### Lấy API key
+
+| Nhà cung cấp | Trang lấy key | Biến môi trường |
+| --- | --- | --- |
+| Gemini | [Google AI Studio → API keys](https://aistudio.google.com/app/apikey) | `GEMINI_API_KEY` hoặc `GOOGLE_API_KEY` |
+| OpenAI | [OpenAI Platform → API keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` |
+| Poe | [Poe → API key](https://poe.com/api_key) | `POE_API_KEY` |
+
+Đăng nhập, tạo key rồi dán vào nhóm **API Keys** của nhà cung cấp đó. Nút **Get API Key** trong Settings cũng mở trang của nhà cung cấp. OpenAI tính phí theo lượng dùng, cần nạp tiền trước khi gọi API.
+
 ![Cửa sổ Agent Chat](../images/agent-chat.png)
 
 Chat lưu phiên làm việc, lịch sử và tệp đính kèm. Trợ lý trả lời theo ngôn ngữ tin nhắn mới nhất. Khi tạo nội dung màn hình hoặc nhãn graph, hãy nói rõ ngôn ngữ đầu ra.

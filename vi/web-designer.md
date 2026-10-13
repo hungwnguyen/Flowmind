@@ -23,6 +23,17 @@ Nếu không hỗ trợ ghi trực tiếp, dùng **Import folder** để đọc 
 
 Editor chỉ truy cập thư mục được chọn. Đường dẫn phải tương đối, không có `..`, ký tự ổ đĩa hay dấu gạch chéo ngược. File có sẵn chỉ được ghi đè khi phiên bản khớp với file đã mở. Nếu ứng dụng khác sửa file, hãy tải lại hoặc lưu tên mới. Mỗi workspace có bản nháp riêng; hãy xuất file trước khi xóa dữ liệu website hoặc đổi trình duyệt/thiết bị.
 
+## Làm việc online trên nhiều máy
+
+Web Designer không có server lưu file, nhưng bạn có thể đưa workspace lên đám mây bằng app đồng bộ thư mục:
+
+1. Cài app desktop của [Google Drive](https://www.google.com/drive/download/), [OneDrive](https://www.microsoft.com/microsoft-365/onedrive/download) hoặc [Dropbox](https://www.dropbox.com/install) và đăng nhập.
+2. Tạo thư mục thiết kế bên trong thư mục đồng bộ, ví dụ `Google Drive/My Drive/Designs`.
+3. Trong Web Designer, bấm **Choose folder** và chọn thư mục đó. Mỗi lần **Save**, file `.svgpro` được app tự tải lên đám mây.
+4. Trên máy khác, cài cùng app, đợi đồng bộ xong rồi chọn lại thư mục đó.
+
+**Lưu ý:** Đặt thư mục ở chế độ **luôn giữ trên thiết bị** (offline) để trình duyệt đọc được file. Không mở cùng một file trên hai máy cùng lúc; nếu file đã đổi ở máy khác, editor sẽ chặn ghi đè, hãy tải lại hoặc lưu tên mới.
+
 ## Các chức năng thiết kế
 
 Bấm **Demo** để mở màn hình nhỏ gồm shape và text chỉnh sửa được. Chọn tiêu đề,
@@ -51,9 +62,7 @@ Phím tắt: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse,
 3. Object có ảnh cùng kích thước và pixel tự dùng chung một component, kể cả khác tên file hoặc metadata PNG. Inspector hiện số instance. Thay nguồn ảnh, tint, gradient hay image mode cập nhật mọi instance trong tài liệu. Vị trí, kích thước, góc xoay và cây cha/con vẫn riêng. Remove image hoặc xóa object chỉ tác động instance đó.
 4. **Undo/Redo** khôi phục thay đổi chung trong một bước. Lưu `.svgpro` để giữ liên kết. Thay bằng ảnh đã dùng ở object khác sẽ gộp các instance. Ảnh glyph của text không tham gia component ảnh.
 
-![Assets: chọn file ảnh từ mọi thư mục](../images/web-designer/assets.png)
-
-![Inspector: component ảnh dùng chung](../images/web-designer/components.png)
+![Assets và component ảnh dùng chung trong Inspector](../images/web-designer/assets.png)
 
 ## Nhập và xuất PSD
 
@@ -86,7 +95,7 @@ Có thể mở gói VinaGen SVGPRO v2 hiện có. Tham chiếu riêng của Unit
 
 ![Theme, snap và tên người bình luận](../images/web-designer/settings.png)
 
-**Settings** dùng chung khung popup và ba thẻ xem trước Light / Dark / System với bản local. Chỉnh màu canvas sáng, tăng tương phản, snap và tên hiển thị khi bình luận cục bộ. Thay đổi áp dụng ngay và lưu trong trình duyệt này. Chỉnh kích thước canvas trong Screen inspector; thêm font bằng Import. Chưa có cộng tác cloud, tự tải tài nguyên lên server hay đồng bộ giữa thiết bị.
+**Settings** dùng chung khung popup và ba thẻ xem trước Light / Dark / System với bản local. Chỉnh màu canvas sáng, tăng tương phản, snap và tên hiển thị khi bình luận cục bộ. Thay đổi áp dụng ngay và lưu trong trình duyệt này. Chỉnh kích thước canvas trong Screen inspector; thêm font bằng Import. Chưa có cộng tác cloud hay đồng bộ tích hợp; để dùng trên nhiều máy, xem [Làm việc online trên nhiều máy](web-designer.md?id=làm-việc-online-trên-nhiều-máy).
 
 ## Quan hệ với toolkit Unity
 

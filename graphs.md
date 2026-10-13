@@ -22,6 +22,8 @@ Choose **Tools → VinaGen AI Toolkit → Editors → Open Flow Editor**. Both g
 
 A flow graph is a plan; connect its logic to your game code. FlowCanvas and NodeCanvas are optional integrations.
 
+**Via MCP:** ask `/vina create a login flow with success and failure branches`. The assistant reads the graph with `GET /graph?graphType=mock_flow_graph&graphPath=<asset>` and sends changes through `POST /import` (`import_mock_flow_graph`). `create_block_diagram` / `fix_block_diagram` create or edit a graph from a `prompt` through the toolkit's AI Chat.
+
 ## Sketch screens
 
 1. Open or create a Design graph.
@@ -32,6 +34,8 @@ A flow graph is a plan; connect its logic to your game code. FlowCanvas and Node
 ![Design graph with screen frames and callouts](images/design-editor.png)
 
 Use [UI Designer](ui-designer.md) when you want editable UI layers that import into a Unity Canvas.
+
+**Via MCP:** ask `/vina sketch a shop screen with an item list and a purchase popup`. Read with `GET /graph?graphType=design_content_graph&whiteFramePath=<asset>` and make scoped edits with `patch_design_content_graph`. `create_white_frame` creates a new Design graph; `update_white_frame` edits it from a `prompt`.
 
 ## Write screen specifications
 
@@ -52,8 +56,14 @@ Select a Design frame, then click **Document editor → Edit document & label im
 
 For example, label **1** identifies the event card; item **1** in the document explains its unlock condition and what happens when tapped. Close the editor and use **Save asset** to save the graph.
 
+**Via MCP:** `check_white_frame` reviews frames and generates descriptions from their images and callouts. To let the assistant read the frame selected in the editor, use `get_web_editor_context`, then `get_node_context`.
+
 ## Export
 
 Export **Markdown** for written specs, **JSON** for structured data, or **SVG / PNG** for a visual overview.
+
+**Via MCP:** `GET /graph` returns the graph data as JSON; `get_document_metadata` returns a compact node outline. Markdown, SVG and PNG export are available in the editor only.
+
+Actions that take a `prompt` (`fix_block_diagram`, `update_white_frame`, `check_white_frame`) run through [AI Chat](ai-chat.md) and need an AI provider. Direct reads and patches do not. See also [MCP Bridge](mcp-bridge.md).
 
 [Next: Web Flow Editor](web-editor.md)
