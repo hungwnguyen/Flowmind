@@ -24,15 +24,14 @@
   * [Folder Layout](folder-layout.md)
   * [FAQ & Troubleshooting](faq.md)
 
----
-<div style="margin-top: 20px; padding: 0 15px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
 
-  <div class="download-container" style="margin: 0; width: 100%; max-width: 180px;">
-    <a href="https://discord.gg/Ds3fXXAFYU" target="_blank" class="download-btn"
-       style="width: 100%; display: flex; align-items: center; justify-content: center; height: 36px; padding: 0; font-size: 13px; background-color: transparent !important; color: #f8fafc !important; border: 1.5px solid #5865F2 !important; border-radius: 20px !important; box-sizing: border-box; text-decoration: none; transition: all 0.3s ease;">
-      <i class="fa-brands fa-discord" style="font-size: 15px; margin-right: 10px; color: #f8fafc;"></i>
-      <span style="font-weight: 500; letter-spacing: 0.3px;">Join Discord</span>
-    </a>
-  </div>
-
-</div>
+<nav class="vg-sidebar-actions" aria-label="Store and community">
+  <a class="vg-sidebar-action vg-sidebar-store" href="https://assetstore.unity.com/packages/slug/375862" target="_blank" rel="noopener noreferrer">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18v12H3Z M2 9l2-6h16l2 6 M9 21v-7h6v7 M2 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/></svg>
+    <span>Unity Asset Store</span>
+  </a>
+  <a class="vg-sidebar-action" href="https://discord.gg/Ds3fXXAFYU" target="_blank" rel="noopener noreferrer">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M20.3 4.5a19 19 0 0 0-4.6-1.4l-.6 1.2a17 17 0 0 0-6.2 0l-.6-1.2a19 19 0 0 0-4.6 1.4C.8 8.8 0 13 0.5 17.1a19 19 0 0 0 5.7 2.9l1.2-2a12 12 0 0 1-1.9-.9l.5-.4a14 14 0 0 0 12 0l.5.4a12 12 0 0 1-1.9.9l1.2 2a19 19 0 0 0 5.7-2.9c.6-4.7-.9-8.9-3.2-12.6ZM8 14.7c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Zm8 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z"/></svg>
+    <span>Join Discord</span>
+  </a>
+</nav>

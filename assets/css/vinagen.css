@@ -70,6 +70,18 @@
 .sidebar-nav .vg-nav-toc .app-sub-sidebar li { margin: 0; }
 .sidebar-nav .vg-nav-toc .app-sub-sidebar a { margin: 0; padding: 5px 8px; border: 0; }
 .sidebar-nav hr { margin: 18px 0 12px; border-color: var(--vg-line); }
+/* Keep community links visible while only the documentation menu scrolls. */
+.sidebar { overflow: hidden; }
+.sidebar > .search,
+.sidebar > .app-name { flex: 0 0 auto; }
+.sidebar .sidebar-nav { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; overflow: hidden; }
+.sidebar-nav > ul { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.sidebar .vg-sidebar-actions { flex: 0 0 auto; display: grid; gap: 10px; margin: 0; padding: 16px 0 20px; border-top: 1px solid var(--vg-line); background: var(--sidebar-background); }
+.vg-sidebar-actions .vg-sidebar-action { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 38px; padding: 8px 10px; border: 1px solid #5865f2; border-radius: 20px; color: var(--vg-ink); font-size: 13px; font-weight: 500; text-decoration: none; }
+.vg-sidebar-actions .vg-sidebar-store { border-color: var(--vg-amber); }
+.vg-sidebar-actions .vg-sidebar-action:hover { background: var(--vg-panel); color: #fff; text-decoration: none; }
+.vg-sidebar-actions .vg-sidebar-action:focus-visible { outline: 2px solid var(--vg-violet); outline-offset: 3px; }
+.vg-sidebar-action svg { flex: 0 0 18px; width: 18px; height: 18px; }
 .markdown-section table { border-radius: 10px; overflow: hidden; font-size: 14px; }
 .markdown-section table th, .markdown-section table td { border-color: var(--vg-line); }
 .markdown-section .vg-benchmark {
