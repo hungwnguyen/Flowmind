@@ -114,23 +114,37 @@ class Workspace {
     for (const resource of resources.values())
       URL.revokeObjectURL(resource.url);
     resources.clear();
+    const [documents, styles, storedResources] = await Promise.all([
+      records("doc:" + this.id + ":"),
+      record("styles:" + this.id),
+      records("resource:" + this.id + ":"),
+    ]);
     this.documents = new Map(
-      (await records("doc:" + this.id + ":")).map(([key, value]) => [
+      documents.map(([key, value]) => [
         key.slice(("doc:" + this.id + ":").length),
         value,
       ]),
     );
-    this.styles = (await record("styles:" + this.id)) || [];
-    for (const [, resource] of await records("resource:" + this.id + ":"))
-      this.install(resource);
-    for (const [guid, name, file] of [
-      ["f10a11", "Inter", "Inter.ttf"],
-      ["f10a12", "Montserrat Black", "Montserrat-Black.ttf"],
-    ]) {
-      const font = await fetch(new URL("./fonts/" + file, import.meta.url));
-      if (!font.ok) throw Error("Bundled font could not load: " + name);
-      this.install({guid, name, path: "Fonts/" + file, type: "font", blob: await font.blob(), builtIn: true});
-    }
+    this.styles = styles || [];
+    for (const [, resource] of storedResources) this.install(resource);
+    const builtInFonts = await Promise.all(
+      [
+        ["f10a11", "Inter", "Inter.ttf"],
+        ["f10a12", "Montserrat Black", "Montserrat-Black.ttf"],
+      ].map(async ([guid, name, file]) => {
+        const font = await fetch(new URL("./fonts/" + file, import.meta.url));
+        if (!font.ok) throw Error("Bundled font could not load: " + name);
+        return {
+          guid,
+          name,
+          path: "Fonts/" + file,
+          type: "font",
+          blob: await font.blob(),
+          builtIn: true,
+        };
+      }),
+    );
+    for (const font of builtInFonts) this.install(font);
   }
   install(resource) {
     const previous = resources.get(resource.guid);

@@ -59,6 +59,10 @@ Shortcuts: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse, *
 
 Supported: PSD v1, 8-bit RGB, raw/RLE/ZIP channels. Source import no longer has the 500 MB or 8192 px / 16 MP caps. PSD v1 itself permits up to 30,000 px per side. Large layers and masks stream by scanline into 1024 px image tiles, with one decoder worker; available memory and local storage still determine practical capacity. The document has a separate 1000-object limit, including tile objects. Very large text rasters retain source metadata but become raster tile groups rather than editable labels. Export and capture limits remain separate from source import limits. A 575 MB, 15,360 x 12,288 px PSD (188.7 MP) was verified in Chromium. PSB, CMYK and 16/32-bit PSD are unsupported. Groups, stacking, visibility, opacity and supported blend modes are retained. Smart objects and unsupported vector/effect details become raster artwork or carry review notes.
 
+Rotated text is restored in local glyph coordinates so its Photoshop rotation applies once. Rounded bevels use a Euclidean edge field to avoid corner streaks. To repair artwork imported by an earlier version, keep a saved copy, then reimport the PSD with **Replace**; reloading alone preserves the old artwork.
+
+Reload restores workspace records directly without scanning decoded PSD paint caches. Assets and bundled fonts restore in parallel; the draft and its shared image references remain intact.
+
 PSD stores font names, not font files. Import the matching font separately. Missing fonts show a fallback warning; the cached Photoshop glyph image is preserved until you edit text, font, size or style. Browser text rendering, mixed formatting, masks and complex Photoshop effects may differ; inspect the result before sharing. Rich-text tags currently produce plain text in the styled browser renderer; use separate text layers for different formatting.
 
 ![Export options in the standalone editor](images/web-designer/export.png)

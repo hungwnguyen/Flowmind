@@ -1,16 +1,28 @@
+import {psdTextGeometry,psdLocalPaintBounds} from './psd-text-geometry.mjs';
 import {cacheKey,fileCacheKey,projectCache,blobBase64,cachedBlob} from './ui-project-cache.mjs';
 import {readPSD,readPSDFile,preparePSDImport,decodeChannel,solidPixelColor} from './psd-reader.mjs';
 import {paintPSDText} from './psd-text.mjs';
 import {paintPSDRaster} from './psd-raster-effects.mjs';
 import {streamPSDTiles,PSD_TILE_SIZE} from './psd-stream.mjs';
-let document,index=0,byId,source,tiled,channelCache,total=0,fileKey,paintCacheKey;
-async function postPaint(layer,png,rasterBounds){
+let document,index=0,byId,source,tiled,channelCache,total=0,fileKey,paintCacheKey,pendingPaints=[];
+async function paintHash(png){
+  if(!globalThis.crypto?.subtle)return undefined;
+  const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',await png.arrayBuffer()));return Array.from(hash,b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function emitPaint(layer,png,paintKey,rasterBounds,blendPaints=[],cacheHit=false){
+  if(total+blendPaints.length>1000)throw Error('PSD baked effect layers exceed the 1000-object import limit.');
+  if(blendPaints.length){total+=blendPaints.length;postMessage({type:'progress',stage:'layer',name:layer.name,index,total});}
+  const output=blendPaints.map((effect,i)=>({type:'layer',layer:{id:layer.id+'-effect-'+i,parentId:layer.parentId,name:layer.name+' · '+effect.name,role:'image',x:layer.x-(rasterBounds?.x||0)+effect.bounds.x,y:layer.y-(rasterBounds?.y||0)+effect.bounds.y,width:effect.width,height:effect.height,opacity:layer.opacity,visible:layer.visible,blendMode:effect.blendMode,fill:'#ffffffff'},png:effect.png,paintKey:effect.paintKey,cacheHit}));
+  output.push({type:'layer',layer,png,paintKey,cacheHit});
+  pendingPaints.push(...output.slice(1));postMessage(output[0]);
+}
+async function postPaint(layer,png,rasterBounds,blendPaints=[],textBounds){
   // Hash off the UI thread. Identical encoded artwork shares one upload even
   // when different branches reach it at the same time.
-  let paintKey;
-  if(globalThis.crypto?.subtle){const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',await png.arrayBuffer()));paintKey=Array.from(hash,b=>b.toString(16).padStart(2,'0')).join('');}
-  if(paintCacheKey&&!tiled)await projectCache('psd-paint',paintCacheKey,{layer,png:await blobBase64(png),paintKey,rasterBounds,warnings:document.warnings});
-  postMessage({type:'layer',layer,png,paintKey});
+  const paintKey=await paintHash(png);
+  for(const effect of blendPaints)effect.paintKey=await paintHash(effect.png);
+  if(paintCacheKey&&!tiled){const cachedEffects=await Promise.all(blendPaints.map(async effect=>({...effect,png:await blobBase64(effect.png)})));await projectCache('psd-paint',paintCacheKey,{layer,png:await blobBase64(png),paintKey,rasterBounds,textBounds,blendPaints:cachedEffects,warnings:[...new Set(document.warnings)]});}
+  await emitPaint(layer,png,paintKey,rasterBounds,blendPaints);
 }
 async function nextTile(){
   if(tiled.stream){
@@ -27,6 +39,7 @@ async function nextTile(){
 }
 const channelBytes=async channel=>channel.bytes||(channelCache&&channel.offset>=channelCache.offset&&channel.offset+channel.length<=channelCache.offset+channelCache.bytes.length?channelCache.bytes.subarray(channel.offset-channelCache.offset,channel.offset-channelCache.offset+channel.length):new Uint8Array(await source.slice(channel.offset,channel.offset+channel.length).arrayBuffer()));
 async function next() {
+  if(pendingPaints.length){postMessage(pendingPaints.shift());return;}
   if(tiled){await nextTile();return;}
   while(index<document.records.length) {
     const record=document.records[index++];
@@ -35,7 +48,7 @@ async function next() {
     const group=record.section===1||record.section===2;
     const parent=byId.get(record.parentId);
     const layer={id:record.id,parentId:record.parentId,name:record.name,role:group?'empty':'image',x:record.x-(parent?.x||0),y:record.y-(parent?.y||0),width:record.width,height:record.height,opacity:record.opacity,visible:record.visible,blendMode:record.blendMode,fill:record.fill||(group?'#ffffff00':'#ffffff'),...(record.screen?{canvasRoot:true,anchor:'stretch'}:{}),...(record.artboard?{clip:true}:{}),...record.text};
-    const textBox=layer.psdTextBox,textPaint=layer.psdTextPaint;delete layer.psdTextBox;delete layer.psdTextPaint;
+    let textBox=layer.psdTextBox,textPaint=layer.psdTextPaint;delete layer.psdTextBox;delete layer.psdTextPaint;
     if(textBox)Object.assign(layer,{x:textBox.x-(parent?.x||0),y:textBox.y-(parent?.y||0),width:textBox.width,height:textBox.height,rotation:textBox.rotation,fill:'#ffffff00'});
     // Preserve Photoshop's cached paint alongside editable TySh data.
     if(record.text&&!record.channels.some(c=>c.id===0)){postMessage({type:'layer',layer});return;}
@@ -46,12 +59,12 @@ async function next() {
       const count=Math.ceil(record.width/PSD_TILE_SIZE)*Math.ceil(record.height/PSD_TILE_SIZE);total+=count;
       if(total>1000)throw Error('PSD raster tiles exceed the 1000-object document limit. Split the PSD into fewer screens.');
       if(record.text){layer.psdSourceText=record.text;for(const key of ['textRenderer','textStyle','textMeshPro','standaloneText','tmpFont','tmpSettings','tmpMaterial','fontGuid','sourceTextPaint','psdFontName'])delete layer[key];document.warnings.push('Large text raster preserves Photoshop pixels and its source metadata; its tile group is not an editable text label.');}
-      if(record.textEffects||record.textGroupEffects?.length)document.warnings.push('Large text effects use cached Photoshop pixels; review their appearance.');
+      if(record.textEffects||record.textGroupEffects?.length||record.rasterEffects)document.warnings.push('Oversized tiled Photoshop layer effects are not baked; review their appearance.');
       Object.assign(layer,{role:'empty',x:record.x-(parent?.x||0),y:record.y-(parent?.y||0),width:record.width,height:record.height,rotation:0,text:'',fill:'#ffffff00'});
       tiled={layer,stream:streamPSDTiles(source,record,progress=>postMessage({type:'progress',stage:'raster',name:record.name,index,total,...progress}))};
       postMessage({type:'progress',stage:'layer',name:record.name,index,total});postMessage({type:'layer',layer});return;
     }
-    paintCacheKey=fileKey?await cacheKey('psd-paint-v5:'+fileKey+':'+record.id):null;
+    paintCacheKey=fileKey?await cacheKey('psd-paint-v8:'+fileKey+':'+record.id):null;
     const cached=paintCacheKey?await projectCache('psd-paint',paintCacheKey):null;
     if(cached?.png&&cached.layer?.id===layer.id){try{
       const png=cachedBlob(cached.png);document.warnings.push(...(cached.warnings||[]));
@@ -59,7 +72,9 @@ async function next() {
       // In particular, authored artboards change the root's origin and clipping.
       const current={...cached.layer,...layer};if(cached.layer.sourceTextPaint)current.sourceTextPaint=cached.layer.sourceTextPaint;
       if(cached.rasterBounds)Object.assign(current,{x:layer.x+cached.rasterBounds.x,y:layer.y+cached.rasterBounds.y,width:cached.rasterBounds.width,height:cached.rasterBounds.height});
-      postMessage({type:'layer',layer:current,png,paintKey:cached.paintKey,cacheHit:true});return;
+      if(cached.textBounds)Object.assign(current,{x:layer.x+cached.textBounds.x,y:layer.y+cached.textBounds.y,width:cached.textBounds.width,height:cached.textBounds.height});
+      const blendPaints=(cached.blendPaints||[]).map(effect=>({...effect,png:cachedBlob(effect.png)}));
+      await emitPaint(current,png,cached.paintKey,cached.rasterBounds,blendPaints,true);return;
     }catch{}}
     // Read adjacent compressed channels together, bounded to one layer. Avoid
     // four or five Blob/OS reads per raster without loading the whole PSD.
@@ -80,10 +95,23 @@ async function next() {
     const solid=solidPixelColor(pixels);
     if(solid&&!record.text&&!record.rasterEffects){layer.fill=solid;postMessage({type:'layer',layer});return;}
     const effects=record.textEffects||record.rasterEffects;
-    let effectPaint=effects?(record.text?paintPSDText:paintPSDRaster)(pixels,record.width,record.height,effects,document.warnings,{x:record.x,y:record.y,width:document.sourceWidth||document.width,height:document.sourceHeight||document.height}):null;
+    let effectPaint=effects?(record.text?paintPSDText:paintPSDRaster)(pixels,record.width,record.height,effects,document.warnings,{x:record.x,y:record.y,width:document.sourceWidth||document.width,height:document.sourceHeight||document.height,separateBlendEffects:!record.text}):null;
     if(record.rasterEffects?.masterFXSwitch!==false&&['ChFX','patternFill'].some(key=>record.rasterEffects?.[key]?.enab))document.warnings.push('Raster layer '+record.name+' has Photoshop satin or pattern effects that need visual review.');
     for(const effects of record.textGroupEffects||[]){if(effectPaint?.useRenderer)break;const next=paintPSDText(effectPaint?.pixels||pixels,effectPaint?.width||record.width,effectPaint?.height||record.height,effects,document.warnings);if(next){if(!next.useRenderer){next.bounds.x+=effectPaint?.bounds.x||0;next.bounds.y+=effectPaint?.bounds.y||0;}effectPaint=next;}}
     if(effectPaint?.useRenderer){if(record.text){postMessage({type:'layer',layer});return;}effectPaint=null;}
+    let textBounds;
+    if(record.text&&!textBox){
+      textBox=psdTextGeometry(pixels,record,layer.rotation);
+      if(textBox){
+        textBounds={x:textBox.x-record.x,y:textBox.y-record.y,width:textBox.width,height:textBox.height};
+        textPaint=psdLocalPaintBounds(record,textBox,effectPaint?.bounds||{x:0,y:0,width:record.width,height:record.height});
+        Object.assign(layer,{x:textBox.x-(parent?.x||0),y:textBox.y-(parent?.y||0),width:textBox.width,height:textBox.height});
+        if(textPaint.width>8192||textPaint.height>8192||textPaint.width*textPaint.height>16777216){
+          document.warnings.push('Rotated Photoshop text paint exceeds the bitmap limit; using editable text.');
+          postMessage({type:'layer',layer});return;
+        }
+      }
+    }
     const rasterBounds=!record.text&&effectPaint?.bounds;
     if(rasterBounds)Object.assign(layer,{x:layer.x+rasterBounds.x,y:layer.y+rasterBounds.y,width:rasterBounds.width,height:rasterBounds.height});
     let canvas=new OffscreenCanvas(effectPaint?.width||record.width,effectPaint?.height||record.height);canvas.getContext('2d').putImageData(new ImageData(effectPaint?.pixels||pixels,canvas.width,canvas.height),0,0);
@@ -97,9 +125,11 @@ async function next() {
     const png=await canvas.convertToBlob({type:'image/png'});
     if(record.text&&png.size>5*1024*1024){canvas.width=canvas.height=1;document.warnings.push('Large Photoshop text paint uses the editable text renderer.');postMessage({type:'layer',layer});return;}
     if(png.size>5*1024*1024){const count=Math.ceil(canvas.width/1024)*Math.ceil(canvas.height/1024);total+=count;if(total>1000){canvas.width=canvas.height=1;throw Error('PSD raster tiles exceed the 1000-object import limit.');}tiled={canvas,layer,x:0,y:0};postMessage({type:'progress',stage:'layer',name:record.name,index,total});postMessage({type:'layer',layer:{...layer,fill:'#ffffff00'}});return;}
-    canvas.width=canvas.height=1;if(textBox&&textPaint)layer.sourceTextPaint={bounds:textPaint};else if(record.text&&effectPaint)layer.sourceTextPaint={bounds:effectPaint.bounds};await postPaint(layer,png,rasterBounds);return;
+    const blendPaints=[];
+    for(const effect of effectPaint?.blendPaints||[]){const effectCanvas=new OffscreenCanvas(effect.width,effect.height);effectCanvas.getContext('2d').putImageData(new ImageData(effect.pixels,effect.width,effect.height),0,0);blendPaints.push({name:effect.name,blendMode:effect.blendMode,bounds:effect.bounds,width:effect.width,height:effect.height,png:await effectCanvas.convertToBlob({type:'image/png'})});effectCanvas.width=effectCanvas.height=1;}
+    canvas.width=canvas.height=1;if(textBox&&textPaint)layer.sourceTextPaint={bounds:textPaint};else if(record.text&&effectPaint)layer.sourceTextPaint={bounds:effectPaint.bounds};await postPaint(layer,png,rasterBounds,blendPaints,textBounds);return;
   }
-  postMessage({type:'done',warnings:document.warnings});document=null;byId=null;source=null;tiled=null;channelCache=null;
+  postMessage({type:'done',warnings:document.warnings});document=null;byId=null;source=null;tiled=null;channelCache=null;pendingPaints=[];
 }
 // Credits may arrive together; serialize each branch's decoder state (tiles,
 // channel cache and cursor), while independent branch workers run in parallel.

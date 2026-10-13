@@ -26,18 +26,18 @@ export async function record(key, value) {
 export async function records(prefix) {
   const db = await database();
   return new Promise((resolve, reject) => {
-    const request = db
-        .transaction("records")
-        .objectStore("records")
-        .openCursor(),
-      rows = [];
-    request.onsuccess = () => {
-      const cursor = request.result;
-      if (!cursor) return resolve(rows);
-      if (String(cursor.key).startsWith(prefix))
-        rows.push([cursor.key, cursor.value]);
-      cursor.continue();
-    };
-    request.onerror = () => reject(request.error);
+    // Restrict the query before cloning values. PSD paint caches can contain
+    // hundreds of MB and must never be scanned while restoring workspace data.
+    const tx = db.transaction("records"),
+      store = tx.objectStore("records");
+    const range = IDBKeyRange.bound(prefix, prefix + "\uffff");
+    // Bulk reads also avoid a separate browser/DB round trip for every asset.
+    const keys = store.getAllKeys(range),
+      values = store.getAll(range);
+    tx.oncomplete = () =>
+      resolve(keys.result.map((key, i) => [key, values.result[i]]));
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () =>
+      reject(tx.error || Error("Browser storage read aborted."));
   });
 }

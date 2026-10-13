@@ -260,6 +260,7 @@ export function paintPSDText(pixels,width,height,effects,warnings=[],context={})
   const alpha=new Uint8Array(w*h);for(let y=0;y<height;y++)for(let x=0;x<width;x++)alpha[(y+top)*w+x+left]=pixels[(y*width+x)*4+3];
   const out=new Uint8ClampedArray(w*h*4);
   if(shadow){const c=effectRGBA(shadow),shade=blurPSDAlpha(disk(alpha,w,h,shadowRadius),w,h,softSize);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=x-dx,sy=y-dy;if(sx>=0&&sy>=0&&sx<w&&sy<h)over(out,(y*w+x)*4,c,shade[sy*w+sx]/255);}}
+  if(context.shadowOnly)return {pixels:out,width:w,height:h,bounds:{x:left?-left:0,y:top?-top:0,width:w,height:h}};
   if(radius){const grown=disk(alpha,w,h,outside),c=effectRGBA(stroke);for(let i=0;i<alpha.length;i++)over(out,i*4,c,grown[i]/255);}
   const face=inside?disk(alpha,w,h,inside,true):alpha;
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){const p=(y*width+x)*4,i=((y+top)*w+x+left)*4,c=[pixels[p],pixels[p+1],pixels[p+2],1];if(fillColor)for(let k=0;k<3;k++)c[k]=c[k]*(1-fillColor[3])+fillColor[k]*fillColor[3];if(ramp){const g=ramp.at(x+.5,y+.5);for(let k=0;k<3;k++)c[k]=c[k]*(1-g[3])+g[k]*g[3];}over(out,i,c,face[i/4]/255);}

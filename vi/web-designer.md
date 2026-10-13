@@ -59,6 +59,10 @@ Phím tắt: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse,
 
 Hỗ trợ PSD v1, RGB 8-bit, channel raw/RLE/ZIP; không còn trần 500 MB hay 8192 px / 16 MP khi nhập canvas, layer và mask. Bản thân PSD v1 có giới hạn định dạng 30.000 px mỗi chiều. Layer lớn được giải mã theo hàng thành tile 1024 px, dùng một worker; khả năng thực tế phụ thuộc RAM và dung lượng lưu trữ. Tài liệu vẫn có giới hạn riêng 1000 object, tính cả tile. Ảnh chữ raster rất lớn giữ metadata nguồn nhưng trở thành nhóm tile, không phải label chỉnh sửa được. Giới hạn xuất/chụp là riêng. Đã kiểm thử PSD 575 MB, 15.360 x 12.288 px (188,7 MP) trong Chromium. Không hỗ trợ PSB, CMYK và PSD 16/32-bit. Giữ nhóm, thứ tự layer, hiện/ẩn, opacity và blend mode được hỗ trợ. Smart object và vector/effect phức tạp có thể thành ảnh raster hoặc có ghi chú cần kiểm tra.
 
+Chữ xoay được khôi phục về hệ tọa độ cục bộ để góc xoay Photoshop chỉ áp dụng một lần. Bevel góc bo dùng khoảng cách Euclid để tránh vệt ở góc. Với ảnh đã nhập bằng bản cũ, hãy lưu một bản sao rồi nhập lại PSD bằng **Replace**; reload vẫn giữ ảnh cũ.
+
+Reload khôi phục trực tiếp dữ liệu workspace, không quét cache giải mã PSD. Tài nguyên và font đóng gói được tải song song; bản nháp và liên kết ảnh dùng chung được giữ nguyên.
+
 PSD chỉ chứa tên font, không chứa file font. Hãy nhập riêng font phù hợp. Thiếu font sẽ có cảnh báo fallback; ảnh chữ gốc từ Photoshop được giữ đến khi bạn sửa nội dung, font, kích thước hoặc style. Render chữ, định dạng hỗn hợp, mask và effect Photoshop phức tạp có thể khác; kiểm tra trước khi chia sẻ. Rich-text tag hiện được chuyển thành chữ thường trong renderer styled text; dùng nhiều layer chữ nếu cần định dạng khác nhau.
 
 ![Các lựa chọn xuất file](../images/web-designer/export.png)

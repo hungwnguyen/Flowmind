@@ -1,3 +1,4 @@
+import {psdEdgeDistance} from './psd-distance.mjs';
 import {paintPSDText,blurPSDAlpha} from './psd-text.mjs';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const value=(v,f=0)=>Number.isFinite(v?.value)?v.value:Number.isFinite(v)?v:f;
@@ -23,12 +24,19 @@ export function paintPSDRaster(pixels,width,height,effects,warnings=[],context={
   if(!effects||effects.masterFXSwitch===false)return null;
   let paint=paintPSDText(pixels,width,height,effects,warnings,context);
   if(paint?.useRenderer)return paint;
+  const blendPaints=[];
   const glow=enabled(effects,'OrGl','outerGlowMulti')[0];
   if(glow){
-    const glowPaint=paintPSDText(pixels,width,height,{'Scl ':effects['Scl '],DrSh:{...glow,lagl:0,Dstn:0}},warnings,context);
-    if(glowPaint&&!glowPaint.useRenderer){paint=mergePaint(glowPaint,paint);warnings.push('Photoshop outer glow uses a bounded Gaussian and normal-composite approximation.');}
+    const glowPaint=paintPSDText(pixels,width,height,{'Scl ':effects['Scl '],DrSh:{...glow,lagl:0,Dstn:0}},warnings,{...context,shadowOnly:true});
+    if(glowPaint&&!glowPaint.useRenderer){
+      const blend=glow['Md  ']?.value||'normal',mode=({Mltp:'multiply',Scrn:'screen',Nrml:'normal'})[blend]||blend;
+      if(context.separateBlendEffects&&['multiply','screen','overlay','darken','lighten','colorDodge','colorBurn','hardLight','softLight','difference','exclusion'].includes(mode)){
+        blendPaints.push({...glowPaint,blendMode:mode.replace(/[A-Z]/g,c=>'-'+c.toLowerCase()),name:'Outer Glow'});
+      }else{paint=mergePaint(glowPaint,paint||{pixels,width,height,bounds:{x:0,y:0,width,height}});if(mode!=='normal')warnings.push('Isolated Photoshop outer glow uses a normal-composite approximation.');}
+    }
   }
   const bevel=enabled(effects,'ebbl','bevelEmbossMulti')[0],inner=[...enabled(effects,'IrSh','innerShadowMulti'),...enabled(effects,'IrGl','innerGlowMulti')];
+  if(blendPaints.length){paint||={pixels:pixels.slice(),width,height,bounds:{x:0,y:0,width,height}};paint.blendPaints=blendPaints;}
   if(!bevel&&!inner.length)return paint;
   if(width*height>4194304){warnings.push('Large raster inner lighting exceeds the processing limit.');return paint;}
   paint||={pixels:pixels.slice(),width,height,bounds:{x:0,y:0,width,height}};
@@ -43,17 +51,25 @@ export function paintPSDRaster(pixels,width,height,effects,warnings=[],context={
   if(bevel){
     if(bevel.bvlS?.value&&bevel.bvlS.value!=='InrB'){warnings.push('Photoshop outer bevel needs visual review.');return paint;}
     const size=clamp(value(bevel.blur)*scale,0,64);if(!size)return paint;
-    // Chamfer distance transform creates the raised face without a quadratic
-    // radius scan. Off-image pixels count as transparent at every boundary.
-    const distance=new Float32Array(alpha.length),diag=Math.SQRT2;
-    for(let y=0;y<height;y++)for(let x=0;x<width;x++){const i=y*width+x;if(alpha[i]<128){distance[i]=0;continue;}distance[i]=Math.min(x?distance[i-1]+1:1,y?distance[i-width]+1:1,x&&y?distance[i-width-1]+diag:1,y&&x+1<width?distance[i-width+1]+diag:size,size);}
-    for(let y=height-1;y>=0;y--)for(let x=width-1;x>=0;x--){const i=y*width+x;distance[i]=Math.min(distance[i],x+1<width?distance[i+1]+1:1,y+1<height?distance[i+width]+1:1,x+1<width&&y+1<height?distance[i+width+1]+diag:1,x&&y+1<height?distance[i+width-1]+diag:size);}
-    const field=blurPSDAlpha(distance,width,height,clamp(value(bevel.Sftn)*scale,0,32)),angle=value(bevel.lagl,120)*Math.PI/180,alt=value(bevel.Lald,30)*Math.PI/180,depth=clamp(value(bevel.srgR,100)/100,.01,10)*(bevel.bvlD?.value==='Out '?-1:1),light=[Math.cos(angle)*Math.cos(alt),-Math.sin(angle)*Math.cos(alt),Math.sin(alt)],highlight=color(bevel.hglC),shadow=color(bevel.sdwC);
+    // Euclidean edge distance avoids grid-direction facets at rounded corners.
+    const distance=psdEdgeDistance(alpha,width,height,size);
+    const field=bevel.bvlT?.value==='SfBL'?blurPSDAlpha(distance,width,height,.75):distance,soften=clamp(value(bevel.Sftn)*scale,0,32),angle=value(bevel.lagl,120)*Math.PI/180,alt=value(bevel.Lald,30)*Math.PI/180,depth=clamp(value(bevel.srgR,100)/100,.01,10)*(bevel.bvlD?.value==='Out '?-1:1),light=[Math.cos(angle)*Math.cos(alt),-Math.sin(angle)*Math.cos(alt),Math.sin(alt)],highlight=color(bevel.hglC),shadow=color(bevel.sdwC);
     const sample=(x,y)=>x<0||y<0||x>=width||y>=height?0:field[y*width+x];
+    const highlights=new Float32Array(alpha.length),shadows=new Float32Array(alpha.length);
     for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-      if(!alpha[y*width+x])continue;const nx=-(sample(x+1,y)-sample(x-1,y))*depth/2,ny=-(sample(x,y+1)-sample(x,y-1))*depth/2,length=Math.hypot(nx,ny,1),lit=(nx*light[0]+ny*light[1]+light[2])/length-light[2];
-      const strength=clamp(lit/(lit>0?Math.max(.01,1-light[2]):Math.max(.01,light[2])),-1,1),positive=strength>0;
-      tint(paint.pixels,offset(x,y),positive?highlight:shadow,Math.abs(strength)*clamp(value(positive?bevel.hglO:bevel.sdwO,100)/100,0,1),(positive?bevel.hglM:bevel.sdwM)?.value);
+      const i=y*width+x;if(!alpha[i])continue;const nx=-(sample(x+1,y)-sample(x-1,y))*depth/4,ny=-(sample(x,y+1)-sample(x,y-1))*depth/4,length=Math.hypot(nx,ny,1),lit=(nx*light[0]+ny*light[1]+light[2])/length-light[2];
+      const strength=clamp(lit/(lit>0?Math.max(.01,1-light[2]):Math.max(.01,light[2])),-1,1);
+      highlights[i]=Math.max(0,strength)*alpha[i];shadows[i]=Math.max(0,-strength)*alpha[i];
+    }
+    // Soften the light masks after shading. Blurring the height first creates
+    // a wide, saturated shelf at high depth instead of a soft bevel edge.
+    // Normalize by alpha coverage so translucent/outside pixels do not darken
+    // the silhouette or spread the bevel over the layer's external glow.
+    const high=blurPSDAlpha(highlights,width,height,soften),low=blurPSDAlpha(shadows,width,height,soften),coverage=blurPSDAlpha(alpha,width,height,soften);
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+      const i=y*width+x;if(!alpha[i]||!coverage[i])continue;const p=offset(x,y);
+      tint(paint.pixels,p,shadow,clamp(low[i]/coverage[i],0,1)*clamp(value(bevel.sdwO,100)/100,0,1),bevel.sdwM?.value);
+      tint(paint.pixels,p,highlight,clamp(high[i]/coverage[i],0,1)*clamp(value(bevel.hglO,100)/100,0,1),bevel.hglM?.value);
     }
     warnings.push('Photoshop bevel lighting uses a bounded approximation.');
   }
