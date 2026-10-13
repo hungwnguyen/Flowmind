@@ -32,12 +32,7 @@ const { chromium } = require(
     });
     const url = await link.evaluate((node) => node.href);
     assert.equal(url, base + "designer/");
-    assert.ok(
-      await page
-        .locator(".sidebar a")
-        .filter({ hasText: "Web Designer" })
-        .count(),
-    );
+    await page.locator(".sidebar a").filter({ hasText: "Web Designer" }).first().waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(
       await page.evaluate(
