@@ -36,3 +36,7 @@ bridge routes and verifies zero Unity/API requests.
 
 The standalone captures were refreshed with the shared local-editor SVG icons,
 48 px document toolbar and split tool menus on 13 October 2026.
+
+`web-designer/settings.png` now shows the shared local-editor popup, three theme
+preview cards, light canvas background, enhanced contrast, snapping and comment
+display name. Light/dark preferences and narrow-screen scrolling were checked.

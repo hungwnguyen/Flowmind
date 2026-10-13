@@ -69,7 +69,7 @@ Existing VinaGen SVGPRO v2 packages can be opened. Unity-only references, native
 
 ![Theme, snap and comment author settings](images/web-designer/settings.png)
 
-**Settings** controls the theme, grid snapping and local comment display name. Change canvas dimensions in the Screen inspector; import fonts through Import. These preferences are saved in this browser. There is no cloud collaboration, automatic upload or cross-device synchronization.
+**Settings** uses the same popup and Light / Dark / System preview cards as the local editor. Adjust the light canvas background, enhanced contrast, grid snapping and local comment display name. Changes apply immediately and are saved in this browser. Change canvas dimensions in the Screen inspector; import fonts through Import. There is no cloud collaboration, automatic upload or cross-device synchronization.
 
 ## Relation to the Unity toolkit
 

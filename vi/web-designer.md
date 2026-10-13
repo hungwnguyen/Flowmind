@@ -69,7 +69,7 @@ Có thể mở gói VinaGen SVGPRO v2 hiện có. Tham chiếu riêng của Unit
 
 ![Theme, snap và tên người bình luận](../images/web-designer/settings.png)
 
-**Settings** chỉnh theme, snap và tên hiển thị khi bình luận cục bộ. Chỉnh kích thước canvas trong Screen inspector; thêm font bằng Import. Cài đặt lưu trong trình duyệt này. Chưa có cộng tác cloud, tự tải tài nguyên lên server hay đồng bộ giữa thiết bị.
+**Settings** dùng chung khung popup và ba thẻ xem trước Light / Dark / System với bản local. Chỉnh màu canvas sáng, tăng tương phản, snap và tên hiển thị khi bình luận cục bộ. Thay đổi áp dụng ngay và lưu trong trình duyệt này. Chỉnh kích thước canvas trong Screen inspector; thêm font bằng Import. Chưa có cộng tác cloud, tự tải tài nguyên lên server hay đồng bộ giữa thiết bị.
 
 ## Quan hệ với toolkit Unity
 

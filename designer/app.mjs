@@ -3,6 +3,7 @@ import { openUIStudio, getUIStudio } from "./ui-studio.mjs";
 import { newDocument } from "./ui-model.mjs";
 import { demoDocument } from "./demo.mjs";
 import { icon } from "./icons.mjs";
+import { showDesignerSettings } from "./settings.mjs";
 for (const button of document.querySelectorAll(".topbar [data-icon]")) {
   button.prepend(icon(button.dataset.icon));
 }
@@ -134,53 +135,9 @@ document.getElementById("folder-input").onchange = async (event) => {
     event.target.value = "";
   }
 };
-window.addEventListener("vinagen-open-settings", () => {
-  const dialog = document.getElementById("web-settings"),
-    preferences = window.VinaGenUserPreferences.get();
-  dialog.replaceChildren();
-  const heading = document.createElement("h2");
-  heading.textContent = "Web Designer settings";
-  dialog.append(heading);
-  const field = (text, node) => {
-    const label = document.createElement("label");
-    label.append(text, node);
-    dialog.append(label);
-  };
-  const theme = document.createElement("select");
-  for (const value of ["system", "dark", "light"])
-    theme.add(new Option(value, value));
-  theme.value = preferences.theme;
-  theme.onchange = () =>
-    window.VinaGenUserPreferences.update({ theme: theme.value });
-  field("Theme", theme);
-  const grid = document.createElement("input");
-  grid.type = "checkbox";
-  grid.checked = preferences.grid;
-  grid.onchange = () =>
-    window.VinaGenUserPreferences.update({ grid: grid.checked });
-  field("Snap to grid", grid);
-  const author = document.createElement("input");
-  author.value = workspace.config().commentDisplayName;
-  author.onchange = () => {
-    localStorage.setItem("web-designer-author", author.value);
-    getUIStudio().config.commentDisplayName = author.value;
-  };
-  field("Comment display name", author);
-  const p = document.createElement("p");
-  p.textContent =
-    "Files stay on this device. Choose folder enables direct saves in supported Chromium browsers on HTTPS or localhost. Import folder is read-only; Save downloads a copy. Import fonts through Import. Clear browser storage only after exporting your drafts.";
-  dialog.append(p);
-  const help = document.createElement("a");
-  help.href = "../#/vi/web-designer";
-  help.target = "_blank";
-  help.textContent = "Read the guide";
-  dialog.append(help);
-  const close = document.createElement("button");
-  close.textContent = "Done";
-  close.onclick = () => dialog.close();
-  dialog.append(close);
-  dialog.showModal();
-});
+window.addEventListener("vinagen-open-settings", () =>
+  showDesignerSettings(getUIStudio()),
+);
 try {
   await workspace.init();
   state();
