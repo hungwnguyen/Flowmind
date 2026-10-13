@@ -24,3 +24,12 @@ Existing `flow-editor.png`, `design-editor.png`, `design-document-editor.png`, `
 - Ran the actual Built-in WebGL effect and explicit seeded camera captures. Returned frames include timing and pipeline metadata; an API success flag is not a substitute for looking at the images.
 - No paid AI-provider request, WebGL player build, new Canvas/UI Toolkit import or new text bake was needed for these documentation captures.
 - This update does not validate a clean toolkit-only Unity import, URP/HDRP parity, Photoshop round trips or target-device performance. UI Toolkit behavior is documented from the current implementation/skill contract; the Canvas screenshots are not proof of UI Toolkit parity.
+# Standalone Web Designer — 13 October 2026
+
+`web-designer/workspace.png`, `settings.png`, `export.png`, `inspector.png`,
+`folder.png` and `mobile.png`
+are real Chromium screenshots captured on this device by
+`tests/designer-smoke.cjs`. The sample is created from plain shapes/text,
+exported to PSD and imported back in the actual browser editor. No private
+PSD artwork or generated mock UI is included. The integration test blocks
+bridge routes and verifies zero Unity/API requests.

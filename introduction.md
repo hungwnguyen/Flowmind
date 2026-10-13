@@ -16,6 +16,7 @@
 ## Choose a tool
 
 <div class="vg-workspaces">
+  <a class="vg-ws vg-ws--ui" href="#/web-designer"><strong>Web Designer</strong><span>Design online, choose a local workspace and import/export PSD without Unity.</span></a>
   <a class="vg-ws vg-ws--chat" href="#/ai-chat"><strong>Agent Chat</strong><span>Think, ask and create with your own AI provider.</span></a>
   <a class="vg-ws vg-ws--flow" href="#/graphs"><strong>Flow Editor</strong><span>Plan game flows and sketch screen wireframes.</span></a>
   <a class="vg-ws vg-ws--ui" href="#/ui-designer"><strong>UI Designer</strong><span>UI layers, PSD/images and Canvas import.</span></a>

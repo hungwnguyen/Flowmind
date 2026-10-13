@@ -177,3 +177,8 @@ Mở **Settings → UI Designer Settings** để chỉnh thư mục, font, Butto
 Trợ lý có thể dùng `render_ui_web_demo` và `capture_ui_web_screens` để chụp riêng từng màn hình/popup. Các thao tác review không lưu tài liệu hay scene.
 
 [Tiếp theo: VinaGenText](vinagen-text.md)
+## Bản web độc lập
+
+Để thiết kế trực tiếp trên website mà không cần Unity, mở
+[tab Web Designer](web-designer.md). Bản này có nhập/xuất PSD và chọn thư mục
+workspace cục bộ. Phần tích hợp Unity bên dưới thuộc toolkit trong Editor.

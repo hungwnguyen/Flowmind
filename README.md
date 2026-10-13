@@ -6,6 +6,26 @@ VinaGen AI Toolkit is a Unity Editor extension that combines flow/design graphs,
 
 ## Pages
 
+The **Web Designer** tab opens the independent static application in `designer/`.
+It retains browser design tools and PSD/SVGPRO/PNG/SVG workflows, and replaces
+Unity storage with a user-selected local directory or browser recovery + downloads.
+See [guide](web-designer.md) and [Vietnamese guide](vi/web-designer.md).
+Deploy the folder alongside this site on its existing HTTPS host; no runtime build,
+backend, npm installation or Unity process is required. `.mjs` must use a JavaScript
+MIME type. All URLs are relative and support hosting under a project subpath.
+
+Existing production host: `https://vinagen.onrender.com/` (Render).
+The standalone route is `/designer/`, and its Vietnamese guide is `/#/vi/web-designer`.
+Publish the same repository root and branch as the existing docs; no new service is needed.
+
+Author checks: `node --test tests/designer-zip.test.mjs`, then
+`node tests/designer-smoke.cjs` against the local site on port 3000.
+Run `node tests/designer-docs.cjs` for both language routes and guide assets.
+The browser test accepts `PLAYWRIGHT_MODULE` and `DESIGNER_URL`; Node/Playwright
+are development dependencies only. Optional `tests/designer-fixture.cjs <path>`
+verifies an existing private package without copying it into this repository.
+Browser snapshots live in `images/web-designer/`.
+
 | File | Topic |
 | --- | --- |
 | `introduction.md` | Overview, requirements and entry points (home page) |
@@ -14,6 +34,7 @@ VinaGen AI Toolkit is a Unity Editor extension that combines flow/design graphs,
 | `graphs.md` | Flow and design content graphs |
 | `web-editor.md` | Browser Flow Editor |
 | `ui-designer.md` | UI Designer, PSD import and Canvas import |
+| `web-designer.md` | Standalone hosted designer, local folder workspace and PSD/SVGPRO workflows |
 | `vinagen-text.md` | VinaGenText fonts, styles and gradients |
 | `particles.md` | Texture library, authoring tools and effect construction |
 | `webgl-preview.md` | AI Agent particle testing loop, timed evidence and browser controls |

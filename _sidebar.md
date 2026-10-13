@@ -4,6 +4,7 @@
   * [Demos & Practice](demos.md)
 
 * **Design & Logic**
+  * [Web Designer — Design Online](web-designer.md)
   * [Flow & Design Graphs](graphs.md)
   * [Web Flow Editor](web-editor.md)
   * [UI Designer](ui-designer.md)

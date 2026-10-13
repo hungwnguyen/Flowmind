@@ -177,3 +177,8 @@ Open **Settings → UI Designer Settings** for folders, fonts, Button prefab, de
 Assistants can use `render_ui_web_demo` and `capture_ui_web_screens` to capture each screen/popup separately. Review actions do not save documents or scenes.
 
 [Next: VinaGenText](vinagen-text.md)
+## Standalone web version
+
+To design directly on the hosted website without Unity, use the new
+[Web Designer tab](web-designer.md). It provides PSD import/export and a local
+folder workspace. The Unity integration described below belongs to the toolkit.

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Design UI locally in your browser. Import and export Photoshop files, SVGPRO, SVG and PNG without Unity."
+    />
+    <title>Flowmind · Web Designer</title>
+    <link rel="icon" href="robot.png" />
+    <link rel="stylesheet" href="editor.css" />
+    <link rel="stylesheet" href="standalone.css" />
+    <script src="preferences.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../#/vi/web-designer" title="Documentation"
+        ><img src="robot.png" alt="" />Flowmind</a
+      ><button id="workspace" title="Choose a folder on this device">
+        Choose folder</button
+      ><button id="reconnect" hidden>Reconnect folder</button
+      ><button id="import-folder">Import folder</button
+      ><span id="workspace-state" role="status">Loading local workspace…</span>
+      <div id="document-tabs" role="tablist"></div>
+      <button id="demo">Demo</button
+      ><button id="open-files" title="Documents">Files</button
+      ><button id="reload" title="Reload saved document">Reload</button
+      ><button id="save">Save</button><button id="import">Import</button
+      ><button id="export">Export</button><button id="settings">Settings</button
+      ><span id="sync-state" role="status"></span
+      ><button id="toggle-layers" class="mobile-toggle" aria-label="Layers">
+        Layers</button
+      ><button
+        id="toggle-inspector"
+        class="mobile-toggle"
+        aria-label="Inspector"
+      >
+        Inspector
+      </button>
+    </header>
+    <main><p id="startup" role="status">Starting Web Designer…</p></main>
+    <input id="folder-input" type="file" webkitdirectory multiple hidden />
+    <dialog id="web-settings"></dialog>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>

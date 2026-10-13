@@ -16,6 +16,7 @@
 ## Chọn công cụ
 
 <div class="vg-workspaces">
+  <a class="vg-ws vg-ws--ui" href="#/vi/web-designer"><strong>Web Designer</strong><span>Thiết kế online, chọn workspace cục bộ và nhập/xuất PSD không cần Unity.</span></a>
   <a class="vg-ws vg-ws--chat" href="#/vi/ai-chat"><strong>Agent Chat</strong><span>Suy nghĩ, hỏi và sáng tạo với nhà cung cấp AI của bạn.</span></a>
   <a class="vg-ws vg-ws--flow" href="#/vi/graphs"><strong>Flow Editor</strong><span>Lên luồng game và phác thảo wireframe màn hình.</span></a>
   <a class="vg-ws vg-ws--ui" href="#/vi/ui-designer"><strong>UI Designer</strong><span>Layer UI, PSD/ảnh và import Canvas.</span></a>
