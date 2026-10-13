@@ -6,6 +6,11 @@
   <img class="vg-hero-robot" src="images/robot.png" alt="VinaGen robot">
 </div>
 
+<nav class="vg-quick-links" aria-label="Try it in your browser">
+  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Open Web Designer <span aria-hidden="true">↗</span></strong><small>Design UI, import/export PSD and save your workspace. No Unity needed.</small></span></a>
+  <a class="vg-quick-link vg-quick-link--particle" href="#/particles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z"/><path d="m4 3 .7 2.3L7 6l-2.3.7L4 9l-.7-2.3L1 6l2.3-.7L4 3Z"/></svg><span><strong>Explore particle demos <span aria-hidden="true">→</span></strong><small>8 interactive effects: Explosion, Lightning, Portal and more.</small></span></a>
+</nav>
+
 <figure class="vg-hero-shot">
   <img src="images/ui-designer.png" alt="UI Designer with the bundled game screen sample">
   <figcaption>Editable sample UI, ready to import into a Unity Canvas.</figcaption>

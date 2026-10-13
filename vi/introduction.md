@@ -6,6 +6,11 @@
   <img class="vg-hero-robot" src="images/robot.png" alt="Robot VinaGen">
 </div>
 
+<nav class="vg-quick-links" aria-label="Trải nghiệm ngay trên trình duyệt">
+  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Mở Web Designer <span aria-hidden="true">↗</span></strong><small>Thiết kế UI, nhập/xuất PSD và lưu workspace. Không cần Unity.</small></span></a>
+  <a class="vg-quick-link vg-quick-link--particle" href="#/vi/particles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z"/><path d="m4 3 .7 2.3L7 6l-2.3.7L4 9l-.7-2.3L1 6l2.3-.7L4 3Z"/></svg><span><strong>Xem demo Particle <span aria-hidden="true">→</span></strong><small>8 hiệu ứng tương tác: Explosion, Lightning, Portal và nhiều hơn nữa.</small></span></a>
+</nav>
+
 <figure class="vg-hero-shot">
   <img src="images/ui-designer.png" alt="UI Designer với màn hình game mẫu">
   <figcaption>Mẫu UI đi kèm, có thể chỉnh sửa và import thành Unity Canvas.</figcaption>
