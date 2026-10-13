@@ -264,7 +264,6 @@ body,
 .vg-quick-link svg { width: 28px; height: 28px; flex: 0 0 28px; color: var(--launch-color); }
 .vg-quick-link strong { display: block; font-size: 1.1rem; line-height: 1.45; }
 .vg-quick-link small { display: block; margin-top: 7px; color: #c0c8d8; font-size: .86rem; line-height: 1.65; }
-.vg-free-badge { display: inline-block; margin-top: 8px; padding: 3px 10px; border: 1px solid #46c08a; border-radius: 999px; background: #183e36; color: #a8efcd; font-size: 12px; font-weight: 700; line-height: 1.6; }
 .markdown-section a.vg-quick-link:hover { background: var(--launch-tint); text-decoration: none; }
 .markdown-section a.vg-quick-link:focus-visible { outline: 3px solid var(--launch-color); outline-offset: 4px; }
 @media (max-width: 760px) {
