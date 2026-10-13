@@ -10,34 +10,119 @@
     <title>Flowmind · Web Designer</title>
     <link rel="icon" href="robot.png" />
     <link rel="stylesheet" href="editor.css" />
+    <link rel="stylesheet" href="workspace-controls.css" />
     <link rel="stylesheet" href="standalone.css" />
     <script src="preferences.js"></script>
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="../#/vi/web-designer" title="Documentation"
-        ><img src="robot.png" alt="" />Flowmind</a
-      ><button id="workspace" title="Choose a folder on this device">
-        Choose folder</button
-      ><button id="reconnect" hidden>Reconnect folder</button
-      ><button id="import-folder">Import folder</button
-      ><span id="workspace-state" role="status">Loading local workspace…</span>
-      <div id="document-tabs" role="tablist"></div>
-      <button id="demo">Demo</button
-      ><button id="open-files" title="Documents">Files</button
-      ><button id="reload" title="Reload saved document">Reload</button
-      ><button id="save">Save</button><button id="import">Import</button
-      ><button id="export">Export</button><button id="settings">Settings</button
-      ><span id="sync-state" role="status"></span
-      ><button id="toggle-layers" class="mobile-toggle" aria-label="Layers">
-        Layers</button
-      ><button
-        id="toggle-inspector"
-        class="mobile-toggle"
-        aria-label="Inspector"
+    <header class="topbar" aria-label="Document toolbar">
+      <a
+        class="brand"
+        href="../#/vi/web-designer"
+        title="Documentation"
+        aria-label="Flowmind documentation"
+        ><img src="robot.png" alt="" /><span>Flowmind</span></a
       >
-        Inspector
+      <span class="top-divider" aria-hidden="true"></span>
+      <button
+        id="workspace"
+        class="workspace-picker icon-button"
+        title="Choose a folder on this device"
+        aria-label="Choose folder"
+        data-icon="folder"
+      >
+        <span class="toolbar-label">Choose folder</span>
       </button>
+      <button
+        id="reconnect"
+        class="icon-button"
+        title="Reconnect folder"
+        aria-label="Reconnect folder"
+        data-icon="sync"
+        hidden
+      ></button>
+      <button
+        id="import-folder"
+        class="icon-button folder-import"
+        title="Import folder (read-only)"
+        aria-label="Import folder"
+        data-icon="upload"
+      ></button>
+      <span id="workspace-state" role="status">Loading local workspace…</span>
+      <div
+        id="document-tabs"
+        class="document-tabs"
+        role="tablist"
+        aria-label="Open design document"
+      ></div>
+      <div class="top-actions">
+        <button
+          id="demo"
+          class="icon-button"
+          title="Open editable demo"
+          aria-label="Demo"
+          data-icon="demo"
+        ></button>
+        <button
+          id="open-files"
+          class="icon-button"
+          title="Browse documents"
+          aria-label="Files"
+          data-icon="folder"
+        ></button>
+        <span class="top-divider" aria-hidden="true"></span>
+        <button
+          id="reload"
+          class="icon-button"
+          title="Reload saved document"
+          aria-label="Reload"
+          data-icon="reload"
+        ></button>
+        <button
+          id="save"
+          class="primary icon-button"
+          title="Save · Ctrl/Cmd+S"
+          aria-label="Save"
+          data-icon="save"
+        ></button>
+        <button
+          id="import"
+          class="icon-button"
+          title="Import PSD, SVGPRO, images or fonts"
+          aria-label="Import"
+          data-icon="download"
+        ></button>
+        <button
+          id="export"
+          class="icon-button"
+          title="Export PSD, SVGPRO, SVG or PNG"
+          aria-label="Export"
+          data-icon="upload"
+        ></button>
+        <span class="top-divider" aria-hidden="true"></span>
+        <button
+          id="settings"
+          class="icon-button"
+          title="Settings"
+          aria-label="Settings"
+          data-icon="settings"
+        ></button>
+        <span id="sync-state" role="status"></span>
+        <button
+          id="toggle-layers"
+          class="mobile-toggle icon-button"
+          title="Toggle layers panel"
+          aria-label="Layers"
+          data-icon="sidebar"
+        ></button>
+        <button
+          id="toggle-inspector"
+          class="mobile-toggle icon-button"
+          title="Toggle inspector"
+          aria-label="Inspector"
+          data-icon="properties"
+        ></button>
+      </div>
     </header>
     <main><p id="startup" role="status">Starting Web Designer…</p></main>
     <input id="folder-input" type="file" webkitdirectory multiple hidden />

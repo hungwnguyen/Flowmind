@@ -6,6 +6,10 @@ adapter, filesystem/IndexedDB storage, ZIP codec and browser text renderer repla
 the Unity bridge. `tools/sync-web-designer.py` records the extraction and removes
 native editor controls; it is author tooling, not a deployment/build requirement.
 
+`icons.mjs` reuses the local editor's SVG paths. Refresh them with the author-only
+`tools/sync-designer-icons.py --source <toolkit Editor/WebGraph>` command. Keep
+`workspace-controls.css` linked for the split tool buttons, popovers and asset grid.
+
 Publish this folder with the existing Flowmind repository on Render. Entry point:
 `https://vinagen.onrender.com/designer/`. Use HTTPS, JavaScript MIME types for
 `.mjs` and preserve relative module paths. No server API, external runtime CDN,

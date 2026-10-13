@@ -1,38 +1,108 @@
+/* Shared local-editor SVGs and compact toolbar, with browser workspace controls. */
 .topbar {
-  height: 58px;
+  height: 48px;
   gap: 6px;
+  padding: 0 10px;
+  align-items: center;
+}
+body[data-workspace="ui"] .ui-studio {
+  top: 48px;
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  padding: 0 8px 0 0;
   color: var(--text);
   text-decoration: none;
-  font-weight: 700;
-  padding-right: 10px;
+  font-size: 12px;
+  font-weight: 650;
+  flex-shrink: 0;
 }
 .brand img {
   width: 28px;
   height: 28px;
 }
-#workspace-state {
+.topbar .workspace-picker {
+  width: auto;
+  height: 30px;
+  padding: 0 9px;
+  gap: 7px;
   font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-raised);
+}
+.topbar #workspace {
+  height: 30px;
+  min-height: 30px;
+  grid-column: auto;
+  grid-row: auto;
+}
+.workspace-picker .ui-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+#workspace-state {
+  display: block;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--muted);
+  font-size: 10px;
+}
+#workspace-state::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  vertical-align: middle;
+}
+#workspace-state[data-mode="folder"]::before {
+  background: #38a874;
+}
+#workspace-state[data-mode="reconnect"]::before {
+  background: #e7a52f;
 }
 #document-tabs {
   min-width: 80px;
-  flex: 1;
+  margin: 0 6px;
+}
+.top-actions {
+  gap: 4px;
+}
+body[data-workspace="ui"] .top-actions > .icon-button {
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+}
+.topbar .ui-icon {
+  width: 16px;
+  height: 16px;
+}
+.topbar .top-divider {
+  margin: 0 3px;
+}
+.mobile-toggle {
+  display: none;
+}
+.ui-copy-error {
+  max-width: 100%;
+}
+#startup {
+  padding: 30px;
 }
 #web-settings {
   max-width: 540px;
   width: calc(100vw - 36px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: var(--panel);
+  background: var(--surface);
   color: var(--text);
   padding: 24px;
 }
@@ -49,61 +119,6 @@
   line-height: 1.6;
   color: var(--muted);
 }
-#startup {
-  padding: 30px;
-}
-.ui-studio {
-  top: 58px;
-}
-.mobile-toggle {
-  display: none;
-}
-@media (max-width: 1100px) {
-  .brand {
-    font-size: 0;
-  }
-  #workspace-state {
-    max-width: 90px;
-  }
-  #import-folder {
-    display: none;
-  }
-}
-@media (max-width: 760px) {
-  .topbar {
-    height: 94px;
-    flex-wrap: wrap;
-    padding: 5px;
-  }
-  .ui-studio {
-    top: 94px;
-  }
-  #document-tabs {
-    display: none;
-  }
-  #workspace-state {
-    flex: 1;
-    max-width: 120px;
-  }
-  .topbar button {
-    font-size: 11px;
-    padding: 6px;
-  }
-  .mobile-toggle {
-    display: inline-flex;
-  }
-}
-.ui-copy-error {
-  max-width: 100%;
-}
-.topbar {
-  align-content: center;
-  align-items: center;
-}
-#web-settings {
-  background: var(--surface);
-  border-color: var(--line);
-}
 #web-settings a {
   color: var(--blue);
 }
@@ -115,27 +130,65 @@
   background: var(--blue-soft);
   color: var(--text);
 }
-@media (max-width: 760px) {
-  .topbar {
-    height: auto;
-    min-height: 94px;
-    max-height: 94px;
-    gap: 4px;
-    align-content: center;
+@media (max-width: 1100px) {
+  .brand span {
+    display: none;
   }
-  .topbar button {
+  #workspace-state {
+    max-width: 100px;
+  }
+  .toolbar-label {
+    display: none;
+  }
+  .topbar .workspace-picker {
+    width: 30px;
+    padding: 6px;
+  }
+}
+@media (max-width: 900px) {
+  #toggle-inspector {
+    display: inline-flex;
+  }
+  #workspace-state {
+    max-width: 75px;
+  }
+}
+@media (max-width: 640px) {
+  .topbar {
+    gap: 3px;
+    padding: 0 6px;
+  }
+  #toggle-layers {
+    display: inline-flex;
+  }
+  #workspace-state,
+  .brand span,
+  .folder-import,
+  #document-tabs,
+  .topbar > .top-divider,
+  .top-actions > .top-divider {
+    display: none;
+  }
+  .top-actions {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 2px;
+  }
+  body[data-workspace="ui"] .top-actions > .icon-button {
+    width: 28px;
     height: 30px;
-    min-height: 30px;
-    flex-shrink: 0;
+    padding: 6px;
   }
   .brand {
     padding-right: 2px;
   }
-  #open-files {
-    display: none;
+  .ui-toolbar.floating-tools {
+    flex-wrap: nowrap;
+    max-width: calc(100% - 16px);
+    gap: 1px;
+    padding: 5px;
   }
-  #workspace-state {
-    font-size: 10px;
-    max-width: 70px;
+  .ui-toolbar .ui-tool-group {
+    gap: 0;
   }
 }

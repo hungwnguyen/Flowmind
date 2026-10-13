@@ -2,33 +2,9 @@ import { workspace } from "./workspace.mjs";
 import { openUIStudio, getUIStudio } from "./ui-studio.mjs";
 import { newDocument } from "./ui-model.mjs";
 import { demoDocument } from "./demo.mjs";
-function icon(name) {
-  const span = document.createElement("span");
-  span.className = "icon";
-  span.textContent =
-    {
-      folder: "▣",
-      plus: "+",
-      minus: "−",
-      close: "×",
-      search: "⌕",
-      undo: "↶",
-      redo: "↷",
-      grid: "▦",
-      fit: "⛶",
-      image: "▧",
-      download: "↓",
-      frame: "□",
-      cursor: "↖",
-      hand: "✋",
-      chevron: "⌄",
-      check: "✓",
-      settings: "⚙",
-      upload: "↑",
-      eye: "◉",
-      lock: "▣",
-    }[name] || "◇";
-  return span;
+import { icon } from "./icons.mjs";
+for (const button of document.querySelectorAll(".topbar [data-icon]")) {
+  button.prepend(icon(button.dataset.icon));
 }
 const shell = {
   icon,
@@ -49,6 +25,15 @@ function state() {
         ? "Access needed"
         : "Download save");
   document.getElementById("reconnect").hidden = workspace.mode !== "reconnect";
+  document.getElementById("workspace-state").title =
+    workspace.name +
+    " · " +
+    (workspace.mode === "folder"
+      ? "Save directly to the selected folder"
+      : workspace.mode === "reconnect"
+        ? "Reconnect to allow saving"
+        : "Save downloads a portable document");
+  document.getElementById("workspace-state").dataset.mode = workspace.mode;
   document.getElementById("workspace").disabled = !window.showDirectoryPicker;
   document
     .querySelector(".project-heading strong")

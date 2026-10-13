@@ -33,3 +33,6 @@ are real Chromium screenshots captured on this device by
 exported to PSD and imported back in the actual browser editor. No private
 PSD artwork or generated mock UI is included. The integration test blocks
 bridge routes and verifies zero Unity/API requests.
+
+The standalone captures were refreshed with the shared local-editor SVG icons,
+48 px document toolbar and split tool menus on 13 October 2026.
