@@ -4,18 +4,17 @@
 
 ![Portal demo in the real WebGL player with playback controls](images/particle-web-demo.png)
 
-The [website demos](particles.md) show supplied effects. A project's local preview loads that project's prefab/bundle through the Unity bridge. Browser controls change live playback; they do not save edits back to a Unity prefab. The agent must apply persistent edits in Unity and export/reload the revision.
+The [website demos](particles.md) show supplied effects. A project's local preview exports that project's particle prefab as portable `.vgfx.json` through the Unity bridge, then reconstructs it in the prebuilt player. Browser controls change live playback; they do not save edits back to a Unity prefab. The agent must apply persistent edits in Unity and export/reload the revision.
 
 ## Prepare the player
 
 1. Keep Unity open and start **Open → MCP Bridge**.
 2. Open **Tools → VinaGen AI Toolkit → Open → Particles**. Under **Particle WebGL player**, use **Download** if missing. It is downloaded once and shared by projects on this computer. If the installed version is outdated, use **Update**. Once installed, **Re-download** downloads it again and **Show folder** locates it.
-3. Install official **WebGL Build Support** through Unity Hub when exporting native prefab bundles.
-4. Open **Editors → Open Particle Preview → Built-in / URP / HDRP**, or the returned `webPreviewUrl` for your effect.
+3. Open **Editors → Open Particle Preview → Built-in / URP / HDRP**, or the returned `webPreviewUrl` for your effect.
 
 ![Particles tab with the installed shared player](images/toolkit-particles.png)
 
-Windows player cache: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Per-project bundles: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Users use the prebuilt player. **Build WebGL** belongs to the separate author-only developer tools.
+Windows player cache: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Per-project portable effect exports: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Users use the prebuilt player. **Build WebGL** belongs to the separate author-only developer tools.
 
 ## The AI Agent review loop
 
@@ -25,7 +24,7 @@ Windows player cache: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPla
 | **2. Wait and load** | Poll `webPreviewStatusUrl` until success, open `webPreviewUrl`, wait for readiness/import acknowledgement. | Correct prefab/revision, system hierarchy and actual pipeline. |
 | **3. Capture** | Choose startup, peak and fade times from this effect's lifetime; use a fixed seed and explicit motion plan. | Frames, requested/actual times and capture errors. |
 | **4. Judge** | View every frame: silhouette, colors, clipping, empty output, layer overlap, movement and disappearance. | Specific visual findings; API success alone does not approve the effect. |
-| **5. Improve** | Edit textures, materials, emission or curves on the Unity asset; re-export/reload its bundle. | Saved effect revision, then captures with the same comparison conditions. |
+| **5. Improve** | Edit textures, materials, emission or curves on the Unity asset; re-export/reload its portable effect. | Saved effect revision, then captures with the same comparison conditions. |
 | **6. Finish** | Repeat until it matches the brief; report paths, images, warnings and limitations. | Review evidence accompanying the delivered prefab. |
 
 Example request:
@@ -84,11 +83,11 @@ Use **Emitter motion → Arc / Line / Circle…**, set A/B positions and duratio
 ## Compatibility and troubleshooting
 
 - **Missing player:** download from Particles or Welcome, then repeat the request.
-- **Version mismatch:** player/bundle must use compatible Unity versions, pipeline and color space; re-download a matching release. Users do not build a player to resolve it.
+- **Outdated player:** download the latest prebuilt release. Portable effects do not require a matching Unity editor version, pipeline or color space; unsupported shader behaviour still needs native Unity verification.
 - **Blank/clipped frame:** restart, choose times inside the active lifetime, check framing and `lastError`.
 - **Pink materials:** repair for the active pipeline and reload.
 - **HDRP:** browser rendering uses a URP/Built-in proxy. Compare `expectedRenderPipeline` / `actualRenderPipeline`; verify native HDRP shading in Unity.
-- **Import format:** use native WebGL AssetBundles/manifests. Raw `.prefab` YAML and `.unitypackage` files cannot load directly.
+- **Import format:** use toolkit-exported portable `.vgfx.json`. Raw `.prefab` YAML and `.unitypackage` files cannot load directly. Website demo controls also retain bundle/manifest import for supplied demos.
 - **Custom scripts / VFX Graph:** scripts absent from the prebuilt player and unsupported VFX content cannot be verified by that player.
 
 These captures verify the Built-in demo on this machine. They do not establish URP/HDRP parity, target-device performance or a clean toolkit-only Unity import.

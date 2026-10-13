@@ -7,7 +7,7 @@
 </div>
 
 <nav class="vg-quick-links" aria-label="Trải nghiệm ngay trên trình duyệt">
-  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Mở Web Designer <span aria-hidden="true">↗</span></strong><small>Thiết kế UI, nhập/xuất PSD và lưu workspace. Không cần Unity.</small></span></a>
+  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Mở Web Designer <span aria-hidden="true">↗</span></strong><span class="vg-free-badge">Miễn phí vĩnh viễn · Free forever</span><small>Thiết kế UI, nhập/xuất PSD và lưu workspace. Không cần Unity.</small></span></a>
   <a class="vg-quick-link vg-quick-link--particle" href="#/vi/particles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z"/><path d="m4 3 .7 2.3L7 6l-2.3.7L4 9l-.7-2.3L1 6l2.3-.7L4 3Z"/></svg><span><strong>Xem demo Particle <span aria-hidden="true">→</span></strong><small>8 hiệu ứng tương tác: Explosion, Lightning, Portal và nhiều hơn nữa.</small></span></a>
 </nav>
 
@@ -23,7 +23,7 @@
 ## Chọn công cụ
 
 <div class="vg-workspaces">
-  <a class="vg-ws vg-ws--ui" href="#/vi/web-designer"><strong>Web Designer</strong><span>Thiết kế online, chọn workspace cục bộ và nhập/xuất PSD không cần Unity.</span></a>
+  <a class="vg-ws vg-ws--ui" href="#/vi/web-designer"><strong>Web Designer · Miễn phí vĩnh viễn</strong><span>Thiết kế online, chọn workspace cục bộ và nhập/xuất PSD không cần Unity.</span></a>
   <a class="vg-ws vg-ws--chat" href="#/vi/ai-chat"><strong>Agent Chat</strong><span>Suy nghĩ, hỏi và sáng tạo với nhà cung cấp AI của bạn.</span></a>
   <a class="vg-ws vg-ws--flow" href="#/vi/graphs"><strong>Flow Editor</strong><span>Lên luồng game và phác thảo wireframe màn hình.</span></a>
   <a class="vg-ws vg-ws--ui" href="#/vi/ui-designer"><strong>UI Designer</strong><span>Layer UI, PSD/ảnh và import Canvas.</span></a>
@@ -38,9 +38,9 @@ Mở **Tools → VinaGen AI Toolkit → Open**, chọn workspace rồi thử m�
 
 | Cần có | Dùng cho |
 | --- | --- |
-| Unity **6000.3.22f1** | Phiên bản dự án hiện tại. |
+| **Unity 2022.3 LTS trở lên** | Editor cục bộ, Canvas và công cụ particle. |
 | **Unity UI (uGUI)** và tài nguyên TMP | UI Designer, Canvas và text. |
-| **WebGL Build Support** | Xuất bundle prefab để xem particle trên web. |
+| **Windows, macOS hoặc Linux** | Hệ điều hành desktop được phiên bản Unity bạn chọn hỗ trợ. |
 | Tài khoản nhà cung cấp AI | Chat và tạo ảnh online, khi cần. |
 
 [Hướng dẫn cài đặt và thao tác đầu tiên](getting-started.md)

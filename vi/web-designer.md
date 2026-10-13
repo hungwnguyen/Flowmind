@@ -1,5 +1,7 @@
 # Web Designer — thiết kế trực tiếp trên web
 
+<p><span class="vg-free-badge">Miễn phí vĩnh viễn · Free forever</span></p>
+
 Thiết kế UI ngay trên website Flowmind. Editor độc lập chạy trong trình duyệt, giữ file trên thiết bị của bạn; không cần cài Unity, chạy bridge, đăng nhập hay cấu hình nhà cung cấp AI.
 
 <p><a href="designer/" target="_blank" rel="noopener" class="vg-btn">Mở Web Designer ↗</a></p>

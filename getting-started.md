@@ -10,7 +10,15 @@ Import the toolkit, open a workspace and try a bundled sample.
 
 Product page: [VinaGen AI Toolkit on the Unity Asset Store](https://assetstore.unity.com/packages/slug/375862). The first release is not published yet.
 
-The project uses **Unity 6000.3.22f1**. UI and text tools need **Unity UI (uGUI)**; TMP Essentials are imported from the installed Unity package when needed. The local editors run inside Unity.
+Use **Unity 2022.3 LTS or newer**, on **Windows, macOS or Linux** meeting the [system requirements for your Unity version](https://docs.unity3d.com/2022.3/Documentation/Manual/system-requirements.html). UI and text tools need official **Unity UI (uGUI)** and **TextMesh Pro** (a separate package in Unity 2022); import **TMP Essentials** when prompted. Local editors run inside Unity. Particle preview uses a prebuilt player and portable `.vgfx.json` effects.
+
+The minimum tested editor is **2022.3.62f2** on Windows. See the verification scope below. Web Designer is **Free forever** and runs in a browser without a Unity installation.
+
+## Verified compatibility
+
+On **13 October 2026**, isolated Windows projects using **Unity 2022.3.62f2** (official uGUI 1.0.0 + TMP 3.0.9) and **6000.3.22f1** (official uGUI 2.0.0 including TMP) compiled all six toolkit assemblies without C# errors. Both passed Canvas text import with wrapping disabled, Undo/Redo, styled bold text mesh generation preserving SDF/bold UV data, and portable particle JSON export/readback. Only the toolkit folder and official Unity prerequisites were imported; developer tools and third-party plugins were absent.
+
+Package Manager on this machine failed before toolkit import. Verification therefore used an offline host (`-noUpm`), official package sources and TMP Essentials, with package-detection defines supplied by the host. Standard UPM installation, macOS/Linux execution, other Unity patches and a full game build remain unverified.
 
 <div class="vg-pair">
   <figure><img src="images/toolkit-home.png" alt="Toolkit Home tab"><figcaption>Home: open a workspace.</figcaption></figure>

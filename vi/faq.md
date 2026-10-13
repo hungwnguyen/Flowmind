@@ -4,9 +4,11 @@
 
 Chỉnh graph, thiết kế UI, text và công cụ particle offline dùng được khi chưa đăng ký AI. Chat và tạo ảnh qua nhà cung cấp cần tài khoản của bạn.
 
-## Dự án dùng Unity nào?
+## Hỗ trợ phiên bản Unity và hệ điều hành nào?
 
-**Unity 6000.3.22f1**. Công cụ UI/text dùng Unity UI và tài nguyên TMP chính thức. Xuất bundle particle cần **WebGL Build Support**.
+Dùng **Unity 2022.3 LTS trở lên** trên **Windows, macOS hoặc Linux** được phiên bản Unity đó hỗ trợ. UI/text cần uGUI, TextMesh Pro và TMP Essentials chính thức. Preview particle dùng player dựng sẵn với hiệu ứng portable `.vgfx.json`. Xem [cài đặt và phạm vi kiểm thử](getting-started.md).
+
+**Web Designer Miễn phí vĩnh viễn · Free forever**, dùng được khi không cài Unity.
 
 ## Lỗi thường gặp
 

@@ -4,18 +4,17 @@
 
 ![Demo Portal trong player WebGL thật với điều khiển playback](../images/particle-web-demo.png)
 
-[Demo trên website](particles.md) minh họa hiệu ứng có sẵn. Preview cục bộ tải prefab/bundle của dự án qua Unity bridge. Điều khiển trình duyệt chỉnh playback live, không tự lưu về prefab Unity. Agent cần áp dụng thay đổi bền vững trong Unity rồi xuất/tải lại phiên bản mới.
+[Demo trên website](particles.md) minh họa hiệu ứng có sẵn. Preview cục bộ xuất prefab particle của dự án thành `.vgfx.json` portable qua Unity bridge, rồi tái tạo hiệu ứng trong player dựng sẵn. Điều khiển trình duyệt chỉnh playback live, không tự lưu về prefab Unity. Agent cần áp dụng thay đổi bền vững trong Unity rồi xuất/tải lại phiên bản mới.
 
 ## Chuẩn bị player
 
 1. Giữ Unity mở, bật **Open → MCP Bridge**.
 2. Mở **Tools → VinaGen AI Toolkit → Open → Particles**. Trong **Particle WebGL player**, bấm **Download** nếu chưa cài. Player được tải một lần, dùng chung cho các dự án trên máy. Nếu bản cài đã cũ, bấm **Update**; khi đã cài, **Re-download** tải lại player và **Show folder** mở nơi lưu.
-3. Cài **WebGL Build Support** chính thức qua Unity Hub khi cần xuất bundle prefab gốc.
-4. Mở **Editors → Open Particle Preview → Built-in / URP / HDRP**, hoặc `webPreviewUrl` toolkit trả về cho hiệu ứng.
+3. Mở **Editors → Open Particle Preview → Built-in / URP / HDRP**, hoặc `webPreviewUrl` toolkit trả về cho hiệu ứng.
 
 ![Tab Particles với player dùng chung đã cài](../images/toolkit-particles.png)
 
-Cache trên Windows: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Bundle từng dự án: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Người dùng dùng player dựng sẵn. **Build WebGL** thuộc bộ developer tools riêng dành cho tác giả.
+Cache trên Windows: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Hiệu ứng portable từng dự án: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Người dùng dùng player dựng sẵn. **Build WebGL** thuộc bộ developer tools riêng dành cho tác giả.
 
 ## Vòng lặp kiểm thử của AI Agent
 
@@ -25,7 +24,7 @@ Cache trên Windows: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlay
 | **2. Đợi và tải** | Poll `webPreviewStatusUrl` đến khi thành công, mở `webPreviewUrl`, đợi sẵn sàng và xác nhận import. | Đúng prefab/phiên bản, hierarchy system và pipeline thực tế. |
 | **3. Chụp** | Chọn mốc bắt đầu, đỉnh và tắt dần theo lifetime; dùng seed cố định và kế hoạch chuyển động rõ ràng. | Frame, thời điểm yêu cầu/thực tế và lỗi capture. |
 | **4. Đánh giá** | Xem từng ảnh: silhouette, màu, cắt khung, ảnh trống, chồng layer, chuyển động và biến mất. | Nhận xét trực quan cụ thể; API thành công chưa đủ để duyệt hiệu ứng. |
-| **5. Cải thiện** | Sửa texture, material, emission hoặc curve trên asset Unity; xuất/tải lại bundle. | Phiên bản đã lưu, rồi chụp lại cùng điều kiện so sánh. |
+| **5. Cải thiện** | Sửa texture, material, emission hoặc curve trên asset Unity; xuất/tải lại hiệu ứng portable. | Phiên bản đã lưu, rồi chụp lại cùng điều kiện so sánh. |
 | **6. Hoàn tất** | Lặp đến khi đúng brief; báo đường dẫn, ảnh, cảnh báo và giới hạn. | Bằng chứng kiểm thử kèm prefab bàn giao. |
 
 Ví dụ yêu cầu trợ lý:
@@ -84,11 +83,11 @@ Dùng **Emitter motion → Arc / Line / Circle…**, đặt A/B, duration rồi 
 ## Tương thích và xử lý sự cố
 
 - **Thiếu player:** tải từ Particles hoặc Welcome rồi thử lại.
-- **Lệch phiên bản:** player/bundle cần tương thích Unity, pipeline và color space; tải lại release phù hợp. Người dùng không cần dựng player để xử lý.
+- **Player cũ:** tải bản dựng sẵn mới nhất. Hiệu ứng portable không yêu cầu khớp phiên bản Unity editor, pipeline hay color space; hành vi shader chưa được hỗ trợ vẫn cần kiểm tra trong Unity.
 - **Ảnh trống/bị cắt:** restart, chọn thời điểm trong lifetime hoạt động, kiểm tra framing và `lastError`.
 - **Material hồng:** sửa cho pipeline đang dùng rồi tải lại.
 - **HDRP:** trình duyệt dùng proxy URP/Built-in. Đối chiếu `expectedRenderPipeline` / `actualRenderPipeline`; kiểm tra shader HDRP gốc trong Unity.
-- **Định dạng import:** dùng AssetBundle WebGL gốc/manifest. Không tải trực tiếp YAML `.prefab` hoặc `.unitypackage`.
+- **Định dạng import:** dùng `.vgfx.json` portable do toolkit xuất. Không tải trực tiếp YAML `.prefab` hoặc `.unitypackage`. Điều khiển demo website vẫn có import bundle/manifest cho các demo có sẵn.
 - **Script riêng / VFX Graph:** script không có trong player dựng sẵn và nội dung VFX không được hỗ trợ không thể kiểm thử bằng player đó.
 
 Các ảnh xác nhận demo Built-in chạy trên máy này; chưa xác nhận tương đương URP/HDRP, hiệu năng thiết bị đích hoặc import Unity sạch chỉ có toolkit.

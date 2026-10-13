@@ -7,7 +7,7 @@
 </div>
 
 <nav class="vg-quick-links" aria-label="Try it in your browser">
-  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Open Web Designer <span aria-hidden="true">↗</span></strong><small>Design UI, import/export PSD and save your workspace. No Unity needed.</small></span></a>
+  <a class="vg-quick-link vg-quick-link--designer" href="designer/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 16 1-4 7-7 3 3-7 7-4 1Z"/></svg><span><strong>Open Web Designer <span aria-hidden="true">↗</span></strong><span class="vg-free-badge">Free forever</span><small>Design UI, import/export PSD and save your workspace. No Unity needed.</small></span></a>
   <a class="vg-quick-link vg-quick-link--particle" href="#/particles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 10 6-10 6V6Z"/><path d="m4 3 .7 2.3L7 6l-2.3.7L4 9l-.7-2.3L1 6l2.3-.7L4 3Z"/></svg><span><strong>Explore particle demos <span aria-hidden="true">→</span></strong><small>8 interactive effects: Explosion, Lightning, Portal and more.</small></span></a>
 </nav>
 
@@ -23,7 +23,7 @@
 ## Choose a tool
 
 <div class="vg-workspaces">
-  <a class="vg-ws vg-ws--ui" href="#/web-designer"><strong>Web Designer</strong><span>Design online, choose a local workspace and import/export PSD without Unity.</span></a>
+  <a class="vg-ws vg-ws--ui" href="#/web-designer"><strong>Web Designer · Free forever</strong><span>Design online, choose a local workspace and import/export PSD without Unity.</span></a>
   <a class="vg-ws vg-ws--chat" href="#/ai-chat"><strong>Agent Chat</strong><span>Think, ask and create with your own AI provider.</span></a>
   <a class="vg-ws vg-ws--flow" href="#/graphs"><strong>Flow Editor</strong><span>Plan game flows and sketch screen wireframes.</span></a>
   <a class="vg-ws vg-ws--ui" href="#/ui-designer"><strong>UI Designer</strong><span>UI layers, PSD/images and Canvas import.</span></a>
@@ -38,9 +38,9 @@ Open **Tools → VinaGen AI Toolkit → Open**, choose a workspace and try an ex
 
 | Requirement | Used for |
 | --- | --- |
-| Unity **6000.3.22f1** | Current project version. |
+| **Unity 2022.3 LTS or newer** | Local toolkit editors, Canvas and particle tools. |
 | **Unity UI (uGUI)** and TMP resources | UI Designer, Canvas and text. |
-| **WebGL Build Support** | Exporting particle prefab bundles for the browser. |
+| **Windows, macOS or Linux** | A desktop OS supported by your chosen Unity version. |
 | An AI provider account | Online chat and image generation, when needed. |
 
 [Installation and your first task](getting-started.md)

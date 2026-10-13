@@ -4,9 +4,11 @@
 
 Local graph editing, UI design, text and offline particle tools work without an AI subscription. Provider chat and image generation require your account.
 
-## Which Unity version does this project use?
+## Which Unity versions and operating systems are supported?
 
-**Unity 6000.3.22f1**. UI/text tools use official Unity UI and TMP resources. Native particle bundle export needs **WebGL Build Support**.
+Use **Unity 2022.3 LTS or newer** on **Windows, macOS or Linux** supported by that Unity release. UI/text tools need official uGUI, TextMesh Pro and TMP Essentials. Particle preview uses a prebuilt player with portable `.vgfx.json` export. See [installation and verification scope](getting-started.md).
+
+**Web Designer is Free forever** and works without Unity.
 
 ## Common issues
 

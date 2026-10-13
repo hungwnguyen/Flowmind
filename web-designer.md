@@ -1,5 +1,7 @@
 # Web Designer — design online
 
+<p><span class="vg-free-badge">Free forever</span></p>
+
 Create UI directly on the Flowmind website. This standalone editor runs in your browser and keeps your files on your device. It needs no Unity installation, bridge, account, AI provider or runtime server.
 
 <p><a href="designer/" target="_blank" rel="noopener" class="vg-btn">Open Web Designer ↗</a></p>
