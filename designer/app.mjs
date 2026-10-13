@@ -6,6 +6,10 @@ import { icon } from "./icons.mjs";
 for (const button of document.querySelectorAll(".topbar [data-icon]")) {
   button.prepend(icon(button.dataset.icon));
 }
+const startupControls = ["demo", "import-folder", "reconnect"].map((id) =>
+  document.getElementById(id),
+);
+for (const button of startupControls) button.disabled = true;
 const shell = {
   icon,
   project: workspace.name,
@@ -34,7 +38,8 @@ function state() {
         ? "Reconnect to allow saving"
         : "Save downloads a portable document");
   document.getElementById("workspace-state").dataset.mode = workspace.mode;
-  document.getElementById("workspace").disabled = !window.showDirectoryPicker;
+  document.getElementById("workspace").disabled =
+    !window.showDirectoryPicker || !getUIStudio()?.ready;
   document
     .querySelector(".project-heading strong")
     ?.replaceChildren(workspace.name);
@@ -61,7 +66,7 @@ async function reset() {
 }
 async function choose() {
   const studio = getUIStudio();
-  if (studio.busy) return;
+  if (!studio?.ready || studio.busy) return;
   try {
     const selection = await workspace.choose();
     studio.busy = true;
@@ -80,6 +85,7 @@ async function choose() {
   }
 }
 document.getElementById("reconnect").onclick = async () => {
+  if (!getUIStudio()?.ready) return;
   try {
     await workspace.reconnect();
     state();
@@ -93,7 +99,7 @@ document.getElementById("import-folder").onclick = () =>
   document.getElementById("folder-input").click();
 document.getElementById("demo").onclick = async () => {
   const s = getUIStudio();
-  if (s.busy) return;
+  if (!s?.ready || s.busy) return;
   const previous = s.doc;
   await s.newScreen();
   if (s.doc === previous) return;
@@ -109,7 +115,7 @@ document.getElementById("demo").onclick = async () => {
 document.getElementById("folder-input").onchange = async (event) => {
   if (!event.target.files.length) return;
   const studio = getUIStudio();
-  if (studio.busy) return;
+  if (!studio?.ready || studio.busy) return;
   studio.busy = true;
   await studio.persist();
   try {
@@ -179,6 +185,7 @@ try {
   await workspace.init();
   state();
   await openUIStudio(shell);
+  for (const button of startupControls) button.disabled = false;
   state();
   document.getElementById("startup").textContent = "";
 } catch (error) {
