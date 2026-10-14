@@ -8,11 +8,11 @@ Bridge cho phép trợ lý đọc và chỉnh nội dung toolkit thông qua Unit
 2. Bấm **Start**.
 3. Cung cấp **Bridge URL** đang hiển thị cho trợ lý. Mặc định: `http://127.0.0.1:8888/`.
 
-Giữ Unity mở. Sau khi biên dịch, thử lại khi Editor sẵn sàng. Tắt bridge khi làm xong.
+Giữ Unity mở khi trợ lý làm việc. Nếu Unity đang biên dịch, đợi xong rồi thử lại.
 
 ![Tab MCP Bridge đang Online, URL và lệnh chat](../images/toolkit-bridge.png)
 
-**Apply URL** áp dụng địa chỉ đã sửa; **Reset to default** trở lại localhost mặc định. Khi trạng thái **Online**, bridge sẵn sàng. **Install chat skills** sửa đăng ký `/vina` và `$vina`; đây là thao tác cục bộ.
+**Online** nghĩa là bridge đang chạy. **Install chat skills** sửa lỗi thiếu lệnh `/vina` / `$vina`. **Reset to default** trả về URL mặc định.
 
 ## Endpoint HTTP
 
@@ -46,7 +46,7 @@ Ví dụ gửi tới `POST /call`:
 | Particle | `plan_particle_system`, `create_particle_system`, `review_particle_system` |
 | Texture | `list_particle_textures`, `inspect_particle_texture`, `audit_particle_textures` |
 
-Đọc schema trước khi gọi. Khi lưu tài liệu, dùng revision hiện tại; sửa graph qua bridge bằng thay đổi có phạm vi rõ ràng. Với job nền, kiểm tra trạng thái tới khi hoàn tất, theo `pollAfterMs`.
+Mẹo cho trợ lý: xem schema của action (`GET /tools`) trước khi gọi; với job dài, kiểm tra trạng thái sau mỗi `pollAfterMs`.
 
 Giữ bridge trên localhost. Xem [Tạo từ chat](create-from-chat.md) để dùng nhanh bằng `/vina` và `$vina`.
 

@@ -1,31 +1,27 @@
 # Web Particle: hỗ trợ AI Agent kiểm thử
 
-**Mục đích chính của Web Particle là hỗ trợ AI Agent kiểm thử trực quan particle mà agent tạo ra.** Agent tải hiệu ứng, đọc trạng thái runtime, chụp thời điểm đã chọn, đánh giá ảnh, chỉnh hiệu ứng trong Unity rồi kiểm thử phiên bản tiếp theo. Người dùng cũng có thể xem và kiểm tra thủ công trên cùng preview.
+**Web Particle giúp AI agent nhìn và kiểm thử hiệu ứng particle mà nó tạo ra.** Agent chạy hiệu ứng trên trình duyệt, chụp ảnh ở các thời điểm quan trọng, kiểm tra, sửa trong Unity rồi thử lại. Bạn cũng có thể tự dùng preview này.
 
 ![Demo Portal trong player WebGL thật với điều khiển playback](../images/particle-web-demo.png)
 
-[Demo trên website](particles.md) minh họa hiệu ứng có sẵn. Preview cục bộ xuất prefab particle của dự án thành `.vgfx.json` portable qua Unity bridge, rồi tái tạo hiệu ứng trong player dựng sẵn. Điều khiển trình duyệt chỉnh playback live, không tự lưu về prefab Unity. Agent cần áp dụng thay đổi bền vững trong Unity rồi xuất/tải lại phiên bản mới.
+[Demo trên website](particles.md) dùng các hiệu ứng có sẵn. Trong dự án của bạn, preview tải prefab particle của chính bạn. Thay đổi trên trình duyệt chỉ để thử — không được lưu ngược về Unity.
 
 ## Chuẩn bị player
 
 1. Giữ Unity mở, bật **Open → MCP Bridge**.
-2. Mở **Tools → VinaGen AI Toolkit → Open → Particles**. Trong **Particle WebGL player**, bấm **Download** nếu chưa cài. Player được tải một lần, dùng chung cho các dự án trên máy. Nếu bản cài đã cũ, bấm **Update**; khi đã cài, **Re-download** tải lại player và **Show folder** mở nơi lưu.
-3. Mở **Editors → Open Particle Preview → Built-in / URP / HDRP**, hoặc `webPreviewUrl` toolkit trả về cho hiệu ứng.
+2. Vào **Tools → VinaGen AI Toolkit → Open → Particles**. Trong **Particle WebGL player**, bấm **Download** (một lần cho mỗi máy; bấm **Update** khi có bản mới).
+3. Mở **Editors → Open Particle Preview → Built-in / URP / HDRP**.
 
 ![Tab Particles với player dùng chung đã cài](../images/toolkit-particles.png)
 
-Cache trên Windows: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Hiệu ứng portable từng dự án: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Người dùng dùng player dựng sẵn. **Build WebGL** thuộc bộ developer tools riêng dành cho tác giả.
+## AI agent kiểm thử hiệu ứng thế nào
 
-## Vòng lặp kiểm thử của AI Agent
-
-| Bước | Agent thực hiện | Bằng chứng / kết quả |
-| --- | --- | --- |
-| **1. Tạo** | Chọn artwork/template phù hợp, gọi `create_particle_system` (mặc định `web_preview`). | Đường dẫn prefab, cảnh báo và URL job preview. |
-| **2. Đợi và tải** | Poll `webPreviewStatusUrl` đến khi thành công, mở `webPreviewUrl`, đợi sẵn sàng và xác nhận import. | Đúng prefab/phiên bản, hierarchy system và pipeline thực tế. |
-| **3. Chụp** | Chọn mốc bắt đầu, đỉnh và tắt dần theo lifetime; dùng seed cố định và kế hoạch chuyển động rõ ràng. | Frame, thời điểm yêu cầu/thực tế và lỗi capture. |
-| **4. Đánh giá** | Xem từng ảnh: silhouette, màu, cắt khung, ảnh trống, chồng layer, chuyển động và biến mất. | Nhận xét trực quan cụ thể; API thành công chưa đủ để duyệt hiệu ứng. |
-| **5. Cải thiện** | Sửa texture, material, emission hoặc curve trên asset Unity; xuất/tải lại hiệu ứng portable. | Phiên bản đã lưu, rồi chụp lại cùng điều kiện so sánh. |
-| **6. Hoàn tất** | Lặp đến khi đúng brief; báo đường dẫn, ảnh, cảnh báo và giới hạn. | Bằng chứng kiểm thử kèm prefab bàn giao. |
+1. **Tạo** — agent dựng prefab particle.
+2. **Tải** — mở hiệu ứng trong web preview.
+3. **Chụp** — chụp lúc bắt đầu, đỉnh và tắt dần, dùng seed cố định để so sánh được.
+4. **Kiểm tra** — xem từng ảnh tìm lỗi: sai màu, bị cắt khung, ảnh trống, sai timing.
+5. **Sửa** — chỉnh texture, material hoặc emission trong Unity rồi tải lại.
+6. **Lặp lại** đến khi đúng yêu cầu, rồi báo kết quả kèm ảnh chụp.
 
 Ví dụ yêu cầu trợ lý:
 
@@ -35,7 +31,7 @@ Chụp lúc bắt đầu, đỉnh và tắt dần với cùng seed. Xem từng �
 sửa lỗi cắt khung hoặc timing, rồi kiểm thử lại prefab Unity đã lưu.
 ```
 
-Dùng [Tạo từ chat](create-from-chat.md) và [MCP Bridge](mcp-bridge.md) cho quy trình này. Commit Git là thao tác riêng của agent trên host khi được yêu cầu; player WebGL không tự commit code.
+Xem [Tạo từ chat](create-from-chat.md) và [MCP Bridge](mcp-bridge.md) để thiết lập.
 
 ## Chụp để so sánh
 
@@ -53,7 +49,7 @@ const frames = await fx.capture({
 });
 ```
 
-Các ảnh camera được chụp trên máy này từ `toon_explosion`, với **seed 12345**, simulation đứng yên và render **Built-in**:
+Ảnh chụp từ `toon_explosion` (seed 12345, pipeline Built-in):
 
 <div class="vg-pair">
   <figure><img src="images/particle-review-1.png" alt="Ảnh camera vụ nổ toon tại 0,08 giây" loading="lazy"><figcaption>0,08 s — flash đầu và silhouette.</figcaption></figure>
@@ -61,35 +57,34 @@ Các ảnh camera được chụp trên máy này từ `toon_explosion`, với *
   <figure><img src="images/particle-review-3.png" alt="Ảnh camera vụ nổ toon tại 0,8 giây" loading="lazy"><figcaption>0,80 s — khói cuối và particle còn lại.</figcaption></figure>
 </div>
 
-Đọc `actualTimeSeconds`, metadata pipeline và lỗi cùng với ảnh. Mở/import/theo dõi manifest không tự chụp. `postToSink:true` lưu qua bridge, mặc định tại `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Captures/`. `download:true` tải qua trình duyệt. Xem [Particle WebGL Preview Settings](settings.md#particle-webgl-preview-settings) để chỉnh camera, bloom và mặc định capture.
+- `postToSink: true` lưu ảnh vào dự án Unity; `download: true` tải ảnh qua trình duyệt.
+- Không có gì được chụp cho đến khi gọi `capture()`.
+- Mặc định camera, bloom, capture: [Particle WebGL Preview Settings](settings.md#particle-webgl-preview-settings).
 
-## Điều khiển thủ công và chuyển động emitter
+## Điều khiển thủ công
 
 | Điều khiển | Cách dùng |
 | --- | --- |
-| **Particle target** | Chọn một system hoặc tất cả trước khi chỉnh. |
-| **Play / Pause / Restart** | Chạy lại hiệu ứng một lần trước khi đánh giá. |
-| **Time scale** | Làm chậm để xem timing và chồng layer. |
-| **Lifetime / Start size / Emission / Start color** | Chỉnh live rồi bấm **Apply basics**. |
-| **Motion & rendering** | Mở để chỉnh camera distance, renderer mode và đường emitter. |
-| **Import & developer tools** | Trong demo website, mở để import bundle/manifest, gửi lệnh, chụp và xem Live state. Player cục bộ có thể sắp xếp khác. |
+| **Particle target** | Chọn một system hoặc tất cả. |
+| **Play / Pause / Restart** | Chạy lại hiệu ứng. |
+| **Time scale** | Làm chậm để xem timing. |
+| **Lifetime / Start size / Emission / Start color** | Chỉnh giá trị rồi bấm **Apply basics**. |
+| **Motion & rendering** | Khoảng cách camera, chế độ render và chuyển động emitter. |
+| **Import & developer tools** | Nhập file, chạy lệnh và chụp (trên demo website). |
 
 ![Web Particle mở nhóm Motion and rendering](../images/particle-web-motion.png)
 
-Dùng **Emitter motion → Arc / Line / Circle…**, đặt A/B, duration rồi **Apply path**. `setMotion` chỉnh chuyển động live mà không chụp; truyền `motion` vào `capture()` để kiểm thử rõ ràng. Chụp đứng yên không chứng minh trail khi di chuyển hoạt động đúng.
+Muốn thử hiệu ứng di chuyển (vệt trail), dùng **Emitter motion → Arc / Line / Circle…**, đặt điểm đầu/cuối và thời gian, rồi **Apply path**.
 
 ![Nút Capture frame và Download PNG trong demo website](../images/particle-web-capture.png)
 
-## Tương thích và xử lý sự cố
+## Xử lý sự cố
 
-- **Thiếu player:** tải từ Particles hoặc Welcome rồi thử lại.
-- **Player cũ:** tải bản dựng sẵn mới nhất. Hiệu ứng portable không yêu cầu khớp phiên bản Unity editor, pipeline hay color space; hành vi shader chưa được hỗ trợ vẫn cần kiểm tra trong Unity.
-- **Ảnh trống/bị cắt:** restart, chọn thời điểm trong lifetime hoạt động, kiểm tra framing và `lastError`.
-- **Material hồng:** sửa cho pipeline đang dùng rồi tải lại.
-- **HDRP:** trình duyệt dùng proxy URP/Built-in. Đối chiếu `expectedRenderPipeline` / `actualRenderPipeline`; kiểm tra shader HDRP gốc trong Unity.
-- **Định dạng import:** dùng `.vgfx.json` portable do toolkit xuất. Không tải trực tiếp YAML `.prefab` hoặc `.unitypackage`. Điều khiển demo website vẫn có import bundle/manifest cho các demo có sẵn.
-- **Script riêng / VFX Graph:** script không có trong player dựng sẵn và nội dung VFX không được hỗ trợ không thể kiểm thử bằng player đó.
-
-Các ảnh xác nhận demo Built-in chạy trên máy này; chưa xác nhận tương đương URP/HDRP, hiệu năng thiết bị đích hoặc import Unity sạch chỉ có toolkit.
+- **Thiếu player hoặc player cũ:** tải/cập nhật trong tab Particles.
+- **Ảnh trống hoặc bị cắt:** restart, chọn thời điểm hiệu ứng đang chạy, lùi camera ra.
+- **Material hồng:** chạy **Repair Materials For Active Pipeline** rồi tải lại.
+- **HDRP:** trình duyệt chỉ hiển thị gần đúng. Kiểm tra kết quả HDRP cuối cùng trong Unity.
+- **Không tải được file:** chỉ dùng `.vgfx.json` do toolkit xuất — không dùng `.prefab` hay `.unitypackage`.
+- **Script riêng / VFX Graph:** player web không hỗ trợ; hãy kiểm tra trong Unity.
 
 [Tiếp theo: AI Chat & Nhà cung cấp](ai-chat.md)

@@ -1,102 +1,83 @@
 # VinaGenText
 
-Chữ UI có gradient, stroke, viền và độ nổi. Dùng Dynamic cho nội dung thay đổi, Static Baked cho label cố định.
+Chữ UI đẹp với gradient, viền, outline và độ nổi 3D. Dùng **Dynamic** cho chữ thay đổi, **Static Baked** cho label cố định.
 
 ![Sample hiệu ứng VinaGenText trong UI Designer](../images/vinagen-text-demo.png)
 
-Mở `Samples/Text Effects/ILoveYouTextShowcase.asset` để thử các style có sẵn. [Demo](demos.md) hướng dẫn thực hành; [Cài đặt text](settings.md#cài-đặt-text) có ảnh Font Studio và bake.
+Thử các style có sẵn trong `Samples/Text Effects/ILoveYouTextShowcase.asset`. Xem thêm [Demo](demos.md) và [Cài đặt text](settings.md#cài-đặt-text).
 
-## Component làm được gì
+## Tính năng
 
-| Nhóm | Chức năng |
+| Nhóm | Bạn có |
 | --- | --- |
-| Chữ và bố cục | Font, cỡ chữ, đậm/nghiêng, căn lề, xuống dòng, overflow, auto size (min/max), kerning, khoảng cách, margin, chữ cong (−360° đến 360°). Hỗ trợ Layout Group qua kích thước preferred. |
-| Rich text | Thẻ định dạng thông thường: `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>`... |
-| Màu mặt chữ | Gradient Single, Horizontal, Vertical, Four Corners; 2–8 key màu và alpha; chế độ Blend hoặc Fixed. |
-| Hiệu ứng | Inner Outline, Stroke, Outer Outline (0–64 px) và 3D Extrusion (−128 đến 128 px). |
-| Opacity | 0–1, làm mờ cả chữ và hiệu ứng cùng lúc; nhân thêm với CanvasGroup. |
-| Style dùng chung | Style là ScriptableObject; sửa một lần cập nhật mọi label dùng nó, kể cả lúc chạy. |
-| Hiển thị | Canvas (mask, raycast, CanvasGroup) hoặc Mesh Renderer cho chữ trong scene. |
-| Chỉnh sửa | Trong UI Designer, Inspector hoặc code (`text`, `color`, `opacity`, `style`...). |
+| Chữ | Font, cỡ chữ, đậm/nghiêng, căn lề, xuống dòng, auto size, khoảng cách, chữ cong. Dùng được với Layout Group. |
+| Rich text | `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>` |
+| Màu | Màu đơn hoặc gradient (ngang, dọc, bốn góc). |
+| Hiệu ứng | Viền trong, stroke, viền ngoài và độ nổi 3D. |
+| Opacity | Làm mờ chữ và hiệu ứng cùng lúc. |
+| Style dùng chung | Sửa style một lần — mọi label dùng nó cùng đổi. |
+| Hiển thị | Canvas (UI) hoặc Mesh Renderer (chữ trong scene). |
 
-Runtime không phụ thuộc assembly TextMesh Pro; TMP chỉ dùng trong Editor để tạo/chuyển font.
-
-## Giới hạn
-
-- **Font atlas tĩnh:** ký tự chưa có trong atlas sẽ không hiển thị. Bộ ký tự có sẵn là Latin, Latin + tiếng Việt hoặc Custom. Không phù hợp cho chữ người dùng nhập bằng ngôn ngữ bất kỳ (CJK, emoji…).
-- **Rich text:** không hỗ trợ thẻ trỏ tới tài nguyên có tên: `<font>`, `<material>`, `<sprite>`, `<style>`.
-- **Không thay thế toàn bộ TMP:** chỉ có API của một component label UI. Font TMP phải chuyển sang font VinaGen trước khi dùng.
-- **Static Baked:** chỉ bake được trong Editor. Lúc chạy, sửa chữ hoặc style của label đã bake bị bỏ qua; gọi `SwitchToDynamic()` trước. Label lớn hơn 1024 px không vào atlas chung mà dùng texture riêng.
-- **Opacity dưới 1:** mỗi label tốn một draw call; ảnh render tạm tối đa 2048 px mỗi chiều, lớn hơn sẽ bị thu nhỏ. Mask áp lên kết quả cuối.
-- **Hiệu ứng tốn chi phí:** Stroke, Outline và Extrusion vẽ thêm nhiều lớp viền (khoảng gấp ba số đỉnh), tốn render hơn chữ trơn. Dùng cho label UI ngắn, không dùng cho đoạn văn dài.
-- **Dynamic so với TMP:** chậm hơn khi đổi chữ, kích hoạt lần đầu, Layout Group và auto size; xem [Benchmark](vinagen-text.md?id=benchmark-200-label).
-- **Draw call:** mask, font fallback và thứ tự Canvas vẫn có thể tách batch; không đảm bảo một draw call cho cả scene.
-- Đổi **Text type** trong UI Designer cần import lại vào Canvas.
+Chạy không cần TextMesh Pro. TMP chỉ dùng trong Editor để tạo font.
 
 ## Tạo label
 
-Chọn **GameObject → VNT → VinaGenText**, hoặc **Typography → Text type → VinaGenText** trong UI Designer.
+Chọn **GameObject → VNT → VinaGenText**, hoặc đặt **Typography → Text type → VinaGenText** trong UI Designer.
 
-Chỉnh font, kích thước và hiệu ứng trong Inspector. **New** tạo style riêng; sửa style dùng chung sẽ cập nhật các label đang dùng nó. Font VinaGen dùng atlas tĩnh: cần có đủ ký tự trước khi build.
+Chỉnh font, cỡ chữ và hiệu ứng trong Inspector. **New** tạo style riêng; sửa style dùng chung sẽ cập nhật mọi label đang dùng nó.
 
-Để tạo font, mở **Font Asset → Select → Create Font**, chọn TTF/OTF và bộ ký tự **Latin And Vietnamese**, rồi **Create & Apply**.
+**Tạo font:** **Font Asset → Select → Create Font** → chọn TTF/OTF → **Latin And Vietnamese** → **Create & Apply**.
 
-Style, gradient và font bạn tạo là đầu ra của dự án, được lưu ngoài toolkit, trong `Assets/VinaGenGenerated/`:
+> Font chỉ chứa các ký tự bạn chọn. Ký tự thiếu sẽ không hiện — kiểm tra bộ ký tự đủ dùng trước khi build.
 
-| Asset | Thư mục |
-| --- | --- |
-| Style mẫu / style tạo bằng **New** | `Text Styles/Defaults/`, `Text Styles/Manual/` |
-| Style xuất từ UI Designer | `Text Styles/UI Designs/<tên design>/`, `Text Styles/Presets/` |
-| Gradient | `Text Gradients/Defaults/`, `Text Gradients/Custom/` |
-| Font tạo mới hoặc import | `Fonts/VinaGenText/` |
-
-Font mà sample và settings đi kèm sử dụng vẫn nằm trong `VinaTextPro/Fonts/` của toolkit. Style và gradient còn sót trong thư mục cũ `VinaTextPro/Text Styles` và `Text Gradients` của toolkit được tự động chuyển ra ngoài, giữ nguyên tham chiếu; **Tools → VinaGen AI Toolkit → Text → Move Generated Text Assets Out Of Toolkit** chạy lại bước này.
+Style, gradient và font bạn tạo được lưu trong `Assets/VinaGenGenerated/` (ngoài toolkit, nên cập nhật toolkit không ghi đè).
 
 ## Chọn chế độ render
 
-| Chế độ | Phù hợp với |
+| Chế độ | Dùng cho |
 | --- | --- |
-| **Dynamic** | Điểm số, đồng hồ và chữ đổi nội dung lúc chạy. |
-| **Static Baked** | Tiêu đề, nhãn nút và chữ trang trí cố định. |
+| **Dynamic** | Điểm số, đồng hồ và chữ thay đổi trong game. |
+| **Static Baked** | Tiêu đề, nhãn nút và chữ cố định. Nhanh nhất. |
 
-Static Baked gộp chữ và hiệu ứng thành một ảnh, vẽ một quad cho mỗi label, hỗ trợ fade alpha và bỏ bước parse, layout, kiểm tra style mỗi frame lúc chạy. Bản hiện tại dùng **ảnh Composited**; bake Geometry đã bị bỏ.
+Static Baked gộp chữ và hiệu ứng thành một ảnh, nên gần như không tốn gì khi chạy.
 
 ## Bake chữ cố định
 
 1. Hoàn thiện nội dung, font và style.
 2. Trong **Rendering**, chọn **Static Baked**, bấm **Bake / Rebuild**.
-3. Giữ **Shared Atlas** bật tại **Text → Settings** để dùng chung trang texture.
-4. Lưu scene hoặc prefab. Bake lại dữ liệu cũ hoặc không tương thích trước khi build.
+3. Giữ **Shared Atlas** bật trong **Text → Settings**.
+4. Lưu scene hoặc prefab.
 
-Muốn bake cả nhóm, chọn object gốc rồi dùng **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** đưa label về Dynamic.
+Bake tất cả chữ dưới một object: chọn object đó rồi **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** đưa label về Dynamic.
 
-**Texel Scale** quyết định độ nét: 1 ở độ phân giải tham chiếu, 2 cho màn hình mật độ cao hoặc chữ phóng lớn, đổi lại tốn thêm bộ nhớ texture. Ảnh bake lưu tại `Assets/VinaGen Text Bakes/`; đổi **Output Folder** trong Text Settings nếu muốn lưu chỗ khác.
+**Texel Scale** chỉnh độ nét: 1 là bình thường, 2 cho màn hình nét cao hoặc chữ phóng to (tốn thêm bộ nhớ). Ảnh bake lưu tại `Assets/VinaGen Text Bakes/`.
 
-## Các tối ưu đã có
-
-- **Kích hoạt Dynamic:** label chưa kích hoạt chưa tạo renderer, và renderer được clone từ một mẫu dựng sẵn. Bật lại label không đổi gì sẽ dùng lại layout cũ thay vì layout lại chữ.
-- **Cập nhật Dynamic:** sửa màu mặt chữ, gradient, stroke hoặc viền của style dùng chung sẽ cập nhật các label mà không layout lại chữ (với label không có thẻ rich text, gạch chân, cắt chữ hay sprite). Chữ cong đổi màu mà không uốn lại và không cấp phát bộ nhớ mỗi frame. Các label có cùng atlas font và gradient có thể chia sẻ material. Dùng `BeginUpdate()` / `EndUpdate()` khi đổi nhiều thuộc tính.
-- **Bake:** nội dung, font và style khớp nhau dùng lại dữ liệu bake. Atlas chung giúp gom các label tương thích vào cùng batch.
-- **Mesh Batch:** gọi `Refresh()` trên label không thay đổi sẽ không dựng lại batch.
-- **Auto Bake:** bake label đã thay đổi khi kết thúc chỉnh sửa hoặc lưu scene/prefab. Bỏ qua label không đổi; chỉ ghi lại trang atlas bị thay đổi. Không chạy trong Play Mode.
+**Auto Bake** tự bake lại label đã sửa khi bạn lưu scene hoặc prefab.
 
 ## Gom chữ bằng Mesh Batch
 
-Dùng **Canvas** cho UI cần mask, raycast và CanvasGroup. Với chữ trong scene dùng **Mesh Renderer**:
+Với chữ trong scene 3D (không phải UI), gom các label đã bake để giảm draw call:
 
-1. Đặt các label đã bake dưới cùng một object gốc.
-2. Chọn **Rendering → Backend → Mesh Renderer** cho các label.
-3. Thêm **VinaGen Text Mesh Batch** vào object gốc qua Add Component.
+1. Đặt các label đã bake dưới một object cha.
+2. Chọn **Rendering → Backend → Mesh Renderer** cho từng label.
+3. Thêm **VinaGen Text Mesh Batch** vào object cha.
 
-Mỗi trang atlas cần một draw call. Nhóm dùng chung thứ tự render; tắt **Track Movement** nếu label không di chuyển trong nhóm, rồi gọi `Refresh()` của label (hoặc `Rebuild()` của batch) sau khi đổi vị trí.
+Nếu label không di chuyển, tắt **Track Movement**. Sau khi di chuyển label, gọi `Refresh()` của nó.
 
-Label Dynamic có opacity dưới 1 sẽ tốn một draw call cho mỗi label. Nếu nhiều label cùng fade, nên dùng Static Baked.
+## Giới hạn
+
+- **Bộ ký tự cố định:** chỉ hiện ký tự có trong font. Không hợp cho chữ người dùng tự nhập (tiếng Trung, Nhật, emoji…).
+- **Rich text:** không hỗ trợ `<font>`, `<material>`, `<sprite>`, `<style>`.
+- **Không thay thế TMP:** font TMP phải chuyển đổi trước.
+- **Label đã bake không đổi được lúc chạy.** Gọi `SwitchToDynamic()` trước khi sửa.
+- **Hiệu ứng tốn hơn:** stroke, outline, extrusion tăng gấp ba số đỉnh. Dùng cho label ngắn, không dùng cho đoạn văn.
+- **Opacity dưới 1** tốn thêm một draw call mỗi label. Nhiều label cùng fade thì nên dùng Static Baked.
+- **Dynamic chậm hơn TMP** khi đổi chữ hoặc hiện lần đầu (xem [Benchmark](vinagen-text.md?id=benchmark-200-label)).
+- Đổi **Text type** trong UI Designer xong cần import lại Canvas.
 
 ## Benchmark: 200 label
 
-Đo ngày **13/10/2026** trên player Release Windows (Mono, Direct3D 12, Built-in pipeline, Gamma), Unity **6000.3.22f1**, Canvas render vào RenderTexture 1280×720; **i7-14700K / RTX 3060**. Mỗi giá trị là trung vị, lấy trung bình hai lần chạy xen kẽ.
-
-UGUI và TMP dùng chữ trơn để đối chứng. **Plain** là VinaGenText với style chỉ có mặt chữ; **Styled** dùng style mặc định gồm gradient, stroke, viền và extrusion.
+Đo ngày 13/10/2026 · Unity 6000.3.22f1 · bản Release Windows · i7-14700K / RTX 3060. **Plain** = không hiệu ứng; **Styled** = gradient, stroke, viền và extrusion.
 
 <div class="vg-benchmark" role="region" aria-label="VinaGenText benchmark, 200 label" tabindex="0">
 <table><thead><tr>
@@ -118,11 +99,11 @@ UGUI và TMP dùng chữ trơn để đối chứng. **Plain** là VinaGenText v
 <tr><th scope="row">Draw call (đứng yên)</th><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
 </tbody></table></div>
 
-Static Baked vẫn là lựa chọn rẻ nhất cho chữ cố định. VinaGenText Dynamic nhanh hơn TMP khi đổi màu và kích hoạt lại, nhưng chậm hơn khi đổi chữ, kích hoạt lần đầu, layout group và autosize; hiệu ứng hai bên khác nhau nên TMP chỉ để đối chứng. Label Styled tốn render hơn khi đứng yên (gấp ba số đỉnh, cộng shader hiệu ứng). Label đầu tiên trong một process mới còn tốn khoảng **29 + 59 ms** khởi tạo font và shader một lần.
+**Tóm lại:** Static Baked rẻ nhất cho chữ cố định. Dynamic nhanh hơn TMP khi đổi màu và bật lại, nhưng chậm hơn khi đổi chữ và kích hoạt lần đầu.
 
 <details>
 <summary>Cách đo các chỉ số</summary>
-<p>Kích hoạt: SetActive(true) + lần cập nhật Canvas đầu, đo khi đã warm (sau lần chạy đầu trong process). Kích hoạt lại: bật lại label sau khi tắt. Các dòng đổi chữ/màu: thời gian cập nhật Canvas của một frame mà mọi label đều đổi. Frame đứng yên: cả frame Release, gồm render camera. Managed: mức tăng heap Mono khi tắt GC. Số đỉnh và draw call: player Development. Player ẩn cửa sổ nên không báo GPU time; cần profile lại trên thiết bị đích.</p>
+<p>Mono, Direct3D 12, Built-in pipeline, Gamma; Canvas render vào RenderTexture 1280×720. Mỗi giá trị là trung vị của hai lần chạy xen kẽ. Kích hoạt = SetActive(true) + lần cập nhật Canvas đầu (đã warm). Các dòng "Đổi" = một frame mà mọi label cùng đổi. Managed = mức tăng heap Mono khi tắt GC. Chưa tính GPU time — hãy profile trên thiết bị đích. Label đầu tiên trong process mới tốn thêm khoảng 29 + 59 ms khởi tạo một lần.</p>
 <p>Nguồn trong dự án: <code>Documentation/VinaGenTextPerformance/VinaGenText-Comparison-Summary.md</code>.</p>
 </details>
 

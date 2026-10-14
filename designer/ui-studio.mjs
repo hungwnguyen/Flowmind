@@ -16,6 +16,7 @@ import {fileBrowser} from './file-browser.mjs';
 import {paintURL,imagePaintFilter} from './ui-paints.mjs';
 import {paintTextCurve} from './ui-text-curve.mjs';
 import {detectSliceBorders,sliceMinimum} from './ui-slice.mjs';
+import {sliceAnalysis} from './ui-slice-source.mjs';
 import {imageResizeTarget,loadSourceImage,resampleImage,blobBase64,maxResizedImageBytes} from './ui-image-resize.mjs';
 import {textStyleDefaults,resolvedTextStyle,textEffectEnabled,setTextEffect,styledTextPreview,validateTextStyle,textPaintSignature,importedTextPaint} from './ui-styled-text.mjs';
 import {gradientAlphaStops,evaluateTextGradient,textGradientRamp,textGradientPresets} from './ui-paints.mjs';
@@ -528,9 +529,9 @@ class Studio {
           source.onload=async()=>{
             const current=this.doc.layers.find(item=>item.id===layer.id);if(!current||this.elements.get(layer.id)?.querySelector('.ui-sliced-image')!==sliced)return;
             sliced._sourceSize={width:source.naturalWidth,height:source.naturalHeight};sliced._borders=current.image.slice||this.sliceBorders(source);
-            if(!current.image.slice){
+            if(current.image.slice?.analysis!==sliceAnalysis||current.image.slice.width!==source.naturalWidth||current.image.slice.height!==source.naturalHeight){
               const doc=this.doc,reference=current.image;
-              try{const info=await this.api('ui-slice-info',{image:reference});if(this.doc!==doc||current.image!==reference)return;if(info.width&&info.height)sliced._borders=info;}catch(error){this.message(error,true);}
+              try{const info=await this.api('ui-slice-info',{image:reference});if(this.doc!==doc||current.image!==reference)return;if(info.width&&info.height)sliced._borders=info;}catch(error){this.message(error,true);this.paintSlice(sliced,current);return;}
               if(this.doc!==doc||current.image!==reference)return;
               reference.slice={width:source.naturalWidth,height:source.naturalHeight,...sliced._borders};
               this.renderVersion=-1;this.paintAll();

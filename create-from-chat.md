@@ -15,7 +15,7 @@ $vina create a login flow with success and failure branches
 $vina create a looping blue fire effect using offline textures
 ```
 
-Describe the result, visual style and output name. Add a destination path when you need one; use `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset` for a new UI document.
+Say what you want, the style and a name. You can also give a save path, e.g. `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset`.
 
 ## Ask the agent to test a particle
 
@@ -24,19 +24,19 @@ $vina create an offline particle, use Web Particle to capture startup, peak
 and fade; inspect the images, fix issues and re-test the saved prefab.
 ```
 
-[Web Particle](webgl-preview.md) lets the AI Agent visually test its effect. The agent must view the frames and apply persistent edits in Unity; live web values do not save themselves to the prefab.
+The agent uses [Web Particle](webgl-preview.md) to look at its effect, then saves fixes in Unity.
 
 ![MCP Bridge with chat skill registration](images/toolkit-bridge.png)
 
 ## If the command is missing
 
-In the **MCP Bridge** tab, check registration status and click **Install chat skills**. Reopen the project chat afterwards. Existing user-authored skills are preserved; resolve any reported name conflict yourself.
+In the **MCP Bridge** tab, click **Install chat skills**, then reopen the chat. Your own skills are not touched.
 
 | Host | Project entry |
 | --- | --- |
 | Claude Code | `.claude/skills/vina/SKILL.md` |
 | Codex | `.agents/skills/vina/SKILL.md` |
 
-The assistant needs access to the project and bridge. Your host account handles assistant usage; provider image generation has separate requirements.
+Assistant usage is billed to your Claude Code / Codex account.
 
 [Next: MCP Bridge](mcp-bridge.md)

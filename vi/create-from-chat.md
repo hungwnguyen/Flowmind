@@ -15,7 +15,7 @@ $vina tạo flow đăng nhập có nhánh thành công và thất bại
 $vina tạo hiệu ứng lửa xanh lặp lại bằng texture offline
 ```
 
-Nêu kết quả cần có, phong cách và tên đầu ra. Thêm đường dẫn khi cần, ví dụ tài liệu UI mới: `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset`.
+Nói rõ bạn muốn gì, phong cách và tên. Có thể kèm đường dẫn lưu, ví dụ `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset`.
 
 ## Yêu cầu agent kiểm thử particle
 
@@ -24,19 +24,19 @@ $vina tạo một particle offline, dùng Web Particle chụp lúc bắt đầu,
 và tắt dần; xem ảnh, sửa lỗi rồi kiểm thử lại prefab đã lưu.
 ```
 
-[Web Particle](webgl-preview.md) giúp AI Agent kiểm thử trực quan hiệu ứng agent tạo. Agent cần xem ảnh và áp dụng thay đổi bền vững về Unity; giá trị live trên web không tự lưu vào prefab.
+Agent dùng [Web Particle](webgl-preview.md) để xem hiệu ứng, rồi lưu bản sửa trong Unity.
 
 ![MCP Bridge với trạng thái đăng ký chat skill](../images/toolkit-bridge.png)
 
 ## Nếu chưa có lệnh
 
-Trong tab **MCP Bridge**, kiểm tra trạng thái rồi bấm **Install chat skills**. Mở lại chat của dự án. Skill do bạn tạo được giữ nguyên; tự xử lý nếu có báo trùng tên.
+Trong tab **MCP Bridge**, bấm **Install chat skills** rồi mở lại chat. Skill bạn tự tạo không bị ảnh hưởng.
 
 | Trợ lý | File đăng ký trong dự án |
 | --- | --- |
 | Claude Code | `.claude/skills/vina/SKILL.md` |
 | Codex | `.agents/skills/vina/SKILL.md` |
 
-Trợ lý cần quyền truy cập dự án và bridge. Chi phí trợ lý theo tài khoản đang dùng; tạo ảnh qua nhà cung cấp có yêu cầu riêng.
+Chi phí trợ lý tính theo tài khoản Claude Code / Codex của bạn.
 
 [Tiếp theo: MCP Bridge](mcp-bridge.md)

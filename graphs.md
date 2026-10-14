@@ -1,45 +1,41 @@
 # Flow & Design Graphs
 
-Use **Flow** to plan game logic and **Design** to sketch screen content.
+Use **Flow** to plan game logic and **Design** to sketch screens.
 
 ## Open
 
-Choose **Tools → VinaGen AI Toolkit → Editors → Open Flow Editor**. Both graph types share this browser workspace.
+Choose **Tools → VinaGen AI Toolkit → Editors → Open Flow Editor**. Both graph types open in the same editor.
 
 | Asset | Use it for |
 | --- | --- |
-| `MockFlowGraph` | Steps, decisions, branches and state transitions. |
-| `DesignContentGraph` | Screen frames, text, images and numbered callouts. |
+| `MockFlowGraph` | Steps, decisions and branches. |
+| `DesignContentGraph` | Screen sketches with text, images and numbered notes. |
 
 ## Build a flow
 
-1. Create a Flow graph in **Files**, or open the sample graph.
+1. Create a Flow graph in **Files**, or open the sample.
 2. Add Start, Action, Decision and End nodes.
-3. Drag between ports to connect nodes. Label decision branches, such as **Yes / No**.
+3. Drag between ports to connect them. Label decision branches (e.g. **Yes / No**).
 4. Click **Save asset**.
 
 ![Flow graph in the browser editor](images/flow-editor.png)
 
-A flow graph is a plan; connect its logic to your game code. FlowCanvas and NodeCanvas are optional integrations.
-
-**Via MCP:** ask `/vina create a login flow with success and failure branches`. The assistant reads the graph with `GET /graph?graphType=mock_flow_graph&graphPath=<asset>` and sends changes through `POST /import` (`import_mock_flow_graph`). `create_block_diagram` / `fix_block_diagram` create or edit a graph from a `prompt` through the toolkit's AI Chat.
+A flow graph is a plan — you still write the game code. FlowCanvas and NodeCanvas integrations are optional.
 
 ## Sketch screens
 
 1. Open or create a Design graph.
-2. Add frames, screen copy and images.
-3. Add numbered callouts to explain behavior.
-4. Save the asset.
+2. Add frames, text and images.
+3. Add numbered notes to explain what each part does.
+4. Click **Save asset**.
 
 ![Design graph with screen frames and callouts](images/design-editor.png)
 
-Use [UI Designer](ui-designer.md) when you want editable UI layers that import into a Unity Canvas.
-
-**Via MCP:** ask `/vina sketch a shop screen with an item list and a purchase popup`. Read with `GET /graph?graphType=design_content_graph&whiteFramePath=<asset>` and make scoped edits with `patch_design_content_graph`. `create_white_frame` creates a new Design graph; `update_white_frame` edits it from a `prompt`.
+Need real UI that imports into Unity? Use [UI Designer](ui-designer.md).
 
 ## Write screen specifications
 
-Select a Design frame, then click **Document editor → Edit document & label images** in the Inspector. Double-clicking the frame also opens it.
+Double-click a Design frame (or click **Document editor → Edit document & label images** in the Inspector).
 
 <figure>
   <img src="images/design-document-editor.png" alt="Design document editor with Home and Popup tabs, formatted screen specifications, and an image with a numbered label">
@@ -48,22 +44,34 @@ Select a Design frame, then click **Document editor → Edit document & label im
 
 | Area | What it does |
 | --- | --- |
-| **Document tabs** | Switch between screen documents, such as Home and Popup. |
-| **Outline** | Navigate headings added to the document. |
-| **Document and toolbar** | Write behavior and requirements; format headings, font, lists, alignment, links and images. |
-| **Images & labels** | Click an image to add a numbered label. Click its badge to edit; drag to move it. |
-| **Export image PNG with labels** | Download the reference image with its numbered labels. |
+| **Document tabs** | Switch between screens (e.g. Home, Popup). |
+| **Outline** | Jump to a heading. |
+| **Document and toolbar** | Write and format the spec. |
+| **Images & labels** | Click the image to add a numbered label; drag to move it. |
+| **Export image PNG with labels** | Download the image with its labels. |
 
-For example, label **1** identifies the event card; item **1** in the document explains its unlock condition and what happens when tapped. Close the editor and use **Save asset** to save the graph.
-
-**Via MCP:** `check_white_frame` reviews frames and generates descriptions from their images and callouts. To let the assistant read the frame selected in the editor, use `get_web_editor_context`, then `get_node_context`.
+Example: label **1** marks the event card; item **1** in the text explains how it unlocks and what tapping it does. Close the editor and click **Save asset**.
 
 ## Export
 
-Export **Markdown** for written specs, **JSON** for structured data, or **SVG / PNG** for a visual overview.
+**Markdown** for written specs, **JSON** for data, **SVG / PNG** for images.
 
-**Via MCP:** `GET /graph` returns the graph data as JSON; `get_document_metadata` returns a compact node outline. Markdown, SVG and PNG export are available in the editor only.
+## Using an AI assistant
 
-Actions that take a `prompt` (`fix_block_diagram`, `update_white_frame`, `check_white_frame`) run through [AI Chat](ai-chat.md) and need an AI provider. Direct reads and patches do not. See also [MCP Bridge](mcp-bridge.md).
+With [MCP Bridge](mcp-bridge.md) running, just ask in your project chat:
+
+- `/vina create a login flow with success and failure branches`
+- `/vina sketch a shop screen with an item list and a purchase popup`
+
+The assistant can read, create and edit graphs, and write descriptions for your screen frames. Some actions (creating from a prompt, reviewing frames) use [AI Chat](ai-chat.md) and need an AI provider; reading and simple edits don't.
+
+<details>
+<summary>MCP tools for graphs</summary>
+
+- Flow: `GET /graph?graphType=mock_flow_graph&graphPath=<asset>`, `import_mock_flow_graph`, `create_block_diagram`, `fix_block_diagram`
+- Design: `GET /graph?graphType=design_content_graph&whiteFramePath=<asset>`, `patch_design_content_graph`, `create_white_frame`, `update_white_frame`, `check_white_frame`
+- Context: `get_web_editor_context`, `get_node_context`, `get_document_metadata`
+
+</details>
 
 [Next: Web Flow Editor](web-editor.md)

@@ -17,22 +17,20 @@ Dùng Agent Chat để hỏi và tạo nội dung bằng tài khoản AI của b
 | OpenAI | [OpenAI Platform → API keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` |
 | Poe | [Poe → API key](https://poe.com/api_key) | `POE_API_KEY` |
 
-Đăng nhập, tạo key rồi dán vào nhóm **API Keys** của nhà cung cấp đó. Nút **Get API Key** trong Settings cũng mở trang của nhà cung cấp. OpenAI tính phí theo lượng dùng, cần nạp tiền trước khi gọi API.
+Tạo key trên trang nhà cung cấp (hoặc bấm **Get API Key** trong Settings) rồi dán vào **API Keys**. Lưu ý: OpenAI cần nạp tiền vào tài khoản trước.
 
 ![Cửa sổ Agent Chat](../images/agent-chat.png)
 
-Chat lưu phiên làm việc, lịch sử và tệp đính kèm. Trợ lý trả lời theo ngôn ngữ tin nhắn mới nhất. Khi tạo nội dung màn hình hoặc nhãn graph, hãy nói rõ ngôn ngữ đầu ra.
+Chat lưu lịch sử và tệp đính kèm, trả lời theo ngôn ngữ bạn viết. Khi tạo chữ cho màn hình hoặc nhãn, hãy nói rõ ngôn ngữ mong muốn.
 
 ![AI Provider Settings với provider, model và nhóm API Keys đang đóng](../images/settings-ai.png)
 
-Mở **AI Chat** để chọn **Active Provider**, rồi **Refresh Models / Select Model** hoặc **Custom Model**. Key nằm trong **API Keys**; ảnh giữ nhóm này đóng. Xem [Cài đặt](settings.md) để hiểu thêm phần chat, image và particle output.
+Xem thêm tùy chọn tại [Cài đặt](settings.md).
 
 ## Chi phí và dữ liệu
 
-Chat và tạo ảnh qua nhà cung cấp dùng hạn mức hoặc điểm của tài khoản bạn. Chỉnh graph, thiết kế UI và công cụ particle offline vẫn dùng được khi chưa kết nối nhà cung cấp.
-
-Yêu cầu online có thể gửi prompt, tệp đính kèm và ngữ cảnh của thao tác đó. Giữ API key trong cấu hình Editor cá nhân; loại cấu hình chứa key khỏi Git và package chia sẻ.
-
-Tạo ảnh particle tại **Authoring Tools → Poe Image** dùng ô mật khẩu tạm thời hoặc biến môi trường `POE_API_KEY`.
+- Chat và tạo ảnh dùng điểm/hạn mức của nhà cung cấp. Các công cụ khác không cần AI.
+- Prompt và tệp đính kèm được gửi tới nhà cung cấp.
+- Giữ API key bí mật. Không commit file cài đặt chứa key lên Git.
 
 Muốn làm việc từ trợ lý bên ngoài, xem [Tạo từ Claude Code / Codex](create-from-chat.md).

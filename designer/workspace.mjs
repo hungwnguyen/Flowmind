@@ -5,6 +5,7 @@ import { validateDocument, copy } from "./ui-model.mjs";
 import { resolvedTextStyle, textPaintSignature } from "./ui-styled-text.mjs";
 import { renderText } from "./web-text.mjs";
 import { detectSliceBorders } from "./ui-slice.mjs";
+import { sourcePixels, authoredSlice, sliceAnalysis } from "./ui-slice-source.mjs";
 import { pickImageFiles } from "./image-picker.mjs";
 const resources = new Map();
 export function resourceURL(guid) {
@@ -749,19 +750,15 @@ class Workspace {
       case "ui-slice-info": {
         const r = resources.get(p.image?.guid || p.guid);
         if (!r) throw Error("Image missing.");
-        if (!r.slice) {
-          const bitmap = await createImageBitmap(r.blob),
-            canvas = document.createElement("canvas");
-          canvas.width = r.width;
-          canvas.height = r.height;
-          const context = canvas.getContext("2d");
-          context.drawImage(bitmap, 0, 0);
-          r.slice = detectSliceBorders(
-            context.getImageData(0, 0, r.width, r.height),
-          );
-          bitmap.close();
+        if (!r.slice || r.sliceAnalysis !== sliceAnalysis) {
+          r.slice = detectSliceBorders(await sourcePixels(r.blob));
+          r.sliceAnalysis = sliceAnalysis;
         }
-        return { width: r.width, height: r.height, ...r.slice };
+        return {
+          width: r.width, height: r.height,
+          ...authoredSlice(r.slice, p.image?.slice, r.width, r.height),
+          analysis: sliceAnalysis,
+        };
       }
       case "ui-assets":
         return {

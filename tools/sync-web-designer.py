@@ -156,7 +156,7 @@ def transform(name,text):
         text=text[:text.index('// Live updates have their own queue')]
     return text
 
-custom={'workspace.mjs','zip.mjs','web-text.mjs','idb.mjs','ui-project-cache.mjs','project-assets.mjs','image-components.mjs','image-picker.mjs'}
+custom={'workspace.mjs','zip.mjs','web-text.mjs','idb.mjs','ui-project-cache.mjs','project-assets.mjs','image-components.mjs','image-picker.mjs','ui-slice-source.mjs'}
 queue=['ui-studio.mjs','preferences.js','editor.css','workspace-controls.css']
 seen=set()
 while queue:

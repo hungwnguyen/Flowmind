@@ -1,28 +1,31 @@
 # Settings
 
-Open **Tools → VinaGen AI Toolkit → Open → Settings**. Click **Open** on a card to select its asset in Unity's **Inspector**. Expand a section to see its fields; changes are stored on that project asset.
-
-At a normal window size, scroll the **Settings** tab to reach all cards. **Make it yours** contains AI, graph, design and UI settings; **Particles & previews** contains the libraries and particle preview settings.
+Open **Tools → VinaGen AI Toolkit → Open → Settings**. Click **Open** on a card to edit that settings asset in the **Inspector**. Scroll down to see all cards.
 
 <div class="vg-pair">
   <figure><img src="images/toolkit-settings.png" alt="Settings: AI, Graph Appearance, Design Content and UI Designer cards" loading="lazy"><figcaption>Make it yours: AI, graph, design and UI settings.</figcaption></figure>
   <figure><img src="images/toolkit-settings-particles.png" alt="Settings scrolled to Particles and previews" loading="lazy"><figcaption>Scroll down: texture and prefab libraries, and Particle WebGL Preview.</figcaption></figure>
 </div>
 
-These screenshots were captured on this computer on **13 October 2026**, using **Unity 6000.3.22f1**. Values shown belong to the demo project; use your own folders, resolution and provider.
-
-Click an image to enlarge it when reading Inspector labels.
+Screenshots show a demo project (Unity 6000.3.22f1). Click an image to enlarge it.
 
 ## AI Provider Settings
 
 ![AI Provider Settings; API Keys is collapsed](images/settings-ai.png)
 
-1. Expand **AI Chat** and choose **Active Provider**.
-2. Enter your key in **API Keys** and keep it private.
-3. Use **Refresh Models / Select Model**, or enter a supported **Custom Model**.
-4. Open [Agent Chat](ai-chat.md) to use the selected account.
+1. Expand **AI Chat** and choose an **Active Provider**.
+2. Paste your key in **API Keys**. Keep it private.
+3. Click **Refresh Models / Select Model**, or type a **Custom Model**.
+4. Open [Agent Chat](ai-chat.md) to start chatting.
 
-**Conversation Behaviour** controls prompt caching and code syntax repair. **Chat UI & Appearance** controls input height/font size and links to graph/design settings. **MCP & Automation → Particle Defaults → Particle Output** selects Web Preview, scene placement or prefab output. **Image Generation** contains image-source/provider options. Provider credits are separate; model refresh and generation may contact the service.
+Other sections:
+
+- **Conversation Behaviour** — prompt caching and code repair.
+- **Chat UI & Appearance** — input size and font.
+- **MCP & Automation → Particle Defaults → Particle Output** — where new particles go (web preview, scene or prefab).
+- **Image Generation** — image provider options.
+
+Usage is billed by your provider, not the toolkit.
 
 ## Graph Appearance and Design Content
 
@@ -31,7 +34,8 @@ Click an image to enlarge it when reading Inspector labels.
   <figure><img src="images/settings-design.png" alt="Design Content: font, numbered stamp and frame size defaults" loading="lazy"><figcaption>Design Content: font, colors, numbered stamps and default frame size.</figcaption></figure>
 </div>
 
-Set **Comment Display Name** before leaving web review comments. Change graph colors for your preferred contrast. **Design Content Settings** supplies **Node Font / Node Font Size**, **Default Stamp Color / Scale** and **Default Node Size**. Open a [graph](graphs.md) to check the result; defaults do not replace authored screen content.
+- **Graph Appearance:** your comment name and the graph's colors.
+- **Design Content:** default font, stamp color/size and frame size for new screens. Existing screens are not changed.
 
 ## UI Designer Settings
 
@@ -40,21 +44,21 @@ Set **Comment Display Name** before leaving web review comments. Change graph co
   <figure><img src="images/settings-ui-canvas.png" alt="UI Designer resolution, scaling, anchors and Linear alpha" loading="lazy"><figcaption>Canvas defaults: resolution, scaling, snap and import behavior.</figcaption></figure>
 </div>
 
-| Field | How to use it |
+| Field | What it does |
 | --- | --- |
-| **Image folder / Document folder** | Keep toolkit output under `Assets/VinaGen AI Toolkit/Content/UI/`. **Browse** selects a project folder. |
-| **Button prefab** | Optional Canvas button template. Empty uses the bundled prefab; add a Text child in the design for a caption. |
-| **VinaGenText fonts** | **Add bundled VinaGenText fonts** registers supplied fonts. |
-| **TextMesh Pro fonts** | **Create TMP starter fonts** prepares fonts from official TMP resources when needed. |
-| **Custom fonts** | Drop TTF/OTF fonts here for Text and browser use. |
-| **Canvas defaults → Reference Resolution** | Width/height for new documents. Existing documents retain their saved size for import and Game View. |
-| **Match Width Or Height** | 0 favors width; 1 favors height. Check portrait and landscape layouts. |
-| **Grid Size** | Positioning grid increment. |
-| **Auto adjust anchors** | Derive anchors during editing/import; disable when preserving manual anchors. |
-| **Linear Alpha Mode** | Choose Gamma Compositor or Compensate Alpha, then compare Game View with the browser. |
-| **Keyboard shortcuts** | Expand to customize commands; reopen browser settings to refresh. |
+| **Image folder / Document folder** | Where UI images and documents are saved. |
+| **Button prefab** | Template for buttons. Leave empty to use the built-in one. |
+| **VinaGenText fonts** | **Add bundled VinaGenText fonts** registers the included fonts. |
+| **TextMesh Pro fonts** | **Create TMP starter fonts** makes ready-to-use TMP fonts. |
+| **Custom fonts** | Drop in your own TTF/OTF fonts. |
+| **Reference Resolution** | Default size for new documents. |
+| **Match Width Or Height** | 0 = fit width, 1 = fit height. |
+| **Grid Size** | Snap grid step. |
+| **Auto adjust anchors** | Sets anchors automatically. Turn off to set them yourself. |
+| **Linear Alpha Mode** | Fixes color differences in Linear projects. |
+| **Keyboard shortcuts** | Customize shortcuts. |
 
-Use **Open UI Designer ↗** to return to your workspace. [UI Designer](ui-designer.md) explains Canvas/UI Toolkit import.
+See [UI Designer](ui-designer.md) for Canvas and UI Toolkit import.
 
 ## Particle libraries
 
@@ -63,25 +67,25 @@ Use **Open UI Designer ↗** to return to your workspace. [UI Designer](ui-desig
   <figure><img src="images/settings-prefabs.png" alt="Bundled Particle Library prefab records and selection preference" loading="lazy"><figcaption>Prefab library: paths, categories and system counts.</figcaption></figure>
 </div>
 
-**Particle Texture Library** stores aliases, tags and catalog references. In a partitioned library, **Entries** can be empty while **Index Entries** contains the catalog. Inspect the matching partition or use MCP `list_particle_textures` / `inspect_particle_texture` for details.
-
-**Bundled Particle Library → Prefabs** lists names, paths, categories and Particle System counts. **Prefer For Prompt Creation** controls whether prompt creation prefers supplied effects. Open a listed prefab in Project to inspect native modules. For shader repair, use **Particles → Repair Materials For Active Pipeline**.
+- **Particle Texture Library** — the texture catalog. Look under **Index Entries** (**Entries** may be empty; that's normal).
+- **Bundled Particle Library** — the included effect prefabs. **Prefer For Prompt Creation** makes the AI reuse them when possible.
+- Pink materials? Run **Particles → Repair Materials For Active Pipeline**.
 
 ## Particle WebGL Preview Settings
 
 ![Particle WebGL settings: output folders, review target and camera](images/settings-web-particle.png)
 
-| Section | Adjusts |
+| Section | What it controls |
 | --- | --- |
-| **Render Pipelines** | Pipeline asset references for supported preview/export paths. HDRP browser rendering uses a compatibility pipeline. |
-| **Output Root** | Preview bundles/cache; default `Library/VinaGen/ParticlePreview`. |
-| **Capture Output Root** | Destination when posting frames to Unity; default `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Captures/`. |
-| **Review Target** | **Demo Effects**, or **Prefab** plus **Reviewed Prefab**. |
-| **Camera Orbit / Target Height** | Angle, distance and framing. Move back if the effect clips. |
-| **Bloom** | Expand for enabled, intensity, threshold, scatter and HDR brightness. Verify glow in the intended pipeline. |
-| **Screenshot → Capture** | Times, dimensions, contact-sheet columns, simulation, seed and output options. |
+| **Render Pipelines** | Which pipeline the preview uses. |
+| **Output Root** | Preview cache (default `Library/VinaGen/ParticlePreview`). |
+| **Capture Output Root** | Where captured frames are saved in the project. |
+| **Review Target** | Preview the demo effects or a specific prefab. |
+| **Camera Orbit / Target Height** | Camera angle and distance. Move back if the effect is cut off. |
+| **Bloom** | Glow strength and threshold. |
+| **Screenshot → Capture** | Capture timing, size and layout. |
 
-**Opening the player never starts a capture.** The legacy **Capture → Enabled** checkbox is ignored at startup. An AI Agent or an explicit browser command must request frames. **Post To Sink** writes to Unity; **Download** saves through the browser. `postToSink:false` returns frames without writing to the Unity project. See [Web Particle review](webgl-preview.md) for the AI testing workflow.
+Opening the player never captures anything by itself — an AI agent or a browser command must ask for frames. See [Web Particle](webgl-preview.md).
 
 ## Text settings
 
@@ -89,15 +93,17 @@ Open **Tools → VinaGen AI Toolkit → Text → Settings**.
 
 ![VinaGenText Settings: Font Studio, output and new-text defaults](images/settings-text.png)
 
-- **Font Studio → Create Font…:** build a font with the characters your game needs.
-- **Output Folder:** destination for bakes and shared atlas pages. This version displays the legacy `Assets/VinaGen Text Bakes` default. For toolkit/sample output, choose a folder inside `Assets/VinaGen AI Toolkit/`, such as `Samples/Text Effects/Bakes/` under that root. Private PSD imports retain their own owned folder.
-- **New text defaults → Auto Bake New Texts:** default for new labels; existing labels retain their component setting. A changed label bakes when editing loses focus or its scene/prefab is saved. Typing and dragging do not trigger a bake.
-- **Baked images → Shared Atlas:** compatible baked labels in the same output folder can share texture pages.
+- **Font Studio → Create Font…** — build a font with the characters your game needs.
+- **Output Folder** — where baked text images are saved (default `Assets/VinaGen Text Bakes`).
+- **Auto Bake New Texts** — new labels re-bake automatically when you finish editing or save.
+- **Shared Atlas** — baked labels share texture pages to save memory.
 
-See [VinaGenText](vinagen-text.md) for rendering modes and [demos](demos.md) for a first practice run.
+See [VinaGenText](vinagen-text.md) for details.
 
 ## Settings files
 
-Settings live in `Assets/VinaGen AI Toolkit/Settings/` and use the robot icon. **Open Settings Folder** selects this folder in Project. Portable export excludes personal provider settings; keep credential-bearing files out of Git and shared packages.
+All settings are in `Assets/VinaGen AI Toolkit/Settings/` (robot icon). **Open Settings Folder** jumps there.
+
+> Never commit files that contain your API keys to Git or share them in packages.
 
 [Next: Folder Layout](folder-layout.md)

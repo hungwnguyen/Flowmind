@@ -1,102 +1,83 @@
 # VinaGenText
 
-UI text with gradients, stroke, outline and extrusion. Choose Dynamic for changing content or Static Baked for fixed labels.
+Stylish UI text with gradients, strokes, outlines and 3D extrusion. Use **Dynamic** for text that changes, **Static Baked** for fixed labels.
 
 ![VinaGenText effect showcase in UI Designer](images/vinagen-text-demo.png)
 
-Open `Samples/Text Effects/ILoveYouTextShowcase.asset` to try supplied styles. [Demos](demos.md) walks through practice; [Text settings](settings.md#text-settings) shows Font Studio and bake options.
+Try the bundled styles in `Samples/Text Effects/ILoveYouTextShowcase.asset`. See also [Demos](demos.md) and [Text settings](settings.md#text-settings).
 
-## What the component can do
+## Features
 
-| Area | Features |
+| Area | What you get |
 | --- | --- |
-| Text and layout | Font, size, bold/italic, alignment, wrapping, overflow, auto size (min/max), kerning, spacing, margins and curved text (−360° to 360°). Works with Layout Groups through preferred size. |
-| Rich text | Ordinary formatting tags: `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>`… |
-| Face color | Single, Horizontal, Vertical and Four Corners gradients; 2–8 color and alpha keys; Blend or Fixed. |
-| Effects | Inner Outline, Stroke, Outer Outline (0–64 px) and 3D Extrusion (−128 to 128 px). |
-| Opacity | 0–1, fading text and effects together; multiplied by CanvasGroup. |
-| Shared styles | Styles are ScriptableObjects; one edit updates every label using it, including at runtime. |
-| Output | Canvas (masks, raycasts, CanvasGroup) or Mesh Renderer for scene text. |
-| Editing | UI Designer, Inspector or code (`text`, `color`, `opacity`, `style`…). |
+| Text | Font, size, bold/italic, alignment, wrapping, auto size, spacing, curved text. Works with Layout Groups. |
+| Rich text | `<b>`, `<i>`, `<u>`, `<s>`, `<color>`, `<size>`, `<sup>`, `<sub>`, `<br>` |
+| Color | Solid or gradient (horizontal, vertical, four corners). |
+| Effects | Inner outline, stroke, outer outline and 3D extrusion. |
+| Opacity | Fades text and effects together. |
+| Shared styles | Edit a style once — every label using it updates. |
+| Output | Canvas (UI) or Mesh Renderer (scene text). |
 
-The runtime does not depend on the TextMesh Pro assembly; TMP is used only in the Editor to create or convert fonts.
-
-## Limitations
-
-- **Static font atlas:** characters missing from the atlas do not render. Built-in sets are Latin, Latin + Vietnamese or Custom. Not suited to user input in arbitrary languages (CJK, emoji…).
-- **Rich text:** tags that reference named resources are not supported: `<font>`, `<material>`, `<sprite>`, `<style>`.
-- **Not a full TMP replacement:** it offers a UI label component API only. TMP fonts must be converted to VinaGen fonts first.
-- **Static Baked:** baking runs in the Editor only. At runtime, text and style edits on a baked label are ignored; call `SwitchToDynamic()` first. Labels larger than 1024 px use their own texture instead of the shared atlas.
-- **Opacity below 1:** costs one draw call per label; the temporary render is capped at 2048 px per side and larger labels are downscaled. Masks apply to the final result.
-- **Effects cost more:** Stroke, Outline and Extrusion draw extra silhouettes (about three times the vertices) and render slower than plain text. Use them for short UI labels, not body copy.
-- **Dynamic vs TMP:** slower for text changes, first activation, Layout Groups and auto size; see [Benchmark](vinagen-text.md?id=benchmark-200-labels).
-- **Draw calls:** masks, fallback fonts and Canvas ordering can still split batches; one draw call per scene is not guaranteed.
-- Changing **Text type** in UI Designer requires importing into the Canvas again.
+Works without TextMesh Pro at runtime. TMP is only used in the Editor to create fonts.
 
 ## Create a label
 
-Use **GameObject → VNT → VinaGenText**, or choose **Typography → Text type → VinaGenText** in UI Designer.
+Use **GameObject → VNT → VinaGenText**, or set **Typography → Text type → VinaGenText** in UI Designer.
 
-Edit font, size and effects in the Inspector. **New** creates a separate style; editing a shared style updates its users. VinaGen fonts use static atlases: include the characters you need before building.
+Edit font, size and effects in the Inspector. **New** creates a separate style; editing a shared style updates every label that uses it.
 
-To create a font, open **Font Asset → Select → Create Font**, choose a TTF/OTF source and **Latin And Vietnamese**, then **Create & Apply**.
+**Create a font:** **Font Asset → Select → Create Font** → choose a TTF/OTF → **Latin And Vietnamese** → **Create & Apply**.
 
-Styles, gradients and fonts you create are project output and are saved outside the toolkit, under `Assets/VinaGenGenerated/`:
+> Fonts only contain the characters you include. Missing characters won't show — make sure your character set covers your text before building.
 
-| Asset | Folder |
-| --- | --- |
-| Starter styles / styles created with **New** | `Text Styles/Defaults/`, `Text Styles/Manual/` |
-| Styles exported from UI Designer | `Text Styles/UI Designs/<design name>/`, `Text Styles/Presets/` |
-| Gradients | `Text Gradients/Defaults/`, `Text Gradients/Custom/` |
-| Created or imported fonts | `Fonts/VinaGenText/` |
-
-Fonts used by bundled samples and settings stay in `VinaTextPro/Fonts/` inside the toolkit. Styles and gradients left in the toolkit's old `VinaTextPro/Text Styles` and `Text Gradients` folders move out automatically with references preserved; **Tools → VinaGen AI Toolkit → Text → Move Generated Text Assets Out Of Toolkit** runs it again.
+Your styles, gradients and fonts are saved in `Assets/VinaGenGenerated/` (outside the toolkit, so updates won't overwrite them).
 
 ## Choose a rendering mode
 
 | Mode | Use it for |
 | --- | --- |
-| **Dynamic** | Scores, timers and text that changes at runtime. |
-| **Static Baked** | Fixed titles, button labels and decorated text. |
+| **Dynamic** | Scores, timers and any text that changes in game. |
+| **Static Baked** | Titles, button labels and other fixed text. Fastest option. |
 
-Static Baked stores all text effects in one image. It draws one quad per label, supports alpha fades and skips text parsing, layout and style polling at runtime. The current version uses **Composited images**; Geometry baking has been removed.
+Static Baked turns the text and its effects into one image, so it costs almost nothing at runtime.
 
 ## Bake fixed text
 
 1. Finish the label's text, font and style.
 2. In **Rendering**, choose **Static Baked** and click **Bake / Rebuild**.
-3. Keep **Shared Atlas** enabled in **Text → Settings** to share texture pages.
-4. Save the scene or prefab. Rebuild stale or unsupported bakes before building.
+3. Keep **Shared Atlas** on in **Text → Settings**.
+4. Save the scene or prefab.
 
-For a whole hierarchy, select its root and use **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** returns a label to Dynamic.
+To bake everything under an object: select it, then **GameObject → VNT → Bake All Text (Selection + Children)**. **Revert Bake** turns a label back to Dynamic.
 
-**Texel Scale** controls image sharpness: 1 at reference resolution, 2 for high-DPI or enlarged text, with higher texture memory. Baked images are saved to `Assets/VinaGen Text Bakes/`; change **Output Folder** in Text Settings to save elsewhere.
+**Texel Scale** sets sharpness: 1 is normal, 2 for high-DPI screens or enlarged text (uses more memory). Baked images go to `Assets/VinaGen Text Bakes/`.
 
-## Built-in optimizations
-
-- **Dynamic activation:** inactive labels delay renderer creation, and renderers are cloned from a prepared template. Re-enabling an unchanged label reuses its previous layout instead of laying the text out again.
-- **Dynamic updates:** editing a shared style's face color, gradient, stroke or outline updates its labels without laying out text again (labels without rich-text tags, underline, truncation or sprites). Curved text recolors without re-bending and does not allocate memory each frame. Equal font-atlas/gradient paint can share materials. Use `BeginUpdate()` / `EndUpdate()` for several property changes.
-- **Baking:** matching text, fonts and styles reuse bake data. Shared atlases let compatible labels batch together.
-- **Mesh Batch:** calling `Refresh()` on labels that have not changed does not rebuild the batch.
-- **Auto Bake:** changed labels bake after editing finishes or on scene/prefab save. Unchanged labels are skipped; only changed atlas pages are rewritten. It does not run in Play Mode.
+**Auto Bake** re-bakes changed labels automatically when you save the scene or prefab.
 
 ## Combine labels with Mesh Batch
 
-Use **Canvas** for UI that needs masks, raycasts and CanvasGroup. For scene text using **Mesh Renderer**:
+For text in the 3D scene (not UI), batch baked labels into fewer draw calls:
 
-1. Put baked labels under the same parent object.
-2. Set their **Rendering → Backend → Mesh Renderer**.
-3. Add **VinaGen Text Mesh Batch** to the parent through Add Component.
+1. Put baked labels under one parent.
+2. Set each label's **Rendering → Backend → Mesh Renderer**.
+3. Add **VinaGen Text Mesh Batch** to the parent.
 
-Each atlas page needs one draw call. The group shares sorting; disable **Track Movement** for labels that stay fixed within it, then call the label's `Refresh()` (or the batch's `Rebuild()`) after moving it.
+If labels don't move, turn off **Track Movement**. After moving one, call its `Refresh()`.
 
-Dynamic labels with opacity below 1 are drawn one draw call per label. For many fading labels, prefer Static Baked.
+## Limitations
+
+- **Fixed character set:** only characters in the font are shown. Not suited to free user input (Chinese, Japanese, emoji…).
+- **Rich text:** `<font>`, `<material>`, `<sprite>` and `<style>` are not supported.
+- **Not a TMP replacement:** TMP fonts must be converted first.
+- **Baked labels can't change at runtime.** Call `SwitchToDynamic()` before editing them.
+- **Effects cost more:** stroke, outline and extrusion triple the vertex count. Use them for short labels, not paragraphs.
+- **Opacity below 1** adds one draw call per label. For many fading labels, use Static Baked.
+- **Dynamic is slower than TMP** when changing text or first showing labels (see [Benchmark](vinagen-text.md?id=benchmark-200-labels)).
+- After changing **Text type** in UI Designer, import to Canvas again.
 
 ## Benchmark: 200 labels
 
-Measured on **13 October 2026** in a Windows Release player (Mono, Direct3D 12, Built-in pipeline, Gamma), Unity **6000.3.22f1**, Canvas rendered to a 1280×720 RenderTexture; **i7-14700K / RTX 3060**. Each value is the median, averaged over two interleaved runs.
-
-UGUI and TMP use plain text as a reference. **Plain** is VinaGenText with a face-only style; **Styled** uses the default gradient, stroke, outline and extrusion style.
+Measured 13 October 2026 · Unity 6000.3.22f1 · Windows Release build · i7-14700K / RTX 3060. **Plain** = no effects; **Styled** = gradient, stroke, outline and extrusion.
 
 <div class="vg-benchmark" role="region" aria-label="VinaGenText benchmark, 200 labels" tabindex="0">
 <table><thead><tr>
@@ -118,11 +99,11 @@ UGUI and TMP use plain text as a reference. **Plain** is VinaGenText with a face
 <tr><th scope="row">Draw calls (idle)</th><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
 </tbody></table></div>
 
-Static Baked remains the cheapest choice for fixed text. VinaGenText Dynamic is faster than TMP for color changes and re-activation, but slower for text changes, first activation, layout groups and autosize; the effects differ, so TMP is only a reference. Styled labels cost more to render while idle (three times the vertices plus effect shaders). The first label in a new process also pays about **29 + 59 ms** of one-time font and shader initialization.
+**In short:** Static Baked is the cheapest for fixed text. Dynamic beats TMP at color changes and re-activation, but is slower at changing text and first activation.
 
 <details>
 <summary>How these numbers were measured</summary>
-<p>Activation: SetActive(true) + first Canvas update, warm (after the first run in the process). Re-activation: enabling labels again after disabling them. Change rows: Canvas update time for one frame in which all labels change. Idle frame: whole Release frame including camera render. Managed: Mono heap increase with GC disabled. Vertices and draw calls: Development player. The player hides its window, so GPU time is not reported; profile your target device.</p>
+<p>Mono, Direct3D 12, Built-in pipeline, Gamma; Canvas rendered to a 1280×720 RenderTexture. Each value is the median of two interleaved runs. Activation = SetActive(true) + first Canvas update (warm). Change rows = one frame where all labels change. Managed = Mono heap growth with GC off. GPU time is not included — profile on your target device. The first label in a new process also pays about 29 + 59 ms of one-time setup.</p>
 <p>Project source: <code>Documentation/VinaGenTextPerformance/VinaGenText-Comparison-Summary.md</code>.</p>
 </details>
 

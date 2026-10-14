@@ -31,7 +31,7 @@ Chọn một hiệu ứng để xem chuyển động. Dùng **Phát lại** đ�
   <li><strong>Tinh chỉnh theo ý bạn</strong><span>Đổi kích thước, màu sắc rồi áp dụng thay đổi.</span></li>
 </ol>
 
-**Các điều khiển demo chỉ thay đổi phiên chạy trong trình duyệt.** Để sửa prefab dự án, áp dụng thay đổi trong Unity rồi tải lại bundle. Mục đích chính của [Web Particle](webgl-preview.md) là hỗ trợ AI Agent kiểm thử hiệu ứng agent tạo, qua ảnh chụp và vòng lặp sửa–kiểm thử.
+**Thay đổi ở đây chỉ có tác dụng trong trình duyệt** — không ảnh hưởng file Unity nào. Để AI agent tự kiểm thử hiệu ứng nó tạo theo cách này, xem [Web Particle](webgl-preview.md).
 
 ![Demo WebGL với playback và particle target](../images/particle-web-demo.png)
 
@@ -49,7 +49,7 @@ Năm pack có **403 texture gốc**, tạo bằng Unity C# và dùng được of
 | CombatCollisionFX | 97 | Đòn đánh, va chạm và phòng thủ. |
 | UniversalGameTextures | 83 | Decal, glow, trạng thái, sprite và mask. |
 
-Artwork có màu dùng **RGB trắng**; texture xám có thể tint. Texture particle additive dùng nền đen; decal và sprite dùng alpha.
+Mẹo: texture xám có thể tint sang màu bất kỳ. Texture additive dùng nền đen; decal và sprite dùng nền trong suốt.
 
 ## Thư viện prefab
 
@@ -57,7 +57,7 @@ Mở **Tools → VinaGen AI Toolkit → Open → Particles → Bundled Particle 
 
 ![Thư viện prefab với đường dẫn và tùy chọn ưu tiên prompt](../images/settings-prefabs.png)
 
-Mở **Prefabs**, xem đường dẫn, rồi tìm prefab đó trong Project để kiểm tra module. Xem [Cài đặt thư viện](settings.md) để hiểu catalog texture chia partition.
+Mở **Prefabs** để xem đường dẫn từng hiệu ứng, rồi mở nó trong cửa sổ Project. Xem thêm tại [Cài đặt](settings.md).
 
 ## Tạo và kiểm tra texture
 
@@ -70,7 +70,7 @@ Mở **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
 | **Inspect** | Kiểm tra prefab, alpha; đổi tên/kích thước giữ GUID. |
 | **FX Review** | Chạy Play Mode và chụp các mốc hiệu ứng. Lưu scene trước. |
 
-Job hiển thị tiến trình và nút hủy. Đợi job xong rồi mới vào Play Mode. Xem báo cáo trong `Library/VinaGenNativeParticleTools/Jobs/` và kiểm tra ảnh bằng mắt sau audit.
+Đợi job chạy xong rồi mới vào Play Mode.
 
 <div class="vg-pair">
   <figure><img src="images/particle-authoring-defaults.png" alt="Particle Authoring: Defaults" loading="lazy"><figcaption>Defaults: Dataset → Generate → Audit → Register.</figcaption></figure>
@@ -79,7 +79,12 @@ Job hiển thị tiến trình và nút hủy. Đợi job xong rồi mới vào 
   <figure><img src="images/particle-authoring-review.png" alt="Particle Authoring: FX Review" loading="lazy"><figcaption>FX Review: Save scenes → review → inspect captures.</figcaption></figure>
 </div>
 
-**Defaults:** chọn Dataset, giữ Overwrite tắt khi chỉ bổ sung file thiếu; tạo xong mới audit/register. **Poe Image:** cần tài khoản/điểm riêng; không cần cho workflow offline. **Inspect:** bật Preview rename plan để xem kế hoạch trước khi đổi tên/kích thước. **FX Review:** lưu scene trước khi chạy; mở ảnh kết quả để đánh giá. Xem [demo](demos.md) để bắt đầu và [Web Particle](webgl-preview.md) cho vòng lặp AI.
+- **Defaults:** giữ **Overwrite** tắt để chỉ bổ sung file thiếu.
+- **Poe Image:** tùy chọn; dùng điểm Poe của bạn.
+- **Inspect:** bật **Preview rename plan** để xem trước thay đổi.
+- **FX Review:** lưu scene trước khi chạy.
+
+Mới bắt đầu? Xem [demo](demos.md).
 
 ## Dựng hiệu ứng
 
@@ -87,12 +92,10 @@ Job hiển thị tiến trình và nút hủy. Đợi job xong rồi mới vào 
 2. Chỉnh layer, kích thước, màu và thời gian.
 3. Xem lại chuyển động trong [WebGL Preview](webgl-preview.md).
 
-Qua MCP, `create_particle_system` mặc định xuất `web_preview`. Dùng `scene_object` để đặt vào scene, `prefab` để chỉ tạo asset. Prefab mới mặc định nằm trong `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/`.
-
-Nếu thiếu artwork đúng chủ đề, toolkit trả kế hoạch tạo ảnh để bạn bổ sung. Kiểm tra quyền sử dụng ảnh import.
+Trợ lý AI cũng có thể tạo hiệu ứng cho bạn (qua `create_particle_system`). Prefab mới lưu tại `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/`. Nếu chưa có texture phù hợp, toolkit gợi ý ảnh cần tạo — hãy kiểm tra quyền sử dụng ảnh bạn nhập vào.
 
 ## Đổi render pipeline
 
-Nếu particle bị hồng, chạy **Particle System → Repair Materials For Active Pipeline**. Preview HDRP trên web dùng bản tương thích; kiểm tra shader cuối cùng trong Unity.
+Particle bị hồng? Chạy **Particle System → Repair Materials For Active Pipeline**. Với HDRP, luôn kiểm tra kết quả cuối trong Unity.
 
 [Tiếp theo: Xem trước Particle trên WebGL](webgl-preview.md)

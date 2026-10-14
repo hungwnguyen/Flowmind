@@ -17,22 +17,20 @@ Use Agent Chat to ask questions and create content with your own AI provider.
 | OpenAI | [OpenAI Platform → API keys](https://platform.openai.com/api-keys) | `OPENAI_API_KEY` |
 | Poe | [Poe → API key](https://poe.com/api_key) | `POE_API_KEY` |
 
-Sign in, create a key and paste it into that provider's **API Keys** section. The **Get API Key** button in Settings also opens the provider's page. OpenAI bills by usage and needs credit on the account before API calls work.
+Create a key on the provider's site (or click **Get API Key** in Settings) and paste it into **API Keys**. Note: OpenAI needs credit on your account first.
 
 ![Agent Chat window](images/agent-chat.png)
 
-Chat keeps sessions, history and attachments. Replies follow your latest message's language. Specify the output language when creating screen copy or graph labels.
+Chat keeps your history and attachments, and replies in the language you write in. When generating screen text or labels, say which language you want.
 
 ![AI Provider Settings with provider, model and collapsed API Keys](images/settings-ai.png)
 
-Expand **AI Chat**, choose **Active Provider**, then **Refresh Models / Select Model** or **Custom Model**. Credentials live in **API Keys**; this capture keeps that section closed. See [Settings](settings.md) for chat, image and particle output options.
+More options are in [Settings](settings.md).
 
 ## Costs and data
 
-Provider chat and image generation use your account's quota or credits. Graph editing, UI design and offline particle tools can be used without provider access.
-
-Online requests may include your prompt, attachments and context collected for that workflow. Keep API keys in personal Editor settings; exclude credential-bearing settings from version control and shared packages.
-
-For particle images, **Authoring Tools → Poe Image** uses a temporary password field or the `POE_API_KEY` environment variable.
+- Chat and image generation use your provider's credits. Everything else works without AI.
+- Your prompt and attachments are sent to your provider.
+- Keep API keys private. Don't commit settings files containing them to Git.
 
 To work from an external assistant, see [Create from Claude Code / Codex](create-from-chat.md).

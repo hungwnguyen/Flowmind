@@ -31,7 +31,7 @@ Pick an effect and explore it in motion. Use **Restart** to replay it, or lower 
   <li><strong>Make it yours</strong><span>Adjust size and color, then apply your changes.</span></li>
 </ol>
 
-**Demo controls change this browser session only.** To edit a project prefab, apply changes in Unity and reload its bundle. [Web Particle](webgl-preview.md) primarily supports AI Agent testing of effects it creates, through captures and an edit–test loop.
+**Changes here are for this browser only** — they don't touch any Unity file. To let an AI agent test its own effects this way, see [Web Particle](webgl-preview.md).
 
 ![WebGL demo with playback and particle targets](images/particle-web-demo.png)
 
@@ -49,7 +49,7 @@ Five packs contain **403 original textures**, generated with Unity C# and usable
 | CombatCollisionFX | 97 | Hits, impacts and defense. |
 | UniversalGameTextures | 83 | Decals, glow, status, sprites and masks. |
 
-Use **white RGB** for colored artwork; tint grayscale textures. Additive particle textures use black backgrounds; decals and sprites use alpha.
+Tip: grayscale textures can be tinted to any color. Additive textures use a black background; decals and sprites use transparency.
 
 ## Prefab library
 
@@ -57,7 +57,7 @@ Open **Tools → VinaGen AI Toolkit → Open → Particles → Bundled Particle 
 
 ![Prefab library paths and prompt selection preference](images/settings-prefabs.png)
 
-Expand **Prefabs**, inspect a path, then find that prefab in Project to review its modules. See [Library settings](settings.md) for partitioned texture catalogs.
+Expand **Prefabs** to see each effect's path, then open it in the Project window. More in [Settings](settings.md).
 
 ## Create and check textures
 
@@ -70,7 +70,7 @@ Open **Tools → VinaGen AI Toolkit → Particle System → Authoring Tools**.
 | **Inspect** | Inspect prefabs/alpha; rename or resize while preserving GUIDs. |
 | **FX Review** | Run Play Mode and capture effect milestones. Save scenes first. |
 
-Jobs show progress and cancellation. Wait for completion before entering Play Mode. Reports live in `Library/VinaGenNativeParticleTools/Jobs/`; visually review images after an audit.
+Wait for a job to finish before entering Play Mode.
 
 <div class="vg-pair">
   <figure><img src="images/particle-authoring-defaults.png" alt="Particle Authoring: Defaults" loading="lazy"><figcaption>Defaults: Dataset → Generate → Audit → Register.</figcaption></figure>
@@ -79,7 +79,12 @@ Jobs show progress and cancellation. Wait for completion before entering Play Mo
   <figure><img src="images/particle-authoring-review.png" alt="Particle Authoring: FX Review" loading="lazy"><figcaption>FX Review: Save scenes → review → inspect captures.</figcaption></figure>
 </div>
 
-**Defaults:** choose Dataset and leave Overwrite off when filling missing files; finish generation before audit/register. **Poe Image:** requires separate account credits and is optional for offline workflows. **Inspect:** keep Preview rename plan on to inspect changes before rename/resize. **FX Review:** save scenes before running and view the captured images. See [demos](demos.md) to start and [Web Particle](webgl-preview.md) for the AI loop.
+- **Defaults:** keep **Overwrite** off to only add missing files.
+- **Poe Image:** optional; uses your own Poe credits.
+- **Inspect:** keep **Preview rename plan** on to check changes first.
+- **FX Review:** save your scenes before running.
+
+New here? Start with the [demos](demos.md).
 
 ## Build an effect
 
@@ -87,12 +92,10 @@ Jobs show progress and cancellation. Wait for completion before entering Play Mo
 2. Adjust layers, size, color and timing.
 3. Review motion in the [WebGL Preview](webgl-preview.md).
 
-Through MCP, `create_particle_system` defaults to `web_preview`. Use `scene_object` for scene placement or `prefab` for an asset only. New prefabs default to `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/`.
-
-If the subject needs missing artwork, the toolkit returns an image-generation plan. Check usage rights for imported images.
+AI assistants can also create effects for you (via `create_particle_system`). New prefabs are saved to `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/`. If no suitable texture exists, the toolkit suggests images to generate — check usage rights for any image you import.
 
 ## Switching render pipeline
 
-For pink particles, run **Particle System → Repair Materials For Active Pipeline**. HDRP web previews use a compatible version; verify final shaders in Unity.
+Particles turned pink? Run **Particle System → Repair Materials For Active Pipeline**. For HDRP, always check the final look in Unity.
 
 [Next: WebGL Particle Preview](webgl-preview.md)

@@ -27,3 +27,11 @@ conflicts, paths, drafts, resources and desktop/mobile layouts.
 
 Inter and its font license are in `fonts/Inter.ttf` and `fonts/Inter-OFL.txt`.
 Private PSD examples and their source fonts are never shipped in this folder.
+
+9-slice detects both axes from original PNG RGBA samples, including faint alpha
+edges. `ui-slice-source.mjs` decodes PNG with the browser's DecompressionStream;
+Canvas readback would quantize faint colors and miss repeated pixel bands.
+Legacy cached zero borders are analyzed again when the image is rendered.
+Run the author regression with `node tests/designer-slice.cjs` (Playwright and
+pngjs are test dependencies only). An optional image-folder argument checks local
+artwork against original RGBA without copying those images into the repository.

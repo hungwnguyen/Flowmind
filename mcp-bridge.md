@@ -8,11 +8,11 @@ The bridge lets an assistant read and edit toolkit content through Unity.
 2. Click **Start**.
 3. Give your assistant the displayed **Bridge URL**. Default: `http://127.0.0.1:8888/`.
 
-Keep Unity open. After compilation, retry when the Editor is ready. Stop the bridge when finished.
+Keep Unity open while the assistant works. If Unity is compiling, wait and try again.
 
 ![MCP Bridge Online status, URL and chat commands](images/toolkit-bridge.png)
 
-**Apply URL** applies an edited address; **Reset to default** restores localhost. **Online** means the bridge is running. **Install chat skills** repairs `/vina` and `$vina` registration locally.
+**Online** means the bridge is running. **Install chat skills** fixes missing `/vina` / `$vina` commands. **Reset to default** restores the default URL.
 
 ## HTTP endpoints
 
@@ -46,8 +46,8 @@ Example request to `POST /call`:
 | Particles | `plan_particle_system`, `create_particle_system`, `review_particle_system` |
 | Textures | `list_particle_textures`, `inspect_particle_texture`, `audit_particle_textures` |
 
-Read the schema before calling. Use document revisions when saving and targeted bridge edits for graphs. For background jobs, poll the returned status until completion; follow `pollAfterMs`.
+Tips for assistants: check an action's schema (`GET /tools`) before calling it; for long jobs, poll the status every `pollAfterMs`.
 
-Keep the bridge on localhost. See [Create from chat](create-from-chat.md) for the simpler `/vina` and `$vina` workflow.
+Keep the bridge on localhost. Most people don't need these details. Just use `/vina` or `$vina` as shown in [Create from chat](create-from-chat.md).
 
 [Next: Settings](settings.md)

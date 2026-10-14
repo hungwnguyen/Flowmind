@@ -2,11 +2,11 @@
 
 ## Do I need AI?
 
-Local graph editing, UI design, text and offline particle tools work without an AI subscription. Provider chat and image generation require your account.
+No. Graphs, UI design, text and particle tools all work without AI. Only chat and image generation need an AI account.
 
 ## Which Unity versions and operating systems are supported?
 
-Use **Unity 2022.3 LTS or newer** on **Windows, macOS or Linux** supported by that Unity release. UI/text tools need official uGUI, TextMesh Pro and TMP Essentials. Particle preview uses a prebuilt player with portable `.vgfx.json` export. See [installation and verification scope](getting-started.md).
+**Unity 2022.3 LTS or newer** on Windows, macOS or Linux. UI and text tools also need uGUI and TextMesh Pro. See [Getting Started](getting-started.md).
 
 **Web Designer is Free forever** and works without Unity.
 
@@ -18,23 +18,23 @@ Use **Unity 2022.3 LTS or newer** on **Windows, macOS or Linux** supported by th
 | Missing `/vina` or `$vina` | Click **Install chat skills**, check conflicts and reopen the project chat. |
 | Canvas tools unavailable | Check that Unity UI (uGUI) is installed. |
 | Pink particles | Run **Particle System → Repair Materials For Active Pipeline**. |
-| Web editor conflict `409` | Export the draft or reload the latest Unity asset. |
+| Web editor conflict `409` | The file changed elsewhere. Export your draft, then reload. |
 | No generated image | Check provider credentials, quota and job status. |
-| Static text is stale or unsupported | Run **Bake / Rebuild** before building. |
-| Baked text needs runtime changes | Use **Revert Bake** to return to Dynamic. |
+| Baked text looks outdated | Run **Bake / Rebuild** before building. |
+| Need to change baked text in game | Use **Revert Bake** to switch back to Dynamic. |
 
 ## Does Canvas import finish the screen?
 
-It creates UI objects with Undo support. Connect Button events and save the scene yourself. Review PSD masks, blend modes and effects after import.
+Almost. It builds the UI objects, but you still need to hook up button events and save the scene. If the design came from a PSD, double-check masks and effects.
 
 ## Where does my data go?
 
-Local editors use Unity's localhost server. Online AI requests can send prompts, attachments and workflow context to your provider; MCP assistants receive requested tool results. Keep credentials private.
+Editors run locally on your computer. Only when you use AI chat or image generation are your prompt and attachments sent to your AI provider. Keep your API keys private.
 
 ## How do I switch language?
 
-Use **EN / VI**; the choice is saved. Automatic language selection uses time zone and may query geojs.io for your country in shared UTC+7 zones.
+Click **EN / VI** at the top. Your choice is remembered.
 
 ## Can I redistribute imported artwork?
 
-Check its license. Rotation and sharpening do not grant redistribution rights. Keep toolkit and font license notices with redistributed content.
+Only if its license allows it. Editing an image doesn't change its license. Keep the toolkit and font license notices with anything you share.

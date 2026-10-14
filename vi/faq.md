@@ -2,11 +2,11 @@
 
 ## Có cần AI không?
 
-Chỉnh graph, thiết kế UI, text và công cụ particle offline dùng được khi chưa đăng ký AI. Chat và tạo ảnh qua nhà cung cấp cần tài khoản của bạn.
+Không. Graph, thiết kế UI, chữ và particle đều dùng được không cần AI. Chỉ chat và tạo ảnh mới cần tài khoản AI.
 
 ## Hỗ trợ phiên bản Unity và hệ điều hành nào?
 
-Dùng **Unity 2022.3 LTS trở lên** trên **Windows, macOS hoặc Linux** được phiên bản Unity đó hỗ trợ. UI/text cần uGUI, TextMesh Pro và TMP Essentials chính thức. Preview particle dùng player dựng sẵn với hiệu ứng portable `.vgfx.json`. Xem [cài đặt và phạm vi kiểm thử](getting-started.md).
+**Unity 2022.3 LTS trở lên** trên Windows, macOS hoặc Linux. Công cụ UI và chữ cần thêm uGUI và TextMesh Pro. Xem [Bắt đầu nhanh](getting-started.md).
 
 **Web Designer Miễn phí vĩnh viễn · Free forever**, dùng được khi không cài Unity.
 
@@ -18,23 +18,23 @@ Dùng **Unity 2022.3 LTS trở lên** trên **Windows, macOS hoặc Linux** đư
 | Thiếu `/vina` hoặc `$vina` | Bấm **Install chat skills**, kiểm tra trùng tên rồi mở lại chat dự án. |
 | Không có công cụ Canvas | Kiểm tra Unity UI (uGUI) đã được cài. |
 | Particle màu hồng | Chạy **Particle System → Repair Materials For Active Pipeline**. |
-| Web editor báo xung đột `409` | Xuất bản nháp hoặc nạp lại asset mới nhất từ Unity. |
+| Web editor báo xung đột `409` | File đã bị sửa ở nơi khác. Xuất bản nháp rồi tải lại. |
 | Không có ảnh được tạo | Kiểm tra thông tin đăng nhập, hạn mức và trạng thái job. |
-| Chữ bake cũ hoặc không tương thích | Chạy **Bake / Rebuild** trước khi build. |
-| Cần đổi nội dung chữ baked lúc chạy | Dùng **Revert Bake** để trở lại Dynamic. |
+| Chữ bake bị cũ | Chạy **Bake / Rebuild** trước khi build. |
+| Cần đổi chữ đã bake trong game | Dùng **Revert Bake** để về Dynamic. |
 
 ## Import Canvas xong là dùng ngay được chưa?
 
-Import tạo object UI và hỗ trợ Undo. Bạn cần nối sự kiện Button, tự lưu scene và kiểm tra lại mask, blend mode, hiệu ứng của PSD.
+Gần như vậy. Import dựng sẵn object UI, nhưng bạn vẫn cần nối sự kiện cho nút và lưu scene. Nếu thiết kế từ PSD, kiểm tra lại mask và hiệu ứng.
 
 ## Dữ liệu đi đâu?
 
-Editor cục bộ dùng server localhost của Unity. Yêu cầu AI online có thể gửi prompt, tệp đính kèm và ngữ cảnh tới nhà cung cấp; trợ lý MCP nhận kết quả công cụ được yêu cầu. Giữ thông tin đăng nhập riêng.
+Các editor chạy ngay trên máy bạn. Chỉ khi dùng chat AI hoặc tạo ảnh, prompt và tệp đính kèm mới được gửi tới nhà cung cấp AI. Giữ API key bí mật.
 
 ## Đổi ngôn ngữ thế nào?
 
-Dùng **EN / VI**; lựa chọn được lưu. Chọn tự động dựa vào múi giờ và có thể hỏi geojs.io về quốc gia khi dùng múi giờ UTC+7 chung.
+Bấm **EN / VI** ở phía trên. Lựa chọn sẽ được ghi nhớ.
 
 ## Có được phân phối artwork import không?
 
-Kiểm tra giấy phép của ảnh. Xoay và làm nét không cấp thêm quyền phân phối. Giữ thông báo giấy phép toolkit và font khi phân phối nội dung.
+Chỉ khi giấy phép của ảnh cho phép. Chỉnh sửa ảnh không thay đổi giấy phép. Giữ thông báo giấy phép của toolkit và font khi chia sẻ.

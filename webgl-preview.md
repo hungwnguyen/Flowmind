@@ -1,31 +1,27 @@
 # Web Particle: AI Agent testing
 
-**Web Particle primarily helps an AI Agent visually test the particles it creates.** The agent loads an effect, inspects runtime state, captures selected moments, evaluates the images, adjusts the Unity effect and tests the next revision. Users can also inspect the same preview manually.
+**Web Particle lets an AI agent see and test the particle effects it creates.** The agent plays the effect in a browser, takes screenshots at key moments, checks them, fixes the effect in Unity and tests again. You can use the same preview yourself.
 
 ![Portal demo in the real WebGL player with playback controls](images/particle-web-demo.png)
 
-The [website demos](particles.md) show supplied effects. A project's local preview exports that project's particle prefab as portable `.vgfx.json` through the Unity bridge, then reconstructs it in the prebuilt player. Browser controls change live playback; they do not save edits back to a Unity prefab. The agent must apply persistent edits in Unity and export/reload the revision.
+The [website demos](particles.md) show the bundled effects. In your project, the preview loads your own particle prefabs. Changes made in the browser are for testing only — they are not saved back to Unity.
 
 ## Prepare the player
 
 1. Keep Unity open and start **Open → MCP Bridge**.
-2. Open **Tools → VinaGen AI Toolkit → Open → Particles**. Under **Particle WebGL player**, use **Download** if missing. It is downloaded once and shared by projects on this computer. If the installed version is outdated, use **Update**. Once installed, **Re-download** downloads it again and **Show folder** locates it.
-3. Open **Editors → Open Particle Preview → Built-in / URP / HDRP**, or the returned `webPreviewUrl` for your effect.
+2. Go to **Tools → VinaGen AI Toolkit → Open → Particles**. Under **Particle WebGL player**, click **Download** (once per computer; use **Update** when a new version is out).
+3. Open **Editors → Open Particle Preview → Built-in / URP / HDRP**.
 
 ![Particles tab with the installed shared player](images/toolkit-particles.png)
 
-Windows player cache: `%USERPROFILE%/AppData/LocalLow/VinaGen/AIToolkit/WebGLPlayer`. Per-project portable effect exports: `Library/VinaGen/ParticlePreview/<Pipeline>/fx/`. Users use the prebuilt player. **Build WebGL** belongs to the separate author-only developer tools.
+## How the AI agent tests an effect
 
-## The AI Agent review loop
-
-| Step | Agent action | Evidence / result |
-| --- | --- | --- |
-| **1. Create** | Choose suitable artwork/template; call `create_particle_system` (default `web_preview`). | Prefab path, warnings and preview job URLs. |
-| **2. Wait and load** | Poll `webPreviewStatusUrl` until success, open `webPreviewUrl`, wait for readiness/import acknowledgement. | Correct prefab/revision, system hierarchy and actual pipeline. |
-| **3. Capture** | Choose startup, peak and fade times from this effect's lifetime; use a fixed seed and explicit motion plan. | Frames, requested/actual times and capture errors. |
-| **4. Judge** | View every frame: silhouette, colors, clipping, empty output, layer overlap, movement and disappearance. | Specific visual findings; API success alone does not approve the effect. |
-| **5. Improve** | Edit textures, materials, emission or curves on the Unity asset; re-export/reload its portable effect. | Saved effect revision, then captures with the same comparison conditions. |
-| **6. Finish** | Repeat until it matches the brief; report paths, images, warnings and limitations. | Review evidence accompanying the delivered prefab. |
+1. **Create** — the agent builds the particle prefab.
+2. **Load** — it opens the effect in the web preview.
+3. **Capture** — it takes screenshots at the start, peak and fade, using a fixed random seed so results are comparable.
+4. **Check** — it looks at every image for problems: wrong colors, cut-off edges, empty frames, bad timing.
+5. **Fix** — it edits textures, materials or emission in Unity and reloads.
+6. **Repeat** until the effect matches your request, then reports the result with screenshots.
 
 Example request:
 
@@ -35,7 +31,7 @@ Capture startup, peak and fade with the same seed. Inspect every image,
 fix clipping or timing problems, and re-test the saved Unity prefab.
 ```
 
-Use [Create from chat](create-from-chat.md) and [MCP Bridge](mcp-bridge.md) for this workflow. Git commits are a separate host-agent action when requested; the WebGL player does not commit code.
+See [Create from chat](create-from-chat.md) and [MCP Bridge](mcp-bridge.md) to set this up.
 
 ## Repeatable captures
 
@@ -53,7 +49,7 @@ const frames = await fx.capture({
 });
 ```
 
-These camera frames were captured on this computer from `toon_explosion`, with **seed 12345**, stationary simulation and **Built-in** rendering:
+Frames from `toon_explosion` (seed 12345, Built-in pipeline):
 
 <div class="vg-pair">
   <figure><img src="images/particle-review-1.png" alt="Toon explosion camera frame at 0.08 seconds" loading="lazy"><figcaption>0.08 s — initial flash and silhouette.</figcaption></figure>
@@ -61,35 +57,34 @@ These camera frames were captured on this computer from `toon_explosion`, with *
   <figure><img src="images/particle-review-3.png" alt="Toon explosion camera frame at 0.8 seconds" loading="lazy"><figcaption>0.80 s — late smoke and remaining particles.</figcaption></figure>
 </div>
 
-Read `actualTimeSeconds`, pipeline metadata and errors alongside the images. Opening/importing/watching a manifest never captures frames. `postToSink:true` saves through the bridge to `Assets/VinaGen AI Toolkit/Samples/GeneratedParticles/Captures/` by default. `download:true` requests browser downloads. See [Particle WebGL Preview Settings](settings.md#particle-webgl-preview-settings) for camera, bloom and capture defaults.
+- `postToSink: true` saves frames into the Unity project; `download: true` downloads them in the browser.
+- Nothing is captured until someone calls `capture()`.
+- Camera, bloom and capture defaults: [Particle WebGL Preview Settings](settings.md#particle-webgl-preview-settings).
 
-## Manual controls and emitter motion
+## Manual controls
 
 | Control | Use |
 | --- | --- |
-| **Particle target** | Select one system or all systems before editing. |
-| **Play / Pause / Restart** | Replay a one-shot before judging it. |
-| **Time scale** | Slow motion to inspect timing and overlap. |
-| **Lifetime / Start size / Emission / Start color** | Edit live values, then **Apply basics**. |
-| **Motion & rendering** | Expand for camera distance, renderer mode and emitter paths. |
-| **Import & developer tools** | In the website demo, expand for bundle/manifest import, commands, captures and Live state. Local player controls may be arranged differently. |
+| **Particle target** | Pick one system or all. |
+| **Play / Pause / Restart** | Replay the effect. |
+| **Time scale** | Slow motion to inspect timing. |
+| **Lifetime / Start size / Emission / Start color** | Tweak values, then **Apply basics**. |
+| **Motion & rendering** | Camera distance, render mode and emitter movement. |
+| **Import & developer tools** | Import files, run commands and capture (website demo). |
 
 ![Web Particle with Motion and rendering expanded](images/particle-web-motion.png)
 
-Use **Emitter motion → Arc / Line / Circle…**, set A/B positions and duration, then **Apply path**. `setMotion` changes live motion without capturing; pass `motion` to `capture()` to test it explicitly. Stationary frames cannot establish that moving trails work.
+To test moving effects (trails), use **Emitter motion → Arc / Line / Circle…**, set start/end points and duration, then **Apply path**.
 
 ![Website demo Capture frame and Download PNG controls](images/particle-web-capture.png)
 
-## Compatibility and troubleshooting
+## Troubleshooting
 
-- **Missing player:** download from Particles or Welcome, then repeat the request.
-- **Outdated player:** download the latest prebuilt release. Portable effects do not require a matching Unity editor version, pipeline or color space; unsupported shader behaviour still needs native Unity verification.
-- **Blank/clipped frame:** restart, choose times inside the active lifetime, check framing and `lastError`.
-- **Pink materials:** repair for the active pipeline and reload.
-- **HDRP:** browser rendering uses a URP/Built-in proxy. Compare `expectedRenderPipeline` / `actualRenderPipeline`; verify native HDRP shading in Unity.
-- **Import format:** use toolkit-exported portable `.vgfx.json`. Raw `.prefab` YAML and `.unitypackage` files cannot load directly. Website demo controls also retain bundle/manifest import for supplied demos.
-- **Custom scripts / VFX Graph:** scripts absent from the prebuilt player and unsupported VFX content cannot be verified by that player.
-
-These captures verify the Built-in demo on this machine. They do not establish URP/HDRP parity, target-device performance or a clean toolkit-only Unity import.
+- **Player missing or outdated:** download/update it from the Particles tab.
+- **Blank or cut-off frame:** restart, pick a time while the effect is active, move the camera back.
+- **Pink materials:** run **Repair Materials For Active Pipeline** and reload.
+- **HDRP:** the browser shows an approximation. Check final HDRP look in Unity.
+- **Can't load a file:** only `.vgfx.json` exported by the toolkit works — not `.prefab` or `.unitypackage`.
+- **Custom scripts / VFX Graph:** not supported in the web player; test them in Unity.
 
 [Next: AI Chat & Providers](ai-chat.md)
