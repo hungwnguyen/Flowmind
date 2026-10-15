@@ -1,8 +1,12 @@
-# UI Designer
+# UI Designer — Offline (Unity)
 
 Dựng màn hình, popup và component UI bằng layer chỉnh sửa được. Xuất ra PSD/PNG, hoặc chuyển thành Unity Canvas.
 
-> Không có Unity? Dùng [Web Designer](web-designer.md) miễn phí trên trình duyệt.
+<nav class="vg-designer-nav" aria-label="Hướng dẫn UI Designer"><a href="#/vi/designer-guide">Tổng quan</a><a href="#/vi/web-designer">Online · Web</a><a href="#/vi/ui-designer" aria-current="page">Offline · Unity</a></nav>
+
+Bản Offline chạy cùng VinaGen AI Toolkit trong dự án Unity. Editor mở trên trình duyệt qua kết nối cục bộ; giữ Unity mở khi chỉnh sửa. Nếu chưa cài Unity, chọn [Online · Web Designer](web-designer.md).
+
+Các thao tác thiết kế và icon dùng chung nằm trong [Tổng quan](designer-guide.md). Phần này chỉ hướng dẫn kết nối và tài nguyên Unity.
 
 ## Mở editor
 
@@ -10,27 +14,25 @@ Chọn **Tools → VinaGen AI Toolkit → Editors → Open UI Designer**, hoặc
 
 ![UI Designer với tài liệu mẫu](../images/ui-designer.png)
 
-## Dựng màn hình
+## Tài nguyên trong dự án Unity
 
-1. Chọn **New screen**, hoặc import PSD, JSON, ảnh.
-2. Tạo **Screen root** (**Root tools**) cho mỗi màn hình hoặc popup.
-3. Thêm ảnh, chữ, nút, nhóm; sắp xếp trong **Layers**.
-4. Chỉnh kích thước, màu, font, component và anchor trong **Inspector**.
-5. **Save** để lưu, **Export** để tải file, hoặc bấm **Canvas** để dựng trong Unity.
+**Files** duyệt tài liệu trong dự án; **Assets → Choose folder…** chọn thư mục bên trong `Assets/` trước khi duyệt ảnh. Có thể kéo thumbnail hoặc dùng đường dẫn `Assets/...` để thêm ảnh. Ảnh mới được lưu theo UI Designer Settings hoặc thư mục ảnh riêng của tài liệu.
 
-Chiều rộng/cao của tài liệu quyết định kích thước Canvas và Game View.
+![Tab Files trong dự án](../images/ui-files.png)
 
-## Workspace
+![Chọn thư mục Assets trong Unity](../images/ui-assets.png)
 
-| Khu vực | Dùng để |
-| --- | --- |
-| **Files** | Tạo, mở và tìm tài liệu. |
-| **Layers** | Chọn, đổi tên, đổi thứ tự, lồng, ẩn và khóa layer. |
-| **Assets** | Duyệt ảnh trong dự án và kéo vào canvas. |
-| **Inspector** | Chỉnh bố cục, màu, ảnh, chữ và thuộc tính Unity. |
-| **Thanh công cụ dưới** | Move, Hand, Scale, root, hình, Image, Text và Comment. |
+Mỗi lần nhập PSD dùng thư mục riêng `Assets/VinaGen PSD Imports/<tên PSD>/`, gồm ảnh, style và tài liệu. Đường dẫn này được giữ khi lưu và import Canvas. Fusion tạo/cập nhật PNG trong dự án; Undo khôi phục layer nhưng PNG vẫn ở lại. Save/Canvas import có thể tối ưu ảnh nguồn 9-slice và giữ GUID; các tài liệu dùng chung nguồn sẽ nhận thay đổi.
 
-Chọn một object trước khi thêm để tạo con bên trong nó; bỏ chọn để thêm ở cấp ngoài cùng. **Add Component** đặt vai trò (Image/Button/Text/Group: `Alt+2–5`).
+## Font, Text type và material TMP
+
+**Typography → Text type** có **Text**, **TextMesh Pro** và **VinaGenText**. Đăng ký font tại **Settings → UI Designer Settings**; **Editors → Create UI Designer TMP starter fonts** tạo sẵn font TMP. Đổi Text type xong cần import lại Canvas.
+
+**PSD import → Default font** chọn font đã đăng ký khi PSD thiếu font. Material TMP và preset phải khớp atlas của font. Dùng [VinaGenText](vinagen-text.md) khi cần gradient, viền và bake chữ.
+
+## Layer khi chuyển vào Unity
+
+**Add Component** đặt vai trò Image/Button/Text/Group (`Alt+2–5`); **Canvas Group** thêm opacity, interactable và raycast. Đây là các thuộc tính Unity bổ sung cho thiết kế chung.
 
 | Layer | Trong Unity thành |
 | --- | --- |
@@ -41,79 +43,7 @@ Chọn một object trước khi thêm để tạo con bên trong nó; bỏ ch�
 | **Canvas Group** | `CanvasGroup` (opacity, interactable, raycast). |
 | **Horizontal / Vertical / Grid** | LayoutGroup tương ứng. |
 
-![Tab Files mở sample UI](../images/ui-files.png)
-
-![Tab Assets: chọn thư mục trước khi duyệt ảnh](../images/ui-assets.png)
-
-Trong **Assets**, bấm **Choose folder…** trước — bảng sẽ trống cho đến khi chọn thư mục. [Demo](demos.md) có bài thực hành ba màn hình.
-
-## Mẹo chỉnh sửa
-
-- **Ctrl/Cmd-click** để thêm vào vùng chọn, **Shift-click** để chọn một dải, hoặc kéo khung trên canvas.
-- Căn lề, group, duplicate, copy/paste, đổi thứ tự từ thanh công cụ hoặc menu chuột phải.
-- **Move** tự bám cạnh và tâm. `Alt`+kéo để bỏ bám; `Shift`+kéo để khóa một trục.
-- Giữ `Shift` khi resize để giữ tỉ lệ. **Scale** (`K`) co giãn cả cỡ chữ và viền.
-- **Selection colors** đổi một màu ở mọi nơi trong vùng chọn cùng lúc.
-
-## Ảnh, hình và 9-slice
-
-Thả file PNG/JPEG hoặc kéo ảnh từ **Assets**. **Reset to image size** trả về kích thước gốc.
-
-| Image mode | Kết quả |
-| --- | --- |
-| **Preserve Aspect** | Vừa trong khung, giữ tỉ lệ. |
-| **None** | Kéo giãn phủ kín khung. |
-| **9-slice** | Giữ góc sắc nét, chỉ kéo phần giữa — hợp cho panel và nút. |
-
-Viền 9-slice được tự nhận diện và thành Sliced Sprite trong Unity.
-
-Các hình (Rectangle, Line, Arrow, Ellipse, Polygon, Star) vẫn sửa được. **Fill** hỗ trợ màu đơn và gradient; **Stroke** chỉnh viền. **Clip** ẩn phần con tràn ra ngoài.
-
-## Fusion images
-
-Gộp nhiều ảnh thành một PNG, chữ vẫn sửa được.
-
-1. Chọn Image, Button hoặc Group có ảnh con.
-2. Bấm **Fusion images** trong mục **Image**.
-3. PNG gộp được lưu vào dự án và gán cho object. Nhớ **Save** tài liệu.
-
-Chữ, layer ẩn và layer bị khóa không bị gộp. Undo khôi phục layer, nhưng file PNG vẫn ở lại dự án. Giới hạn PNG: **5 MB**.
-
-## Chữ và font
-
-**Typography → Text type** có **Text**, **TextMesh Pro** và **VinaGenText**. Dùng [VinaGenText](vinagen-text.md) khi cần gradient, viền và bake chữ.
-
-Text hỗ trợ căn lề, xuống dòng, auto size, spacing và chữ uốn cong (**Text on path**).
-
-Đăng ký font tại **Settings → UI Designer Settings**. **Editors → Create UI Designer TMP starter fonts** tạo sẵn font TMP. Đổi **Text type** xong cần import lại Canvas.
-
-## Import PSD
-
-Hỗ trợ **PSD RGB 8-bit**: layer, nhóm, tên, opacity, ẩn/hiện và blend mode phổ biến. Layer chữ được khôi phục thành chữ sửa được khi có thể; phần còn lại thành ảnh.
-
-- PSD không chứa font. Đặt **PSD import → Default font** cho font bị thiếu.
-- Mỗi lần import được lưu trong `Assets/VinaGen PSD Imports/<tên PSD>/`.
-- Chưa hỗ trợ: PSB, CMYK, 16/32-bit. Kiểm tra mask, smart object và hiệu ứng bằng mắt.
-
-## Export PSD, SVGPRO, SVG và PNG
-
-1. Chọn object muốn xuất (nếu chỉ xuất một phần).
-2. Bấm **Export** (hoặc **More actions → Export**).
-3. Trong **Content**, chọn **Selected object(s)** hoặc **All objects**.
-4. Bấm **PSD**, **SVGPRO**, **SVG** hoặc **PNG**.
-
-![Hộp Export với PSD, SVGPRO, SVG và PNG](../images/ui-export.png)
-
-| Định dạng | Bạn nhận được |
-| --- | --- |
-| **PNG** | Một ảnh trong suốt kích thước 1×. |
-| **SVG** | File xem được trên trình duyệt, nhúng sẵn ảnh và font. |
-| **SVGPRO** | Toàn bộ tài liệu kèm ảnh và font. Kéo vào dự án Unity khác để import. |
-| **PSD** | Layer, nhóm và chữ sửa được. Font không được nhúng. |
-
-Muốn mỗi màn hình một file: chọn từng Screen root rồi xuất lần lượt.
-
-Giới hạn: **8.192 px mỗi cạnh, 16 megapixel**. PSD: tối đa **1.000 layer** và **500 MB**. Không sửa tài liệu khi đang xuất.
+9-slice trở thành Sliced Sprite, hình vẽ trở thành `VinaGenUIShape`, Clip trở thành `RectMask2D`. Canvas dùng standard alpha blending; blend mode và hiệu ứng có thể khác preview trên trình duyệt.
 
 ## Chuyển vào Unity Canvas
 
@@ -155,8 +85,10 @@ Dùng `ShowScreen(layerId)`, `FindLayer(layerId)` và `ButtonClicked` để nố
 
 **Save** (`Ctrl/Cmd+S`) lưu `VinaGenUIDocument`. **Show in Editor** chọn asset trong cửa sổ Project.
 
-**Settings → UI Designer Settings** chứa thư mục, font, Button prefab, độ phân giải mặc định, anchor và phím tắt. **Comment** thêm ghi chú review, không xuất hiện trong Unity.
+**Settings → UI Designer Settings** chứa thư mục, font, Button prefab, độ phân giải mặc định, anchor và phím tắt.
 
 Trợ lý AI có thể chụp từng màn hình qua [MCP Bridge](mcp-bridge.md).
 
-[Tiếp theo: VinaGenText](vinagen-text.md)
+**Export SVGPRO** lưu tài liệu trước rồi tải gói kèm tài nguyên. Có thể kéo gói vào dự án Unity khác để import.
+
+Phím mặc định riêng: **R** chọn Image, **F** chọn Group; **Alt+2/3/4/5** đổi vai trò Image/Button/Text/Group; **Ctrl/Cmd+Shift+I** import Unity. Các phím này có thể đổi trong UI Designer Settings.

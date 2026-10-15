@@ -10,6 +10,13 @@ native editor controls; it is author tooling, not a deployment/build requirement
 `tools/sync-designer-icons.py --source <toolkit Editor/WebGraph>` command. Keep
 `workspace-controls.css` linked for the split tool buttons, popovers and asset grid.
 
+The bilingual UI Designer Overview and Online guide use real SVG button samples in
+`images/web-designer/icons/`. With a local server running on port 3000, refresh
+both light/dark samples after editor icon or theme changes using
+`node tools/sync-designer-guide-icons.cjs`. This author tool reads the editor's
+rendered SVG paths, computed colors, backgrounds and dimensions; no icon font
+or manually redrawn symbol is used in the guide.
+
 Publish this folder with the existing Flowmind repository on Render. Entry point:
 `https://vinagen.onrender.com/designer/`. Use HTTPS, JavaScript MIME types for
 `.mjs` and preserve relative module paths. No server API, external runtime CDN,

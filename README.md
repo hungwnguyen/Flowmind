@@ -20,6 +20,12 @@ The **Web Designer** tab opens the independent static application in `designer/`
 It retains browser design tools and PSD/SVGPRO/PNG/SVG workflows, and replaces
 Unity storage with a user-selected local directory or browser recovery + downloads.
 See [guide](web-designer.md) and [Vietnamese guide](vi/web-designer.md).
+Documentation puts shared editing workflows and the light/dark SVG icon reference
+in [UI Designer Overview](designer-guide.md). **Online** (`web-designer.md`) covers
+workspace permissions, local packages, sync and browser fonts; **Offline · Unity**
+(`ui-designer.md`) covers project assets, native fonts and Canvas/UI Toolkit import.
+The introduction opens the Online guide first; its launch button opens
+the standalone editor. Existing guide URLs remain valid.
 Deploy the folder alongside this site on its existing HTTPS host; no runtime build,
 backend, npm installation or Unity process is required. `.mjs` must use a JavaScript
 MIME type. All URLs are relative and support hosting under a project subpath.
@@ -43,8 +49,9 @@ Browser snapshots live in `images/web-designer/`.
 | `demos.md` | Illustrated practice with UI, text, graphs and particles |
 | `graphs.md` | Flow and design content graphs |
 | `web-editor.md` | Browser Flow Editor |
-| `ui-designer.md` | UI Designer, PSD import and Canvas import |
-| `web-designer.md` | Standalone hosted designer, local folder workspace and PSD/SVGPRO workflows |
+| `ui-designer.md` | Offline Unity access, project assets/fonts and Canvas/UI Toolkit import |
+| `designer-guide.md` | Shared icons, editing, layers, images, text, PSD/export and shortcuts |
+| `web-designer.md` | Online access, local folder workspace, browser fonts and portable saves |
 | `vinagen-text.md` | VinaGenText fonts, styles and gradients |
 | `particles.md` | Texture library, authoring tools and effect construction |
 | `webgl-preview.md` | AI Agent particle testing loop, timed evidence and browser controls |

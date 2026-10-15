@@ -56,3 +56,28 @@ The standalone captures were refreshed with the shared local-editor SVG icons,
 `web-designer/settings.png` now shows the shared local-editor popup, three theme
 preview cards, light canvas background, enhanced contrast, snapping and comment
 display name. Light/dark preferences and narrow-screen scrolling were checked.
+
+## Web Designer guide icons — 15 October 2026
+
+`web-designer/icons/*-light.svg` and `*-dark.svg` are static exports of the
+actual editor's SVGs, computed stroke colors, button backgrounds and dimensions.
+`tools/sync-designer-guide-icons.cjs` captures toolbar buttons, drawing tools,
+the active Move tool and layer visibility/lock controls from the local editor.
+The bilingual Overview uses the common samples; the Online guide keeps its
+workspace/Demo samples. They contain no generated artwork
+or substitute icon-font glyphs. Refresh them against the running editor after
+an icon/theme change. The guide layout and navigation were checked at 1440 px
+and 390 px, including reduced motion, drawer state and the Escape shortcut.
+
+### Shared editor reference check — 15 October 2026
+
+The documentation was compared with the read-only source in
+`C:/Projects/vinagen/Assets/VinaGen AI Toolkit/Editor/WebGraph/` and its UI Studio
+skill references. `canvas-tools.mjs`, `ui-shapes.mjs`, `ui-paints.mjs`,
+`ui-layer-actions.mjs`, `canvas-comments.mjs`, `ui-text-curve.mjs` and the studio's
+`icon()` method match the standalone equivalents. Storage, fonts, native import
+and some PSD implementation paths are adapted, so their workflows remain in the
+Online/Offline guides. Shortcut defaults were checked against standalone
+`workspace.mjs` and Unity's `Editor/UIStudio/VinaGenUIStudioSettings.cs`: **R** is
+Rectangle online and Image in Unity. This source audit does not claim a new Unity
+runtime/import or Photoshop-fidelity test.

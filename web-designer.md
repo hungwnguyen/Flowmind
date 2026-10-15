@@ -1,23 +1,39 @@
-# Web Designer — design online
+# Web Designer — Online
 
 <p><span class="vg-free-badge">Free forever</span></p>
 
 Design UI right in your browser. Your files stay on your device. No Unity, account or AI provider needed.
 
-<p><a href="designer/" target="_blank" rel="noopener" class="vg-btn">Open Web Designer ↗</a></p>
+<nav class="vg-designer-nav" aria-label="UI Designer guide"><a href="#/designer-guide">Overview</a><a href="#/web-designer" aria-current="page">Online · Web</a><a href="#/ui-designer">Offline · Unity</a></nav>
+
+<div class="vg-designer-launch"><div><strong>Start designing on the web</strong><p>Read the steps below, then open the editor to practise. No installation needed.</p></div><a href="designer/" target="_blank" rel="noopener" class="vg-designer-open">Open Web Designer ↗</a></div>
 
 ![The standalone editor after importing a PSD](images/web-designer/workspace.png)
 
+Icons, Layers, drawing tools, images/9-slice, Fusion, text, PSD and Export are shared: see [Overview](designer-guide.md). This page covers web-specific steps.
+
+## Online-only buttons
+
+<table class="vg-icon-table">
+<thead><tr><th scope="col">Light / Dark</th><th scope="col">Button / Tool</th><th scope="col">How to use it</th></tr></thead>
+<tbody>
+<tr><td><img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/folder-light.svg" alt="" width="28" height="28"><img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/folder-dark.svg" alt="" width="28" height="28"></td><td><strong>Choose folder / Files</strong></td><td>Choose your workspace folder or browse documents.</td></tr>
+<tr><td><img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/demo-light.svg" alt="" width="28" height="28"><img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/demo-dark.svg" alt="" width="28" height="28"></td><td><strong>Demo</strong></td><td>Open the sample design to practise.</td></tr>
+</tbody>
+</table>
+
+Click **Demo** for a practice document, then follow the [shared editing guide](designer-guide.md).
+
 ## Start with a workspace
 
-1. Open the editor. In Chrome or Edge on desktop, click **Choose folder** and allow access to your design folder.
+1. Open the editor. In Chrome or Edge on desktop, click <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/folder-dark.svg" alt="" width="28" height="28"> **Choose folder** and allow access to your design folder.
 2. **Files** lists your `.svgpro` documents; **Assets** shows your images.
-3. Create a screen, import a PSD or open a `.svgpro`. **Save** writes the `.svgpro` into your folder (e.g. `Documents/Login.svgpro`).
+3. Create a screen, import a PSD or open a `.svgpro`. <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/save-dark.svg" alt="" width="28" height="28"> **Save** writes the `.svgpro` into your folder (e.g. `Documents/Login.svgpro`).
 4. Next time, click **Reconnect folder** if the browser asks for permission again.
 
 ![The selected folder workspace after saving the demo](images/web-designer/folder.png)
 
-**Browser doesn't support folders?** Use **Import** to open files. **Save** then downloads the `.svgpro` instead — move it into your folder yourself.
+**Browser doesn't support folders?** Use <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/import-dark.svg" alt="" width="28" height="28"> **Import** to open files. <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/save-dark.svg" alt="" width="28" height="28"> **Save** then downloads the `.svgpro` instead — move it into your folder yourself.
 
 Good to know:
 
@@ -31,72 +47,37 @@ Keep your workspace in the cloud with a sync app:
 
 1. Install [Google Drive](https://www.google.com/drive/download/), [OneDrive](https://www.microsoft.com/microsoft-365/onedrive/download) or [Dropbox](https://www.dropbox.com/install) for desktop and sign in.
 2. Create your design folder inside the synced folder, e.g. `Google Drive/My Drive/Designs`.
-3. In Web Designer, **Choose folder** and pick it. Every **Save** is uploaded automatically.
+3. In Web Designer, <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/folder-dark.svg" alt="" width="28" height="28"> **Choose folder** and pick it. Every <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/save-dark.svg" alt="" width="28" height="28"> **Save** is uploaded automatically.
 4. On another computer, install the same app, wait for sync, then choose the same folder.
 
 **Note:** Mark the folder **Always keep on this device** so the browser can read it. Don't edit the same file on two devices at once.
 
-## Design tools
+## Workspace images and fonts
 
-Click **Demo** to open a sample screen. Change the title's font or a color, then export a PNG or PSD.
+In **Assets**, click **Add images...** for PNG/JPEG files; resources are managed within the workspace/document. Identical images are shared automatically: changing tint, gradients or mode updates shared copies; layer positions and sizes remain separate.
 
-| Area | What you can do |
-| --- | --- |
-| Files / Layers / Assets | Open documents; reorder, nest, rename, lock and hide layers; browse images |
-| Canvas | Move, zoom, resize, rotate, align, snap, Undo/Redo |
-| Shapes | Rectangle, ellipse, polygon, star, line, arrow; solid and gradient fills |
-| Text | Fonts, sizes, alignment, curved text, gradient/outline/extrusion effects |
-| Layout | Groups, horizontal/vertical/grid layout, clipping |
-| Images | PNG/JPEG, 9-slice, Fusion |
-| Comments | Pinned notes saved with the document |
+Use **Import** for TTF, OTF, WOFF or WOFF2, then select the font in Typography. The web app renders fonts and effects in the browser; Unity font registration and TMP materials are unavailable.
 
-To use your own font, **Import** a TTF, OTF, WOFF or WOFF2 file and pick it in Typography.
+![Web workspace assets](images/web-designer/assets.png)
 
-![Typography and editable text effects](images/web-designer/inspector.png)
+## Save and export a copy
 
-Shortcuts: **V** Move, **H** Hand, **T** Text, **R** Rectangle, **O** Ellipse, **K** Scale, **Shift+1** Fit, **Ctrl/Cmd+S** Save, **Ctrl/Cmd+Z** Undo, **Ctrl/Cmd+Shift+Z** Redo, **Ctrl/Cmd+D** Duplicate. Right-click a layer for more actions. A large screen works best.
+**Save** writes `.svgpro` to the authorized folder, or downloads it in browser mode. **Export SVGPRO** downloads a portable copy without updating the workspace file — Save separately to update the current document. Export remains available after folder permission expires.
 
-## Images
+PSD import creates no Unity `Assets/` folder; images/fonts belong to the workspace/document package. Fusion and image optimization update the packaged copy; original loose image files are not overwritten.
 
-1. In **Assets**, click **Add images...** and pick PNG/JPEG files (several at once is fine).
-2. Click or drag a thumbnail onto the canvas. To swap an image, use **Replace image from files** in the Inspector.
-3. Identical images are shared automatically: change one (tint, gradient, mode) and every copy updates. Position and size stay separate.
+## Preferences and version-specific keys
 
-![Assets gallery and the shared image component in the inspector](images/web-designer/assets.png)
+Appearance preferences and your comment name are stored in this browser and apply immediately. **R** selects Rectangle; **I** selects Image; **O** selects Ellipse; **L / Shift+L** select Line / Arrow.
 
-## PSD import and export
+![Web settings](images/web-designer/settings.png)
 
-**Import → choose a PSD → Replace or Insert.** *Replace* swaps the current document; *Insert* adds the PSD beside it. You can cancel at any time.
+## Continue with Offline · Unity
 
-- Supported: 8-bit RGB PSD. Large files work (a 575 MB PSD was tested), limited by your computer's memory.
-- Not supported: PSB, CMYK, 16/32-bit.
-- Layers, groups, visibility, opacity and common blend modes are kept. Smart objects and complex effects become images.
-- PSDs don't include fonts — import matching fonts yourself. Missing fonts show a warning.
-- Check the result before sharing: text and effects may look slightly different from Photoshop.
-
-![Export options in the standalone editor](images/web-designer/export.png)
-
-| Format | Use it for |
-| --- | --- |
-| SVGPRO | The editable document with images and fonts. Use it to continue later or move devices. |
-| PSD | Photoshop layers with editable text. |
-| PNG | One flat image with a transparent background. |
-| SVG | A browser-viewable image. Text is not converted to outlines. |
-
-**Export SVGPRO** works even when folder access has expired, so you never lose unsaved work.
-
-## Settings
-
-![Theme, snap and comment author settings](images/web-designer/settings.png)
-
-**Settings** controls theme (Light/Dark/System), canvas background, contrast, grid snapping and your comment name. Changes apply instantly and are saved in this browser. Canvas size is set in the Screen inspector.
-
-## Web Designer vs. the Unity toolkit
-
-Web Designer is a standalone app. Unity features (Canvas import, UI Toolkit, TMP materials, MCP) are only in the Unity [UI Designer](ui-designer.md). For particle effects, see [Web Particle: AI testing](webgl-preview.md).
+Web Designer is a standalone app. Unity features (Canvas import, UI Toolkit, TMP materials, MCP) are only in the Unity [Offline · Unity](ui-designer.md). For particle effects, see [Web Particle: AI testing](webgl-preview.md).
 
 ## Hosting
 
 `designer/` is a static folder — host it anywhere alongside these docs. Requirements: serve `.mjs` as JavaScript and use HTTPS (needed for folder access). No server or npm install.
 
-Tested in desktop Chrome/Edge. Safari and Firefox are not verified — use **Import** and download-save there.
+Tested in desktop Chrome/Edge. Safari and Firefox are not verified — use <img class="vg-editor-icon vg-editor-icon--small" src="images/web-designer/icons/import-dark.svg" alt="" width="28" height="28"> **Import** and download-save there.
