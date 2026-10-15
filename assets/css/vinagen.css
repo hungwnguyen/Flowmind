@@ -403,9 +403,15 @@ body,
     animation: vg-text-glide 760ms 100ms cubic-bezier(.16, 1, .3, 1) both;
   }
 
-  .vg-hero-shot img {
-    animation: vg-rise 650ms 180ms cubic-bezier(.22, 1, .36, 1) both;
+  .markdown-section img.vg-image-pending {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 10px);
   }
+
+  .markdown-section img.vg-image-reveal {
+    animation: vg-image-wipe 1200ms cubic-bezier(.4, 0, .2, 1) both;
+  }
+  .vg-hero-shot img.vg-image-reveal { animation-delay: 160ms; }
 
   .vg-hero-shot figcaption {
     animation: vg-rise 450ms 300ms ease-out both;
@@ -421,6 +427,11 @@ body,
 @keyframes vg-rise {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
+}
+
+@keyframes vg-image-wipe {
+  from { opacity: .2; clip-path: inset(0 0 100% 0 round 10px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0 round 10px); }
 }
 
 @keyframes vg-text-glide {

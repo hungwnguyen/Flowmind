@@ -37,6 +37,7 @@ Publish the same repository root and branch as the existing docs; no new service
 Author checks: `node --test tests/designer-zip.test.mjs`, then
 `node tests/designer-smoke.cjs` against the local site on port 3000.
 Run `node tests/designer-docs.cjs` for both language routes and guide assets.
+Run `node tests/docs-image-motion.cjs` for image-load and viewport reveal behavior.
 The browser test accepts `PLAYWRIGHT_MODULE` and `DESIGNER_URL`; Node/Playwright
 are development dependencies only. Optional `tests/designer-fixture.cjs <path>`
 verifies an existing private package without copying it into this repository.
