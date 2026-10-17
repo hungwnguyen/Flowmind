@@ -9,7 +9,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE ||
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
-    await page.goto(process.env.DESIGNER_URL || 'http://127.0.0.1:3000/designer/');
+    await page.goto(process.env.DESIGNER_URL || 'http://127.0.0.1:3000/tools/designer-source/');
     await page.locator('.ui-toolbar').waitFor();
     const icons = await page.evaluate(async () => {
       const studio = (await import('./ui-studio.mjs')).getUIStudio();

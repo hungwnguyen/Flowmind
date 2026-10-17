@@ -8,7 +8,7 @@ let browser,page;
   const out=process.env.VINAGEN_MASTER_OUTPUT||'C:/Projects/vinagen/Builds/GraphWebVerification/MasterPass';fs.mkdirSync(out,{recursive:true});
   browser=await chromium.launch({headless:true,channel:'msedge'});
   page=await browser.newPage({viewport:{width:1800,height:1100}});const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto(process.env.DESIGNER_URL||'http://127.0.0.1:8769/designer/');
+  await page.goto(process.env.DESIGNER_URL||'http://127.0.0.1:8769/tools/designer-source/');
   await page.waitForFunction(()=>!!document.querySelector('.ui-board'));
   await page.evaluate(async()=>{window.s=(await import('./ui-studio.mjs')).getUIStudio();});await page.waitForFunction(()=>s.ready);
   await page.locator('.ui-studio input[type=file]').setInputFiles(file);

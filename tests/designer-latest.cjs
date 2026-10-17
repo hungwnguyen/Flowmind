@@ -7,7 +7,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'C:/Users/hanoi/.cac
     const page=await browser.newPage({viewport:{width:1440,height:950}}),errors=[],native=[];
     page.on('pageerror',error=>errors.push(error.message));
     page.on('request',request=>{if(new URL(request.url()).pathname.includes('/api/'))native.push(request.url());});
-    await page.goto(process.env.DESIGNER_URL || 'http://127.0.0.1:3000/designer/');
+    await page.goto(process.env.DESIGNER_URL || 'http://127.0.0.1:3000/tools/designer-source/');
     await page.waitForFunction(()=>document.querySelector('.ui-board'));
     const result=await page.evaluate(async()=>{
       const check=(value,message)=>{if(!value)throw Error(message);};

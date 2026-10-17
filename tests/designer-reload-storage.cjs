@@ -5,7 +5,7 @@ const {
 (async () => {
   const b = await chromium.launch(),
     p = await b.newPage();
-  await p.goto(process.env.DESIGNER_URL || "http://127.0.0.1:3000/designer/");
+  await p.goto(process.env.DESIGNER_URL || "http://127.0.0.1:3000/tools/designer-source/");
   await p.locator(".ui-board").waitFor();
   const r = await p.evaluate(async () => {
     const { record, records } = await import("./idb.mjs");

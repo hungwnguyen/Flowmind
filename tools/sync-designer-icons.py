@@ -10,7 +10,7 @@ text = source.read_text(encoding='utf-8')
 paths = re.search(r'const iconPaths = (\{.*?\n\});', text, re.S)
 if not paths:
     raise RuntimeError('Local editor icon paths were not found')
-target = Path(__file__).resolve().parents[1] / 'designer' / 'icons.mjs'
+target = Path(__file__).resolve().parents[1] / 'tools' / 'designer-source' / 'icons.mjs'
 target.write_text("""// SVG paths shared with the Unity-hosted local browser editor.
 // No icon fonts, network dependencies or raster approximations.
 import {canvasToolIcons} from './canvas-tools.mjs';

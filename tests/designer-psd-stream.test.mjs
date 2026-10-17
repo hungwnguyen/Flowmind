@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { deflateSync } from "node:zlib";
-import { openPSDChannelRows } from "../designer/psd-stream.mjs";
+import { openPSDChannelRows } from "../tools/designer-source/psd-stream.mjs";
 import {
   validatePSDSourceSize,
   PSD_MAX_SOURCE_BYTES,
-} from "../designer/psd-reader.mjs";
+} from "../tools/designer-source/psd-reader.mjs";
 
 test("source files have no 500 MB product cap; invalid lengths are rejected", () => {
   assert.equal(PSD_MAX_SOURCE_BYTES, Infinity);
@@ -116,7 +116,7 @@ test("ZIP overflow and truncation fail before rendering invalid pixels", async (
   await short.readRow();
   await assert.rejects(short.readRow(), /Incomplete/);
 });
-import { streamPSDTiles } from "../designer/psd-stream.mjs";
+import { streamPSDTiles } from "../tools/designer-source/psd-stream.mjs";
 test("large tiled rasters apply absolute, relative, inverted and disabled masks", async () => {
   const previousCanvas = globalThis.OffscreenCanvas,
     previousImage = globalThis.ImageData;

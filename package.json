@@ -1,0 +1,10 @@
+{
+  "name": "flowmind-site",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-site.mjs",
+    "test:production": "node tests/designer-production.cjs"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": { "esbuild": "0.28.2" }
+}

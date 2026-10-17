@@ -26,16 +26,26 @@ workspace permissions, local packages, sync and browser fonts; **Offline · Unit
 (`ui-designer.md`) covers project assets, native fonts and Canvas/UI Toolkit import.
 The introduction opens the Online guide first; its launch button opens
 the standalone editor. Existing guide URLs remain valid.
-Deploy the folder alongside this site on its existing HTTPS host; no runtime build,
-backend, npm installation or Unity process is required. `.mjs` must use a JavaScript
+Build the production site with `python tools/build_site.py` (Python 3 and Node.js
+22+), then deploy only `dist/`. The build bundles and minifies Designer code without
+publishing original modules or source maps, and also applies those generated
+files directly to `designer/`. Edit `tools/designer-source/` and rebuild when
+changing the Designer. No runtime build, backend, npm
+installation or Unity process is required. `.mjs` must use a JavaScript
 MIME type. All URLs are relative and support hosting under a project subpath.
 
 Existing production host: `https://vinagen.onrender.com/` (Render).
 The standalone route is `/designer/`, and its Vietnamese guide is `/#/vi/web-designer`.
-Publish the same repository root and branch as the existing docs; no new service is needed.
+Keep the same repository and branch; no new service is needed. In Render, use
+`python3 tools/build_site.py --prebuilt` as Build Command and `dist` as Publish Directory.
+Editable `tools/designer-source/` is local-only and ignored by Git; commit the
+generated `designer/` files after local changes.
+See [production build details](designer/README.md#production-build-and-source-protection).
 
 Author checks: `node --test tests/designer-zip.test.mjs`, then
-`node tests/designer-smoke.cjs` against the local site on port 3000.
+`node tests/designer-smoke.cjs` against the author source at
+`http://127.0.0.1:3000/tools/designer-source/`. Run `npm run test:production`
+to verify the protected `designer/` route and deployment artifact.
 Run `node tests/designer-docs.cjs` for both language routes and guide assets.
 Run `node tests/docs-image-motion.cjs` for image-load and viewport reveal behavior.
 The browser test accepts `PLAYWRIGHT_MODULE` and `DESIGNER_URL`; Node/Playwright

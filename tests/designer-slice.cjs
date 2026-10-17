@@ -32,7 +32,7 @@ function encodedFixture(type, depth, interlace) {
   entries.push(chunk('IDAT',deflateSync(Buffer.concat(rows))),chunk('IEND',Buffer.alloc(0)));
   return Buffer.concat(entries);
 }
-const web = path.resolve(__dirname, '../designer');
+const web = path.resolve(__dirname, '../tools/designer-source');
 const server = http.createServer((req, res) => {
   const name = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/designer\//, '') || 'index.html';
   const file = path.resolve(web, name);

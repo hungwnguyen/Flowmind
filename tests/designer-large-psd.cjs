@@ -10,7 +10,7 @@ const { chromium } = require(
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(
-    process.env.DESIGNER_URL || "http://127.0.0.1:3000/designer/",
+    process.env.DESIGNER_URL || "http://127.0.0.1:3000/tools/designer-source/",
   );
   await page.locator(".ui-studio").waitFor();
   await page.evaluate(async () => {

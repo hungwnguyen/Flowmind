@@ -10,7 +10,7 @@ const { chromium } = require(
   const input = (await fs.readFile(process.argv[2])).toString("base64"),
     browser = await chromium.launch(),
     page = await browser.newPage();
-  await page.goto("http://127.0.0.1:3000/designer/");
+  await page.goto("http://127.0.0.1:3000/tools/designer-source/");
   await page.locator(".ui-studio").waitFor();
   await page.evaluate(async () => {
     globalThis.testStudio = (await import("./ui-studio.mjs")).getUIStudio();

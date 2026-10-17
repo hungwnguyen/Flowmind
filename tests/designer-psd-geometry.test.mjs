@@ -1,10 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { psdEdgeDistance } from "../designer/psd-distance.mjs";
+import { psdEdgeDistance } from "../tools/designer-source/psd-distance.mjs";
 import {
   psdTextGeometry,
   psdLocalPaintBounds,
-} from "../designer/psd-text-geometry.mjs";
+} from "../tools/designer-source/psd-text-geometry.mjs";
 test("Euclidean bevel distance matches a brute-force reference, including border and partial alpha", () => {
   const w = 31,
     h = 27,

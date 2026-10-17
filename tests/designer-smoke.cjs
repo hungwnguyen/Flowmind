@@ -22,7 +22,7 @@ const playwright = require(
   });
   await page.route("**/api/**", (route) => route.abort());
   await page.goto(
-    process.env.DESIGNER_URL || "http://127.0.0.1:3000/designer/",
+    process.env.DESIGNER_URL || "http://127.0.0.1:3000/tools/designer-source/",
   );
   await page.locator(".ui-studio").waitFor();
   await page.evaluate(async () => {

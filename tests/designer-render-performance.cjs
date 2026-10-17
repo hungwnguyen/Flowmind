@@ -1,11 +1,11 @@
 // Author-only regression/benchmark against either shipped browser editor.
-// Set VINAGEN_RENDER_WEB to Flowmind/designer to verify the standalone copy.
+// Set VINAGEN_RENDER_WEB to Flowmind/tools/designer-source for the author copy.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const { chromium } = require(process.argv[2] || 'playwright');
-const web = path.resolve(process.env.VINAGEN_RENDER_WEB || path.join(__dirname, '../designer'));
+const web = path.resolve(process.env.VINAGEN_RENDER_WEB || path.join(__dirname, '../tools/designer-source'));
 const standalone = fs.existsSync(path.join(web, 'workspace.mjs'));
 const prefix = standalone ? '/designer/' : '/graph-editor/';
 const empty = {schema:'vinagen_ui',schemaVersion:1,name:'Render test',width:1920,height:1080,layers:[]};

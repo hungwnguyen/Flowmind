@@ -6,3 +6,8 @@
 .vscode?
 .obsidian
 .obsidian?
+node_modules/
+dist/
+
+# Editable Designer source stays on this machine; commit generated designer/ only.
+/tools/designer-source/

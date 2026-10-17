@@ -1,0 +1,18 @@
+# Apply these settings to the existing vinagen static site in Render.
+# A checked-in Blueprint does not change an existing Dashboard-managed service.
+services:
+  - type: web
+    name: vinagen
+    runtime: static
+    buildCommand: python3 tools/build_site.py --prebuilt
+    staticPublishPath: ./dist
+    headers:
+      - path: /designer/*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /designer/*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /designer/*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate

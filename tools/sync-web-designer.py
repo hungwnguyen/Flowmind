@@ -14,7 +14,7 @@ parser.add_argument('--check',action='store_true',help='Verify extraction withou
 parser.add_argument('--live-url',help='Also compare source modules with the running Unity graph-editor URL')
 args=parser.parse_args()
 source=Path(args.source).resolve()
-target=Path(__file__).resolve().parents[1]/'designer'
+target=Path(__file__).resolve().parents[1]/'tools'/'designer-source'
 target.mkdir(exist_ok=True)
 differences=[]
 

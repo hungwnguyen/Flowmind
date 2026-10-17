@@ -9,7 +9,7 @@ const {
     p = await b.newPage({ viewport: { width: 1600, height: 1000 } }),
     errors = [];
   p.on("pageerror", (e) => errors.push(e.message));
-  const url = process.env.DESIGNER_URL || "http://127.0.0.1:3000/designer/";
+  const url = process.env.DESIGNER_URL || "http://127.0.0.1:3000/tools/designer-source/";
   await p.goto(url);
   await p.locator(".ui-board").waitFor();
   const ready = async () => {
@@ -84,10 +84,12 @@ const {
     assert.equal(await p.evaluate(() => s.doc.layers.length), geometry.layers);
     return ms;
   };
-  const baseline = cp.execFileSync("git", ["show", "HEAD:designer/idb.mjs"], {
-    cwd: "C:/Projects/Flowmind",
-    encoding: "utf8",
-  });
+  const baselineRevision = ["HEAD:tools/designer-source/idb.mjs", "HEAD:designer/idb.mjs"]
+    .map(ref => cp.spawnSync("git", ["show", ref], {
+      cwd: require('node:path').resolve(__dirname, '..'), encoding: 'utf8',
+    })).find(result => result.status === 0);
+  assert.ok(baselineRevision, 'No committed IndexedDB baseline found');
+  const baseline = baselineRevision.stdout;
   await p.route("**/idb.mjs", (route) =>
     route.fulfill({ contentType: "text/javascript", body: baseline }),
   );

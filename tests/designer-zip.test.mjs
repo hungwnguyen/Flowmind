@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { writeZip, readZip, safePath, jsonEntry } from "../designer/zip.mjs";
+import { writeZip, readZip, safePath, jsonEntry } from "../tools/designer-source/zip.mjs";
 test("SVGPRO stored ZIP retains UTF-8 names and bytes", async () => {
   const blob = writeZip([
       [
