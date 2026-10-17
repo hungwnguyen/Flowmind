@@ -8,6 +8,20 @@ const visualStyles=('display position z-index box-sizing width height min-width 
 function renderer(include=()=>true,{includeFonts=true,onClone=()=>{}}={}){
   const resources=new Map(),fonts=new Map();
   const inline=async url=>{if(url.startsWith('data:'))return url;if(!resources.has(url))resources.set(url,fetchWebResource(url,{unavailable:'Capture image/font resource is unavailable.'}).then(dataURL));return resources.get(url);};
+  const inlineImage=async source=>{
+    await source.decode();
+    const url=source.currentSrc||source.src;
+    if(!url.startsWith('blob:'))return inline(url);
+    // Fresh PSD previews are already decoded local images. The host allows
+    // displaying blob: artwork, but connect-src deliberately excludes fetching
+    // it. Copy original pixels without a request or a change to the host CSP.
+    if(!resources.has(url)){
+      const canvas=document.createElement('canvas');canvas.width=source.naturalWidth;canvas.height=source.naturalHeight;
+      try{canvas.getContext('2d').drawImage(source,0,0);resources.set(url,canvas.toDataURL('image/png'));}
+      finally{canvas.width=canvas.height=1;}
+    }
+    return resources.get(url);
+  };
   let cloned=0;
   const clone=async source=>{
     if(source.nodeType===Node.TEXT_NODE)return source.cloneNode();
@@ -16,7 +30,7 @@ function renderer(include=()=>true,{includeFonts=true,onClone=()=>{}}={}){
     if(source instanceof HTMLCanvasElement){node=document.createElement('img');node.src=source.toDataURL('image/png');}
     const style=getComputedStyle(source);for(const key of visualStyles)node.style.setProperty(key,style.getPropertyValue(key));
     node.style.animation='none';node.style.transition='none';if(!(source instanceof SVGElement))node.removeAttribute('id');
-    if(source instanceof HTMLImageElement){await source.decode();node.src=await inline(source.currentSrc||source.src);node.removeAttribute('srcset');}
+    if(source instanceof HTMLImageElement){node.src=await inlineImage(source);node.removeAttribute('srcset');}
     if(includeFonts)for(const match of style.fontFamily.matchAll(/ui-([a-f\d]+)/gi)){const guid=match[1];fonts.set(guid,await inline(resourceURL(guid,'font')));}
     for(const property of ['background-image','border-image-source','-webkit-border-image','mask-image','-webkit-mask-image','filter']){
       let value=style.getPropertyValue(property);const images=[...value.matchAll(/url\(["']?([^"')]+)["']?\)/g)];
@@ -128,7 +142,7 @@ export function layerImageBounds(doc,root,includeChildren=true,padding=()=>0,pai
   const x=Math.floor(left+1e-7),y=Math.floor(top+1e-7);
   return {x,y,width:Math.ceil(right-1e-7)-x,height:Math.ceil(bottom-1e-7)-y,ids:visible};
 }
-export async function captureLayerPNG(studio,layerId,{includeChildren=true,imagesOnly=false,bakeRootAppearance=true,selectedIds=null,format='png',onProgress=()=>{}}={}){
+export async function captureLayerPNG(studio,layerId,{includeChildren=true,imagesOnly=false,bakeRootAppearance=true,selectedIds=null,artworkIds=null,format='png',onProgress=()=>{}}={}){
   const doc=studio.doc,version=studio.version;validateDocument(doc);
   await studio.whenCanvasReady?.();
   if(studio.doc!==doc||studio.version!==version)throw Error('UI changed during PNG export. Export again once editing stops.');
@@ -138,7 +152,7 @@ export async function captureLayerPNG(studio,layerId,{includeChildren=true,image
   if(all){let id='export-root';while(doc.layers.some(layer=>layer.id===id))id+='-';root={id,name:scope.name,role:'empty',x:0,y:0,width:scope.width,height:scope.height};boundsDoc={...scope,layers:[root,...scope.layers.map(layer=>({...layer,parentId:layer.parentId||id}))]};}
   if(!root||!all&&!source)throw Error('Select a rendered object before exporting PNG.');
   const current=()=>{if(studio.doc!==doc||studio.version!==version)throw Error('UI changed during PNG export. Export again once editing stops.');};
-  const paint=layer=>!imagesOnly||['image','button'].includes(layer.role);
+  const artwork=artworkIds&&new Set(artworkIds),paint=layer=>(!imagesOnly||['image','button'].includes(layer.role))&&(!artwork||artwork.has(layer.id));
   const initial=layerImageBounds(boundsDoc,root,includeChildren,()=>0,paint),contents=[...initial.ids].filter(id=>paint(boundsDoc.layers.find(layer=>layer.id===id))).map(id=>studio.elements.get(id)?.firstElementChild).filter(Boolean);
   if(!imagesOnly){await Promise.all(studio.currentFontLoads||[]);await document.fonts.ready;await studio.whenCanvasReady?.();current();}
   const deadline=Date.now()+15000;
@@ -152,6 +166,7 @@ export async function captureLayerPNG(studio,layerId,{includeChildren=true,image
   if(bounds.width>8192||bounds.height>8192||bounds.width*bounds.height>16777216)throw Error('PNG export supports up to 8192 pixels per side and 16 megapixels. Reduce this object or its children.');
   const byId=layerIndex(boundsDoc),include=node=>{
     if(node.dataset?.layerId)return bounds.ids.has(node.dataset.layerId);
+    if(artwork&&node.classList?.contains('ui-layer-content')&&!artwork.has(node.parentElement?.dataset.layerId))return false;
     return !imagesOnly||!node.classList?.contains('ui-layer-content')||byId.get(node.parentElement?.dataset.layerId)?.role!=='text';
   };
   const count=node=>node?.nodeType===Node.ELEMENT_NODE?1+[...node.childNodes].filter(include).reduce((sum,child)=>sum+count(child),0):0;
@@ -163,7 +178,7 @@ export async function captureLayerPNG(studio,layerId,{includeChildren=true,image
     node=document.createElement('div');Object.assign(node.style,{width:root.width+'px',height:root.height+'px',isolation:'isolate'});
     for(const layer of scope.layers.filter(layer=>!layer.parentId)){
       if(!bounds.ids.has(layer.id))continue;const element=studio.elements.get(layer.id);if(!element)throw Error('An export object is not rendered yet.');
-      const child=await clone(element);if(selectedIds)child.removeAttribute('hidden');Object.assign(child.style,{left:layer.x+'px',top:layer.y+'px',transform:`rotate(${layer.rotation||0}deg)`});node.append(child);
+      const child=await clone(element);if(selectedIds)child.removeAttribute('hidden');Object.assign(child.style,{left:layer.x+'px',top:layer.y+'px',transform:layer.rotation?`rotate(${layer.rotation}deg)`:'none'});node.append(child);
     }
   }else{node=await clone(source);node.removeAttribute('hidden');}
   Object.assign(node.style,{position:'absolute',left:-bounds.x+'px',top:-bounds.y+'px',right:'auto',bottom:'auto',transform:'none',display:'block',margin:'0px'});

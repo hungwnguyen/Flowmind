@@ -1,6 +1,7 @@
 // Bounded Adobe action descriptors and Photoshop text engine dictionaries.
 import {validateDocument} from './ui-model.mjs';
 import {styledTextInput} from './ui-styled-text.mjs';
+import {psdSignedEdgeDistance} from './psd-distance.mjs';
 // Reject our optional round-trip data after another editor changes native text.
 // Hash only standard fields; custom descriptor bytes never authenticate themselves.
 export function psdTextFingerprint(type,effects){
@@ -66,6 +67,18 @@ export function readTypeTool(bytes){
  return {transform,descriptor,engine:descriptor.EngineData?readEngineData(descriptor.EngineData):null};
 }
 export function readLayerEffects(bytes){const r=new Binary(bytes);if(r.u32()!==0||r.u32()!==16)throw Error('Unsupported PSD effects version.');return r.descriptor();}
+export function readPSDPlacedSource(bytes){
+ const r=new Binary(bytes);if(r.ascii(4)!=='soLD'||![4,5].includes(r.u32())||r.u32()!==16)return null;
+ const data=r.descriptor(),q=data.Trnf,size=data['Sz  '],w=size?.Wdth,h=size?.Hght;
+ if(typeof data.Idnt!=='string'||!data.Idnt||data.Idnt.length>256||!Array.isArray(q)||q.length!==8||!q.every(Number.isFinite)||!(w>0&&h>0)||data.warp?.warpStyle?.value!=='warpNone')return null;
+ // Only translation/positive axis scaling can reuse an already painted raster.
+ // Rotation, flips, perspective, warp and instance-specific filters stay separate.
+ if(q[2]<=q[0]||q[5]<=q[1]||Math.abs(q[1]-q[3])+Math.abs(q[2]-q[4])+Math.abs(q[5]-q[7])+Math.abs(q[0]-q[6])>1e-5)return null;
+ if(data.nonAffineTransform&&JSON.stringify(data.nonAffineTransform)!==JSON.stringify(q))return null;
+ const {placed,Trnf,nonAffineTransform,...source}=data;
+ const stable=v=>Array.isArray(v)?v.map(stable):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,stable(v[k])])):v;
+ return {key:JSON.stringify(stable(source)),quad:q,width:w,height:h};
+}
 // Artboard geometry is authored independently of layer pixel bounds. Large
 // backgrounds and hidden alternatives may extend far beyond this rectangle.
 export function readPSDArtboard(bytes){
@@ -86,7 +99,8 @@ export function photoshopText(type,effects,warnings=new Set(),bounds={width:1,he
  const engine=type.engine?.EngineDict,run=engine?.StyleRun?.RunArray?.[0]?.StyleSheet?.StyleSheetData;
  if(!run)throw Error('PSD text has no supported style data.');
  const scale=Math.hypot(type.transform[2],type.transform[3]),fontSize=clamp((run.FontSize||24)*scale*(run.VerticalScale||1),1,512);
- let text=(type.descriptor['Txt ']??engine.Editor?.Text?.replace(/\r$/,'')??'').replace(/\r\n?/g,'\n');
+ const rawText=type.descriptor['Txt ']??engine.Editor?.Text?.replace(/\r$/,'')??'';
+ let text=rawText.replace(/\r\n?/g,'\n');
  if(run.FontCaps===2)text=text.toUpperCase();
  if(text.length>512)throw Error('PSD text exceeds 512 characters per label.');
  const color=run.FillColor?.Values||[1,1,1,1],textColor=hex([color[1]*255,color[2]*255,color[3]*255,color[0]*255]);
@@ -102,7 +116,16 @@ export function photoshopText(type,effects,warnings=new Set(),bounds={width:1,he
   if(outside){style.strokeWidth=outside;style.strokeColor=strokeColor;}
   if(inside){style.innerOutlineWidth=inside;style.innerOutlineColor=strokeColor;}
  }
- if(shadow){const angle=number(shadow.lagl,120)*Math.PI/180,d=number(shadow.Dstn)*effectScale;style.extrusionX=clamp(-Math.cos(angle)*d,-128,128);style.extrusionY=clamp(Math.sin(angle)*d,-128,128);style.extrusionColor=effectColor(shadow['Clr '],number(shadow.Opct,100));const spread=clamp(number(shadow.Ckmt)/100,0,1),size=clamp(number(shadow.blur)*effectScale,0,64);if(spread&&size&&!stroke){style.outlineWidth=size*spread;style.outlineColor=style.extrusionColor;}if(size&&spread<1)warnings.add('Blurred Photoshop text shadows are approximated by VinaGenText extrusion.');}
+ if(shadow){
+  // A Photoshop shadow is one translated, expanded glyph silhouette. An
+  // outline plus extrusion also paints at the original position, thickening
+  // the top edge (Activate: radius 5, Y +2 must reach only 3 px above the face).
+  const angle=number(shadow.lagl,120)*Math.PI/180,d=number(shadow.Dstn)*effectScale;
+  const snap=v=>Math.abs(v)<1e-9?0:v,spread=clamp(number(shadow.Ckmt)/100,0,1),size=clamp(number(shadow.blur)*effectScale,0,64);
+  style.shadowX=snap(clamp(-Math.cos(angle)*d,-128,128));style.shadowY=snap(clamp(Math.sin(angle)*d,-128,128));
+  style.shadowWidth=size*spread;style.shadowColor=effectColor(shadow['Clr '],number(shadow.Opct,100));
+  if(size&&spread<1)warnings.add('Blurred Photoshop text shadows retain their offset/spread; soft blur needs visual review.');
+ }
  if(gradient){const ramp=psdGradient(gradient,bounds.width,bounds.height,{x:bounds.x,y:bounds.y,width:bounds.documentWidth,height:bounds.documentHeight});if(ramp){
   style.gradient=true;style.gradientMode=ramp.mode;style.gradientAngle=ramp.angle;style.gradientBlend='blend';
   const base=style.faceColor.match(/[0-9a-f]{2}/gi).map(v=>parseInt(v,16));
@@ -110,11 +133,28 @@ export function photoshopText(type,effects,warnings=new Set(),bounds={width:1,he
   style.faceColor='#ffffffff';style.stops=stops;
   if(ramp.approximate)warnings.add('Photoshop gradient blend, interpolation or midpoint uses an approximation.');
  }else warnings.add('Unsupported Photoshop text gradient needs visual review.');}
- if(engine.StyleRun.RunArray.length>1)warnings.add('Mixed Photoshop text styles use the first style; review this label.');
+ // Keep UTF-16 run offsets in the authored plain text. Unity turns these into
+ // color tags only at rendering time, leaving content editing/tag literals safe.
+ const colors=[],runs=engine.StyleRun.RunArray,lengths=engine.StyleRun.RunLengthArray;let offset=0;
+ if(runs.length>1&&Array.isArray(lengths)&&lengths.length===runs.length){
+  for(let i=0;i<runs.length;i++){
+   const length=lengths[i],s={...run,...runs[i]?.StyleSheet?.StyleSheetData};
+   if(!Number.isInteger(length)||length<0){colors.length=0;break;}
+   const value=s.FillColor?.Values||color,rgba=value.map(v=>v*255);let c=hex([rgba[1],rgba[2],rgba[3],rgba[0]]);
+   if(fill){const overlay=effectRGBA(fill);c=hex([...rgba.slice(1,4).map((v,j)=>overlay[j]*overlay[3]+v*(1-overlay[3])),rgba[0]]);}
+   let piece=rawText.slice(offset,offset+length).replace(/\r\n?/g,'\n');if(run.FontCaps===2)piece=piece.toUpperCase();const count=piece.length;
+   if(count){const previous=colors.at(-1),start=previous?previous.start+previous.length:0;if(previous?.color===c)previous.length+=count;else colors.push({start,length:count,color:c});}
+   offset+=length;
+  }
+ }
+ const textRuns=colors.length>1&&colors.at(-1).start+colors.at(-1).length===text.length&&!gradient?{text,colors}:null;
+ if(textRuns)style.faceColor='#ffffffff';
+ const changingTypography=runs.slice(1).some(r=>['Font','FontSize','FauxBold','FauxItalic','Tracking','VerticalScale','FontCaps'].some(key=>r.StyleSheet?.StyleSheetData?.[key]!==undefined&&r.StyleSheet.StyleSheetData[key]!==run[key]));
+ if(changingTypography||runs.length>1&&!textRuns&&(!colors.length||gradient))warnings.add('Mixed Photoshop text typography or gradient uses the first style; review this label.');
  const paragraph=engine.ParagraphRun?.RunArray?.[0]?.ParagraphSheet?.Properties||{};
  const original=roundTripText(type,effects,warnings);
  if(original){delete original.id;delete original.name;delete original.parentId;delete original.x;delete original.y;delete original.rotation;delete original.opacity;delete original.visible;delete original.clip;}
- return {...(original||{role:'text',text,textRenderer:'vinaGenText',textMeshPro:true,standaloneText:true,textStyle:style,textColor:'#ffffffff',fontSize,bold:!!run.FauxBold,textAlign:['left','right','center'][paragraph.Justification]||'left',rotation:Math.atan2(type.transform[1],type.transform[0])*180/Math.PI,fill:'#ffffff00',tmpSettings:{autoSize:false,wordWrapping:false,richText:false,italic:!!run.FauxItalic,verticalAlign:'middle',overflow:'overflow',characterSpacing:clamp((run.Tracking||0)*fontSize/1000,-1000,1000)}}),psdFontName:type.engine.ResourceDict?.FontSet?.[run.Font]?.Name||''};
+ return {...(original||{role:'text',text,...(textRuns?{textRuns}:{}),textRenderer:'vinaGenText',textMeshPro:true,standaloneText:true,textStyle:style,textColor:'#ffffffff',fontSize,bold:!!run.FauxBold,textAlign:['left','right','center'][paragraph.Justification]||'left',rotation:Math.atan2(type.transform[1],type.transform[0])*180/Math.PI,fill:'#ffffff00',tmpSettings:{autoSize:false,wordWrapping:false,richText:false,italic:!!run.FauxItalic,verticalAlign:'middle',overflow:'overflow',characterSpacing:clamp((run.Tracking||0)*fontSize/1000,-1000,1000)}}),psdFontName:type.engine.ResourceDict?.FontSet?.[run.Font]?.Name||''};
 }
 export const psdFallbackFonts=config=>config.psdFallbackFonts??[...(config.vinaGenFonts||[]),...(config.tmpFonts||[])];
 export function applyPSDFallbackFont(layer,config,key){
@@ -219,6 +259,21 @@ function disk(alpha,width,height,radius,erode=false){
   }
   return result;
 }
+function antialiasedDisk(alpha,width,height,radius,erode=false){
+  if(radius<=0)return alpha;
+  // Cached glyph channels already carry edge coverage. Integer max windows
+  // quantize the circular kernel, leaving steps in solid strokes/spread shadows.
+  // Keep grayscale morphology for translucent masks and bound extra memory.
+  if(alpha.length>4194304||!alpha.includes(255))return disk(alpha,width,height,radius,erode);
+  const padding=2,w=width+padding*2,h=height+padding*2,mask=new Uint8Array(w*h);
+  for(let y=0;y<height;y++)mask.set(alpha.subarray(y*width,(y+1)*width),(y+padding)*w+padding);
+  const distance=psdSignedEdgeDistance(mask,w,h,radius+1),result=new Uint8Array(alpha.length);
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const coverage=.5+distance[(y+padding)*w+x+padding]+(erode?-radius:radius);
+    result[y*width+x]=Math.round(clamp(coverage,0,1)*255);
+  }
+  return result;
+}
 // Three separable box passes approximate a Gaussian with bounded, linear work.
 export function blurPSDAlpha(alpha,width,height,size){
   const radius=Math.ceil(size/2);if(!radius)return alpha;
@@ -250,7 +305,7 @@ export function paintPSDText(pixels,width,height,effects,warnings=[],context={})
   const angle=number(shadow?.lagl,120)*Math.PI/180,distance=shadow?clamp(number(shadow.Dstn)*effectScale,0,128):0;
   const dx=Math.round(-Math.cos(angle)*distance),dy=Math.round(Math.sin(angle)*distance);
   const shadowSize=shadow?clamp(number(shadow.blur)*effectScale,0,64):0,spread=clamp(number(shadow?.Ckmt)/100,0,1),shadowRadius=shadowSize*spread;
-  const softSize=shadowSize*(1-spread),shadowPad=shadowRadius+Math.ceil(softSize*1.5);
+  const softSize=shadowSize*(1-spread),shadowPad=shadowRadius+3*Math.ceil(softSize/2);
   if(softSize)warnings.push('Photoshop shadow soft blur uses a bounded Gaussian approximation.');
   if(shadow&&!normal(shadow))warnings.push('Photoshop shadow blend uses a normal-blend approximation.');
   if(!radius&&!distance&&!shadowSize&&!ramp&&!fill)return null;
@@ -258,11 +313,23 @@ export function paintPSDText(pixels,width,height,effects,warnings=[],context={})
   const w=width+left+right,h=height+top+bottom;
   if(w>8192||h>8192||w*h>16777216||w*h*(2*Math.ceil(Math.max(outside,inside,shadowRadius))+1)>128000000){warnings.push('Photoshop effects exceed the cached-paint processing limit.');return {useRenderer:true};}
   const alpha=new Uint8Array(w*h);for(let y=0;y<height;y++)for(let x=0;x<width;x++)alpha[(y+top)*w+x+left]=pixels[(y*width+x)*4+3];
+  // Raster effects reuse this painter, retaining their existing grayscale
+  // semantics. Only imported editable text opts into contour-based morphology.
+  const morph=context.antialiasMorphology?antialiasedDisk:disk;
+  if(context.antialiasMorphology&&alpha.length>4194304&&(radius||shadowRadius))warnings.push('Large Photoshop text effect edges use integer morphology; review their appearance.');
   const out=new Uint8ClampedArray(w*h*4);
-  if(shadow){const c=effectRGBA(shadow),shade=blurPSDAlpha(disk(alpha,w,h,shadowRadius),w,h,softSize);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const sx=x-dx,sy=y-dy;if(sx>=0&&sy>=0&&sx<w&&sy<h)over(out,(y*w+x)*4,c,shade[sy*w+sx]/255);}}
+  if(shadow){
+    // The output bounds already include the shadow offset. Grow/blur its
+    // translated mask here: growing first in these asymmetric bounds clips the
+    // opposite edge before translation (notably the cap over a dotted "i").
+    const shifted=new Uint8Array(alpha.length);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){const tx=x+dx,ty=y+dy;if(tx>=0&&ty>=0&&tx<w&&ty<h)shifted[ty*w+tx]=alpha[y*w+x];}
+    const c=effectRGBA(shadow),shade=blurPSDAlpha(morph(shifted,w,h,shadowRadius),w,h,softSize);
+    for(let i=0;i<alpha.length;i++)over(out,i*4,c,shade[i]/255);
+  }
   if(context.shadowOnly)return {pixels:out,width:w,height:h,bounds:{x:left?-left:0,y:top?-top:0,width:w,height:h}};
-  if(radius){const grown=disk(alpha,w,h,outside),c=effectRGBA(stroke);for(let i=0;i<alpha.length;i++)over(out,i*4,c,grown[i]/255);}
-  const face=inside?disk(alpha,w,h,inside,true):alpha;
+  if(radius){const grown=morph(alpha,w,h,outside),c=effectRGBA(stroke);for(let i=0;i<alpha.length;i++)over(out,i*4,c,grown[i]/255);}
+  const face=inside?morph(alpha,w,h,inside,true):alpha;
   for(let y=0;y<height;y++)for(let x=0;x<width;x++){const p=(y*width+x)*4,i=((y+top)*w+x+left)*4,c=[pixels[p],pixels[p+1],pixels[p+2],1];if(fillColor)for(let k=0;k<3;k++)c[k]=c[k]*(1-fillColor[3])+fillColor[k]*fillColor[3];if(ramp){const g=ramp.at(x+.5,y+.5);for(let k=0;k<3;k++)c[k]=c[k]*(1-g[3])+g[k]*g[3];}over(out,i,c,face[i/4]/255);}
   return {pixels:out,width:w,height:h,bounds:{x:left?-left:0,y:top?-top:0,width:w,height:h}};
 }

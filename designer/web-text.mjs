@@ -27,9 +27,10 @@ export async function renderText(layer, config, url) {
   const s = resolvedTextStyle(layer, config.textStyles),
     settings = layer.tmpSettings || {},
     padding = Math.ceil(
-      s.strokeWidth +
-        s.outlineWidth +
-        Math.max(Math.abs(s.extrusionX), Math.abs(s.extrusionY)) +
+      Math.max(
+        s.strokeWidth + s.outlineWidth + Math.max(Math.abs(s.extrusionX), Math.abs(s.extrusionY)),
+        s.shadowWidth + Math.max(Math.abs(s.shadowX), Math.abs(s.shadowY)),
+      ) +
         4,
     ),
     width = Math.ceil(layer.width + padding * 2),
@@ -76,20 +77,29 @@ export async function renderText(layer, config, url) {
   const layout = () => {
     const lines = [];
     lines.paragraphStarts = new Set();
+    lines.sourceOffsets = [];
+    let paragraphStart = 0;
     for (const paragraph of plain.split("\n")) {
       lines.paragraphStarts.add(lines.length);
       if (settings.wordWrapping === false) {
+        lines.sourceOffsets.push(paragraphStart);
         lines.push(paragraph);
+        paragraphStart += paragraph.length + 1;
         continue;
       }
-      let line = "";
+      let line = "", lineStart = paragraphStart, consumed = 0;
       for (const word of paragraph.split(/(\s+)/)) {
         if (line && measure(line + word) > areaWidth) {
+          lines.sourceOffsets.push(lineStart);
           lines.push(line.trimEnd());
           line = word.trimStart();
+          lineStart = paragraphStart + consumed + word.length - line.length;
         } else line += word;
+        consumed += word.length;
       }
+      lines.sourceOffsets.push(lineStart);
       lines.push(line);
+      paragraphStart += paragraph.length + 1;
     }
     return lines;
   };
@@ -111,6 +121,7 @@ export async function renderText(layer, config, url) {
   }
   if (["truncate", "ellipsis"].includes(settings.overflow)) {
     const paragraphStarts = lines.paragraphStarts;
+    const sourceOffsets = lines.sourceOffsets;
     const capacity = Math.max(
         1,
         Math.floor(areaHeight / (size * 1.2 + (settings.lineSpacing || 0))),
@@ -128,6 +139,7 @@ export async function renderText(layer, config, url) {
     lines.paragraphStarts = new Set(
       [...paragraphStarts].filter((index) => index < lines.length),
     );
+    lines.sourceOffsets = sourceOffsets.slice(0, lines.length);
   }
   const lineHeight = size * 1.2 + (settings.lineSpacing || 0),
     blockHeight =
@@ -160,6 +172,7 @@ export async function renderText(layer, config, url) {
             ? (areaWidth - lineWidth) / 2
             : 0),
       y = top + i * lineHeight + paragraphOffset + size * 0.82;
+    let sourceIndex = lines.sourceOffsets[i];
     for (const char of [...line]) {
       m.font = fontString();
       const advance = m.measureText(char).width;
@@ -173,7 +186,8 @@ export async function renderText(layer, config, url) {
           layer.width,
           layer.textCurve.angle,
         );
-      glyphs.push({ char, ...pose, advance });
+      glyphs.push({ char, ...pose, advance, sourceIndex });
+      sourceIndex += char.length;
       x += advance + spacing + (char === " " ? wordSpacing : 0);
     }
   }
@@ -182,9 +196,8 @@ export async function renderText(layer, config, url) {
     context.textAlign = "center";
     context.lineJoin = "round";
     context.lineWidth = stroke * 2;
-    context.fillStyle = fill;
-    context.strokeStyle = fill;
     for (const g of glyphs) {
+      context.fillStyle = context.strokeStyle = typeof fill === "function" ? fill(g) : fill;
       context.save();
       context.translate(g.x + dx, g.y + dy);
       context.rotate((g.rotation * Math.PI) / 180);
@@ -197,6 +210,10 @@ export async function renderText(layer, config, url) {
     ctx.beginPath();
     ctx.rect(padding, padding, layer.width, layer.height);
     ctx.clip();
+  }
+  if (s.shadowWidth || s.shadowX || s.shadowY) {
+    if (s.shadowWidth) draw(ctx, s.shadowColor, s.shadowWidth, s.shadowX, s.shadowY);
+    draw(ctx, s.shadowColor, 0, s.shadowX, s.shadowY);
   }
   if (s.extrusionX || s.extrusionY) {
     const steps = Math.ceil(
@@ -221,7 +238,8 @@ export async function renderText(layer, config, url) {
   }
   if (s.outlineWidth) draw(ctx, s.outlineColor, s.strokeWidth + s.outlineWidth);
   if (s.strokeWidth) draw(ctx, s.strokeColor, s.strokeWidth);
-  draw(m, "#fff");
+  const runs = !settings.richText && layer.textRuns?.text === plain ? layer.textRuns.colors : null;
+  draw(m, runs ? g => runs.find(run => g.sourceIndex >= run.start && g.sourceIndex < run.start + run.length)?.color || "#ffffffff" : "#fff");
   const pixels = m.getImageData(0, 0, width, height),
     angle = ((s.gradientAngle || 0) * Math.PI) / 180,
     corners = [s.topLeft, s.topRight, s.bottomLeft, s.bottomRight].map(rgba),
@@ -261,7 +279,7 @@ export async function renderText(layer, config, url) {
         );
       for (let i = 0; i < 3; i++)
         pixels.data[offset + i] =
-          (((color[i] * face[i]) / 255) * tint[i]) / 255;
+          pixels.data[offset + i] * color[i] * face[i] * tint[i] / 255 ** 3;
       pixels.data[offset + 3] *= color[3] * face[3] * tint[3];
     }
   m.putImageData(pixels, 0, 0);

@@ -110,6 +110,8 @@ Dùng **Group**, **Horizontal**, **Vertical** hoặc **Grid** để tổ chức 
 
 ## Fusion images
 
+Với nhóm pass-through, Fusion giữ các lớp cần blend với nền và gộp một dải artwork normal liên tục. Ảnh PSD đã gộp hiệu ứng giữ các paint frame; làm phẳng lên nền trong suốt sẽ đổi màu.
+
 1. Chọn Image, Button hoặc Group có ảnh con hiển thị.
 2. Trong Inspector → **Image**, bấm **Fusion images**.
 3. Kiểm tra ảnh gộp, rồi **Save** tài liệu.
@@ -118,6 +120,8 @@ Layer chữ và nội dung ẩn được giữ lại. Hãy mở khóa object và
 
 ## Chữ và hiệu ứng
 
+**Drop Shadow** có độ rộng, độ lệch X/Y và màu riêng, vẽ bóng chữ dịch chuyển độc lập. Chưa hỗ trợ blur mềm. Text có metadata PSD được nhập thành Styled Text/VinaGenText chỉnh sửa được, giữ hiệu ứng hỗ trợ và các đoạn màu, không tạo PNG cache cho glyph. Sửa nội dung làm mất hiệu lực các khoảng màu cũ; font/cỡ chữ trộn và hiệu ứng Photoshop chưa hỗ trợ vẫn cần kiểm tra hình ảnh.
+
 Trong **Typography**, chỉnh nội dung, font, cỡ chữ, căn lề, spacing, xuống dòng và auto size. **Text on path** uốn chữ theo đường cong. Hiệu ứng chữ có gradient, viền, outline và độ nổi; kiểm tra font và kiểu chữ đang chọn trước khi chỉnh.
 
 Cách nhập/đăng ký font, Text type và material TMP khác giữa hai phiên bản — xem phần Online hoặc Offline.
@@ -125,6 +129,10 @@ Cách nhập/đăng ký font, Text type và material TMP khác giữa hai phiên
 ![Typography và hiệu ứng chữ](../images/web-designer/inspector.png)
 
 ## Nhập PSD
+
+Hiệu ứng raster hỗ trợ được bake cùng ảnh nguồn thành một Image và một PNG. Hiệu ứng phụ thuộc nền giữ các paint frame có thứ tự trong một atlas để bảo toàn blend mode mà không thêm layer tài liệu. Giới hạn ảnh gộp: **8.192 px mỗi cạnh, 16 MP, 5 MB**; tile raster quá lớn giữ pixel nguồn và báo hiệu ứng chưa bake. Bevel, glow và hiệu ứng mềm vẫn là xấp xỉ Photoshop.
+
+Các nhánh PSD thông thường giải mã bằng tối đa ba worker tái sử dụng; nhánh cần stream raster lớn chạy riêng. Cache plan/paint có thể bị xóa. Nhập lại PSD cũ để nhận cách biểu diễn chữ/hiệu ứng mới; asset cũ được giữ vì tài liệu khác có thể còn tham chiếu.
 
 Bấm **Import** hoặc thả PSD vào canvas. Tài liệu trống nhập trực tiếp; nếu đã có object, chọn **Replace** để thay tài liệu hoặc **Insert** để thêm PSD bên cạnh. Có thể hủy trong lúc nhập.
 
@@ -163,6 +171,8 @@ Chọn **Comment** rồi bấm lên canvas để ghim ghi chú. Ghi chú lưu k�
 **Settings** có Light/Dark/System, màu nền canvas, độ tương phản, snap và tên người bình luận. Cài đặt áp dụng vào giao diện editor; thay đổi kích thước thiết kế trong Screen inspector. Cách lưu cài đặt nằm trong từng phiên bản.
 
 ## Phím tắt chung
+
+Phím mũi tên di chuyển selection 1 px, giữ Shift là 10 px; khi một layer được chọn trong Layers, mũi tên điều hướng cây. Phím backquote (\`) bật/tắt hiển thị selection, bỏ qua khi đang gõ chữ.
 
 `Ctrl/Cmd` là Ctrl trên Windows và Cmd trên macOS. Đây là các phím mặc định dùng chung; Unity cho phép đổi trong UI Designer Settings.
 

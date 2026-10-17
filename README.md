@@ -58,7 +58,7 @@ Browser snapshots live in `images/web-designer/`.
 | `webgl-preview.md` | AI Agent particle testing loop, timed evidence and browser controls |
 | `ai-chat.md` | Agent Chat and AI providers |
 | `create-from-chat.md` | `/vina` and `$vina` chat skills |
-| `mcp-bridge.md` | Local MCP bridge |
+| `mcp-bridge.md` | MCP connection/discovery, document context and revision patches, Unity tools and compile/test loop |
 | `settings.md` | Settings assets |
 | `folder-layout.md` | Toolkit and project folders, portable export |
 | `faq.md` | FAQ and troubleshooting |

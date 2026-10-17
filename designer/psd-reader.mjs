@@ -1,12 +1,17 @@
 // Bounded PSD v1 reader based on Adobe's published file format specification.
 // No provider, executable, CDN, or third-party artwork is bundled.
-import {readTypeTool,readLayerEffects,readPSDArtboard,photoshopText,inheritPSDTextGroupEffects} from './psd-text.mjs';
+import {readTypeTool,readLayerEffects,readPSDArtboard,readPSDPlacedSource,photoshopText,inheritPSDTextGroupEffects} from './psd-text.mjs';
 const blendNames={norm:'normal',pass:'pass-through','mul ':'multiply',scrn:'screen',over:'overlay',dark:'darken',lite:'lighten','div ':'color-dodge',idiv:'color-burn',hLit:'hard-light',sLit:'soft-light',diff:'difference',smud:'exclusion','hue ':'hue','sat ':'saturation',colr:'color','lum ':'luminosity'};
 // Compatibility export: file size is bounded by the file API, not a product cap.
 export const PSD_MAX_SOURCE_BYTES=Infinity;
 export const PSD_MAX_DIMENSION=30000;
 export function validatePSDSourceSize(size) {
   if(!Number.isSafeInteger(size)||size<26)throw Error('Truncated or invalid PSD file size.');
+}
+export function isStreamedPSDRaster(record) {
+  // Folder bounds may span many screens, but folders allocate no bitmap.
+  const large=rect=>rect&&(rect.width>8192||rect.height>8192||rect.width*rect.height>16777216);
+  return !record.section&&!record.fill&&record.channels.some(c=>c.id===0)&&!!(large(record)||large(record.mask));
 }
 export function solidPixelColor(pixels) {
   if(!pixels.length||pixels.length%4)return null;
@@ -53,7 +58,7 @@ function* parsePSD(size) {
     r=yield* take(4);const maskLength=r.u32();need(maskLength);const maskEnd=offset+maskLength;let mask=null;
     if(maskLength>=18){r=yield* take(18);const top=r.i32(),left=r.i32(),bottom=r.i32(),right=r.i32(),defaultColor=r.u8(),flags=r.u8();mask={x:left,y:top,width:right-left,height:bottom-top,defaultColor,flags};if(mask.width<0||mask.height<0||mask.width>PSD_MAX_DIMENSION||mask.height>PSD_MAX_DIMENSION)throw Error('Invalid PSD mask dimensions.');}
     if(maskLength)warnings.add('Feathered and vector masks need visual review.');offset=maskEnd;offset=yield* section();
-    r=yield* take(1);const nameLength=r.u8();r=yield* take(nameLength);let name=r.text(nameLength);const padding=(4-(nameLength+1)%4)%4;need(padding);offset+=padding;let sectionType=0,type=null,effects=null,artboard=null,rasterEffects=false;
+    r=yield* take(1);const nameLength=r.u8();r=yield* take(nameLength);let name=r.text(nameLength);const padding=(4-(nameLength+1)%4)%4;need(padding);offset+=padding;let sectionType=0,type=null,effects=null,artboard=null,placedSource=null,vectorMask=false,rasterEffects=false;
     while(offset+12<=extraEnd) {
       r=yield* take(12);const signature=r.text(4);if(signature!=='8BIM'&&signature!=='8B64')break;
       const key=r.text(4),length=r.u32(),end=offset+length;need(length);
@@ -70,6 +75,11 @@ function* parsePSD(size) {
         else{try{effects=readLayerEffects(r.bytes);}catch{warnings.add('Unsupported layer effects need visual review.');}}
       }
       if(['lfx2','lmfx','lfxs','lrFX'].includes(key))rasterEffects=true;
+      if(key==='SoLd'||key==='SoLE'){
+        if(length>16*1024*1024)throw Error('PSD placed layer metadata exceeds 16 MB.');
+        r=yield* take(length);try{placedSource=readPSDPlacedSource(r.bytes);}catch{warnings.add('Unsupported smart object metadata retains its own raster.');}
+      }
+      if(key==='vmsk'||key==='vsms')vectorMask=true;
       if(['vmsk','SoLd'].includes(key))warnings.add('Vector masks and smart objects are raster imports; review their appearance.');
       offset=end+(length%2);
     }
@@ -78,7 +88,7 @@ function* parsePSD(size) {
     if(w<0||h<0||w>PSD_MAX_DIMENSION||h>PSD_MAX_DIMENSION)throw Error('Invalid PSD layer dimensions.');
     if(!blendNames[blend])warnings.add('Unsupported Photoshop blend mode '+blend+' uses normal blending; review its appearance.');
     const text=type?photoshopText(type,effects,warnings,{x:left,y:top,width:w||1,height:h||1,documentWidth:width,documentHeight:height}):null;
-    records.push({index,name:name||'Layer '+(index+1),x:left,y:top,width:w,height:h,opacity,visible:!(flags&2),blendMode:blendNames[blend]||'normal',section:sectionType,text,...(artboard?{artboard}:{}),...(text&&effects&&!text.psdTextBox?{textEffects:effects}:{}),...(!text&&!sectionType&&effects?{rasterEffects:effects}:{}),...(sectionType&&effects?{groupEffects:effects}:{}),mask,channels:channelInfo});
+    records.push({index,name:name||'Layer '+(index+1),x:left,y:top,width:w,height:h,opacity,visible:!(flags&2),blendMode:blendNames[blend]||'normal',section:sectionType,text,...(artboard?{artboard}:{}),...(placedSource?{placedSource}:{}),...(vectorMask?{vectorMask:true}:{}),...(text&&effects&&!text.psdTextBox?{textEffects:effects}:{}),...(!text&&!sectionType&&effects?{rasterEffects:effects}:{}),...(sectionType&&effects?{groupEffects:effects}:{}),mask,channels:channelInfo});
   }
   // Total decoded area is deliberately unrestricted: only one layer is decoded
   // at a time. A compressed, many-layer file need not fit in RAM as one bitmap.
@@ -194,7 +204,20 @@ export function preparePSDImport(doc) {
   };
   for(const r of doc.records){const root=assignments.get(r.id);if(root)emit(r,root);}
   if(output.length>1000)throw Error('PSD screen containers exceed the 1000-object import limit.');
+  sharePSDPlacedRasters(output);
   return {...doc,width:common?.width||roots[0]?.width||doc.width,height:common?.height||roots[0]?.height||doc.height,records:output,removedGroups:doc.records.filter(r=>r.section).length-output.filter(r=>r.section&&byId.has(r.id)).length};
+}
+export function sharePSDPlacedRasters(records){
+ const groups=new Map();
+ const crop=r=>{const s=r.placedSource,q=s.quad,sx=s.width/(q[2]-q[0]),sy=s.height/(q[5]-q[1]);return [(r.x-q[0])*sx,(r.y-q[1])*sy,r.width*sx,r.height*sy,sx,sy];};
+ for(const r of records){
+  if(!r.placedSource||r.section||r.text||r.mask||r.vectorMask||r.rasterEffects||isStreamedPSDRaster(r)||!r.channels.some(c=>c.id===0)||!r.width||!r.height)continue;
+  const key=r.placedSource.key,list=groups.get(key)||[];list.push(r);groups.set(key,list);
+ }
+ for(const list of groups.values())for(const r of list){
+  const a=crop(r),source=list.filter(s=>{const b=crop(s);return a.slice(0,4).every((v,i)=>Math.abs(v-b[i])<=1.5*Math.max(1,a[4+i%2],b[4+i%2]));}).sort((a,b)=>b.width*b.height-a.width*a.height||a.index-b.index)[0];
+  if(source&&source!==r)r.rasterSource={id:source.id,name:source.name,width:source.width,height:source.height,channels:source.channels};
+ }
 }
 export function unpackRLE(bytes,width,height) {
   const r=new Reader(bytes);

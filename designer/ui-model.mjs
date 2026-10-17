@@ -138,6 +138,7 @@ export function validateDocument(doc) {
     ids.set(layer.id,layer);
     validateGradient(layer.fillGradient);
     if(layer.blendMode!==undefined&&!blendModes.includes(layer.blendMode))throw Error('Invalid layer blend mode.');
+    validateImageComposite(layer);
     if(layer.fillGradient&&!['image','button'].includes(layer.role))throw Error('Gradient fills require an Image or Button.');
     if(layer.canvasRoot!==undefined&&(typeof layer.canvasRoot!=='boolean'||layer.canvasRoot&&!containerRoles.includes(layer.role)))throw Error('Canvas Root requires a container and a boolean label.');
     validateTextCurve(layer);normalizeTextRenderer(layer);validateTMP(layer);validateTextStyle(layer);
@@ -232,6 +233,7 @@ export function marqueeLayerIds(doc,start,end) {
   return ids;
 }
 export function imageSourcePoint(layer,point,width,height,borders=null) {
+  if(layer.imageComposite){width=layer.imageComposite.width;height=layer.imageComposite.height;}
   const mode=imageMode(layer);
   if(mode==='nine_slice'){
     for(const [sx,sy,sw,sh,dx,dy,dw,dh]of sliceImageRects(width,height,layer.width,layer.height,borders))
@@ -242,6 +244,14 @@ export function imageSourcePoint(layer,point,width,height,borders=null) {
   const renderedWidth=scale===null?layer.width:width*scale,renderedHeight=scale===null?layer.height:height*scale;
   const x=(point.x-(layer.width-renderedWidth)/2)*width/renderedWidth,y=(point.y-(layer.height-renderedHeight)/2)*height/renderedHeight;
   return x>=0&&x<width&&y>=0&&y<height?{x,y}:null;
+}
+export function validateImageComposite(layer){
+  const c=layer.imageComposite;if(c===undefined)return;
+  const integer=(v,min,max)=>Number.isInteger(v)&&v>=min&&v<=max;
+  if(!c||!['image','button'].includes(layer.role)||!layer.image||imageMode(layer)!=='none'||
+    !integer(c.width,1,8192)||!integer(c.height,1,8192)||!integer(c.atlasWidth,1,8192)||!integer(c.atlasHeight,1,8192)||c.atlasWidth*c.atlasHeight>16777216||
+    !Array.isArray(c.paints)||c.paints.length<2||c.paints.length>16)throw Error('Invalid fused image atlas.');
+  for(const p of c.paints)if(!p||p.width!==c.width||p.height!==c.height||!integer(p.x,0,c.atlasWidth-c.width)||!integer(p.y,0,c.atlasHeight-c.height)||!blendModes.includes(p.blendMode)||p.blendMode==='pass-through')throw Error('Invalid fused image paint.');
 }
 export function roots(doc, ids, byId=layerIndex(doc)) {const selected=new Set(ids); return doc.layers.filter(l=> {if(!selected.has(l.id)) return false; let p=l.parentId; while(p) {if(selected.has(p)) return false;p=byId.get(p)?.parentId;} return true;});}
 export function duplicate(doc, ids, offset=24) {

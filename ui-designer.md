@@ -43,7 +43,7 @@ Each PSD import owns `Assets/VinaGen PSD Imports/<PSD name>/` for images, styles
 | **Canvas Group** | `CanvasGroup` (opacity, interactable, raycasts). |
 | **Horizontal / Vertical / Grid** | The matching LayoutGroup. |
 
-9-slice becomes a Sliced Sprite, shapes become `VinaGenUIShape` and Clip becomes `RectMask2D`. Canvas uses standard alpha blending; blend modes and effects may differ from the browser preview.
+9-slice becomes a Sliced Sprite, shapes become `VinaGenUIShape` and Clip becomes `RectMask2D`. Canvas supports standard alpha plus Multiply/Screen on Image/Button layers. Fused PSD paints keep their source rectangles on one Canvas Image; other modes and isolated group blending still need visual review.
 
 ## Transfer to Unity Canvas
 
@@ -81,13 +81,15 @@ If colors look different from the browser in a Linear-color project, use **VinaG
 
 Use `ShowScreen(layerId)`, `FindLayer(layerId)` and `ButtonClicked` to connect your game. Some text effects, shapes and custom components aren't fully supported — read the warnings and compare the result.
 
+UI Toolkit import rejects fused PSD effects that depend on the backdrop because its renderer cannot reproduce them. Use Canvas for those documents, or prepare artwork with a fixed backdrop and check the result.
+
 ## Save and settings
 
 **Save** (`Ctrl/Cmd+S`) stores the `VinaGenUIDocument`. **Show in Editor** selects it in the Project window.
 
 **Settings → UI Designer Settings** holds folders, fonts, Button prefab, default resolution, anchors and shortcuts.
 
-AI assistants can capture screenshots of each screen through [MCP Bridge](mcp-bridge.md).
+AI assistants start with `vinagen_find`, read the saved document or live browser context, then use revision-checked `patch_ui_document` or `refactor_ui_layers` (dry run first). Layer refactoring proposes content-based names, Button roles and nested labels. Saved assets and browser drafts remain separate. Target screen captures by `path` + `revision` or `tabId` + `draftVersion`, then poll `inspect_ui_web_demo`. See [MCP Bridge](mcp-bridge.md).
 
 **Export SVGPRO** saves the document first, then downloads its resources as a package. Drop it into another Unity project to import it.
 

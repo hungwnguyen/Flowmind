@@ -11,7 +11,7 @@ import {shapeTools,paintShape,shapeHit,isOpenShape,shapeStrokeWidth,shapePaintBi
 import {containerRoles,parentRoles,automaticAnchor,adjustAnchors,recalculateAnchors,worldPose,screenSized,isScreenRoot,screenAnchors} from './ui-model.mjs';
 import {projectAssets} from './project-assets.mjs';
 import {workspace,resourceURL} from './workspace.mjs';
-import {webErrorReport} from './web-errors.mjs';
+import {webErrorReport,fetchWebResource} from './web-errors.mjs';
 import {fileBrowser} from './file-browser.mjs';
 import {paintURL,imagePaintFilter} from './ui-paints.mjs';
 import {paintTextCurve} from './ui-text-curve.mjs';
@@ -23,11 +23,11 @@ import {gradientAlphaStops,evaluateTextGradient,textGradientRamp,textGradientPre
 import {canvasComments,commentIcon} from './canvas-comments.mjs';
 import {toolGroup} from './canvas-tools.mjs';
 import {layerMenu} from './ui-layer-menu.mjs';
-import {imageFusionState,fusionHash,applyImageFusion,insertPSDDocument} from './ui-layer-actions.mjs';
+import {imageFusionState,fusionHash,applyImageFusion,fusionImageLayer,insertPSDDocument} from './ui-layer-actions.mjs';
 import {componentPicker} from './ui-components.mjs';
 import {scrubNumber} from './number-scrub.mjs';
 import {psdFallbackFonts,applyPSDFallbackFont} from './psd-text.mjs';
-import {cacheKey,projectCache,restoreProjectDraft} from './ui-project-cache.mjs';
+import {cacheKey,projectCache,restoreProjectDraft,PSD_PAINT_BYTES} from './ui-project-cache.mjs';
 
 import {html as el,reconcileInspector} from './dom-controls.mjs';
 import {dialogShell} from './popup-shell.mjs';
@@ -39,6 +39,12 @@ const media=image=>{
   return (local&&local.revision===revision&&local.url)||previewURL(app?.preview?.media,key,resourceURL(image.guid));
 };
 const sliceMedia=image=>resourceURL(image.guid);
+const sourceTextMedia=image=>{
+  const key=`${image.guid}:${image.localId||''}`,cache=app?.psdPaints,local=cache?.document===app?.doc&&cache?.images.get(key),revision=resizedSources.get(image.guid)||image.revision||'';
+  // Cached PSD glyph paint is already a finished bitmap. Saved texture previews
+  // may be resampled by Unity; use the original file when no worker Blob exists.
+  return (local&&local.revision===revision&&local.url)||sliceMedia(image);
+};
 let app;
 export function prepareUIStudio() {
   let style=document.querySelector('link[data-ui-style]');
@@ -289,13 +295,13 @@ class Studio {
       if(draft){try{validateDocument(draft.document);}catch{draft=null;}}
       const sessionPromise=Promise.resolve(this.shell.token?{token:this.shell.token}:this.api('ui-session'));
       const snapshot=this.shell.snapshot;
-      this.preview=snapshot?.preview;
+      this.preview=null;
       let initialRead=requestedPath&&(!draft||draft.dirty===false)?snapshot?.path===requestedPath?Promise.resolve(snapshot):sessionPromise.then(session=>{this.token=session.token;return this.api('ui-read',{path:requestedPath});}):null;
       if(initialRead)initialRead=Promise.resolve(initialRead).catch(error=>{if(error.status===404)return {missingPath:requestedPath};throw error;});
       this.refreshAppearance();
       const [session,config,saved]=await Promise.all([sessionPromise,this.shell.configPromise||this.api('ui-config'),initialRead]);
       this.token=session.token;this.config=config;this.lastConfigReadAt=snapshot?-Infinity:performance.now();this.doc=newDocument(this.config);
-      if(saved?.document){this.doc=validateDocument(saved.document);this.path=saved.path;this.revision=saved.revision;this.guid=saved.guid||'';this.dirty=false;this.message('Opened '+this.doc.name);}
+      if(saved?.document){this.doc=validateDocument(saved.document);this.preview=saved.preview||null;this.path=saved.path;this.revision=saved.revision;this.guid=saved.guid||'';this.dirty=false;this.message('Opened '+this.doc.name);}
       else if(draft) {
         try {
           this.doc=validateDocument(draft.document);this.path=draft.path||'';this.revision=draft.revision||'';this.guid=draft.guid||'';this.dirty=draft.dirty!==false;
@@ -303,6 +309,7 @@ class Studio {
         }catch{this.message('Stored draft could not be recovered.',true);}
       }
       this.lastPersistedDraft=saved?.document?undefined:JSON.stringify({document:this.doc,path:this.path,revision:this.revision,guid:this.guid,dirty:!!this.dirty});
+
       this.ready=true;this.repairTMPMaterials();this.refreshFiles();this.pendingLoad=loading;this.paintAll();this.fit();
       if(saved?.document)this.persist();
       if(saved?.missingPath){this.retainMissingDocument(saved.missingPath);this.setSidebar('Files');this.refreshConfig({force:true});}
@@ -430,9 +437,21 @@ class Studio {
   paintAll(){this.docName.value=this.doc.name;this.paintTools();this.paintLayers();this.paintInspector();this.paintShell();this.paint();}
   paint(){if(this.raf)return;this.raf=requestAnimationFrame(()=>{this.raf=0;this.paintCanvas();});}
   paintCanvas() {
+    // Appearance/config replies can request a frame while draft resources are
+    // restoring. Mounting images now would start hundreds of native renders
+    // before their source URLs/Blobs are ready.
+    if(this.restoringPSDPaints===this.doc)return;
     // Imported artwork already has a PNG in the browser. Keep it for this document
     // instead of sending it back through Unity's GPU readback/PNG encoder.
-    if(this.psdPaints&&this.psdPaints.document!==this.doc){for(const entry of this.psdPaints.images.values())if(entry.owned)URL.revokeObjectURL(entry.url);this.psdPaints=null;}
+    if(this.psdPaints&&this.psdPaints.document!==this.doc){
+      const cache=this.psdPaints,references=new Map(this.doc.layers.filter(layer=>layer.image).map(layer=>[`${layer.image.guid}:${layer.image.localId||''}`,layer.image.revision||'']));
+      // Save/Undo can replace the JSON object while retaining the same sources.
+      // Keep matching revisions instead of discarding their decoded colors and
+      // starting hundreds of native GPU previews again.
+      for(const [key,entry]of cache.images)if(!references.has(key)||references.get(key)!==(entry.revision||'')){if(entry.owned)URL.revokeObjectURL(entry.url);cache.images.delete(key);}
+      cache.document=this.doc;cache.bytes=[...cache.images.values()].reduce((sum,entry)=>sum+(entry.bytes||0),0);
+      if(!cache.images.size)this.psdPaints=null;
+    }
     this.loadFonts();
     this.world.style.transform=`translate(${this.pan.x}px,${this.pan.y}px) scale(${this.zoom})`;
     Object.assign(this.board.style,{width:this.doc.width+'px',height:this.doc.height+'px'});this.zoomLabel.textContent=Math.round(this.zoom*100)+'%';
@@ -502,14 +521,17 @@ class Studio {
     const parent=layer.parentId?this.elements.get(layer.parentId):this.board;
     // Keep layer DOM and image elements alive during pointer movement.
     if(node.parentElement!==parent)parent.append(node);
-    const geometry=[layer.x,layer.y,layer.width,layer.height,layer.rotation||0,layer.opacity??1,layer.blendMode,!!layer.clip,!!layer.locked,layer.visible!==false,indexes.get(layer.id)].join('|');
+    const geometry=[layer.x,layer.y,layer.width,layer.height,layer.rotation||0,layer.opacity??1,layer.blendMode,!!layer.imageComposite,!!layer.clip,!!layer.locked,layer.visible!==false,indexes.get(layer.id)].join('|');
     if(node._geometry!==geometry){node._geometry=geometry;node.hidden=layer.visible===false;
       // A pass-through folder must not create its own stacking context: its
       // children blend with artwork painted before the folder, including siblings.
-      const pass=layer.blendMode==='pass-through'&&['empty','group'].includes(layer.role);
+      const pass=!!layer.imageComposite||layer.blendMode==='pass-through'&&['empty','group'].includes(layer.role);
       Object.assign(node.style,{zIndex:pass?'auto':String(indexes.get(layer.id)??this.doc.layers.length),left:layer.x+'px',top:layer.y+'px',width:layer.width+'px',height:layer.height+'px',opacity:String(layer.opacity??1),transform:layer.rotation?`rotate(${layer.rotation}deg)`:'none',mixBlendMode:layer.blendMode==='pass-through'?'normal':layer.blendMode||'normal',isolation:pass?'auto':'isolate',overflow:layer.clip?'hidden':'visible',pointerEvents:layer.locked?'none':'auto'});
+      if(layer.imageComposite)node.style.opacity='1';
     }
     const content=node.firstElementChild;
+    content.style.zIndex=layer.imageComposite?'auto':'0';
+    for(const paint of content.querySelectorAll('.ui-composite-paint')){paint.style.opacity=String(layer.opacity??1);paint.style.zIndex=String(indexes.get(layer.id)??this.doc.layers.length);}
     // Moving changes only geometry. Keep image/TMP content and signatures untouched.
     if(!full&&this.gesture?.type==='move')return;
     const renderText=layer.role==='text';
@@ -517,14 +539,16 @@ class Studio {
     const renderImage=!['text','group','empty'].includes(layer.role);
     const tmpFont=renderText&&layer.textMeshPro?this.tmpFontFor(layer):null,tmpPreset=tmpFont?.materials?.find(m=>m.key===layer.tmpMaterial?.preset)||tmpFont?.materials?.[0];
     const styleRevision=(this.config.textStyles||[]).find(s=>s.key===layer.textStyle?.preset)?.revision||'';
-    const signature=JSON.stringify([layer.role,renderText,layer.sourceTextPaint,layer.fill,layer.fillGradient,layer.image,layer.image?resourceURL(layer.image.guid):null,imageMode(layer),layer.shape,layer.stroke,layer.strokeWidth,layer.shapeSides,layer.starInnerRadius,layer.shapeFlipX,layer.shapeFlipY,...(layer.shape?[layer.width,layer.height]:[]),layer.textCurve,...(layer.textCurve?[layer.width,layer.height]:[]),layer.text,layer.textColor,layer.fontSize,layer.fontGuid,layer.textAlign,layer.bold,layer.textMeshPro,layer.standaloneText,layer.tmpFont,layer.tmpSettings,layer.tmpMaterial,layer.textStyle,styleRevision,...(renderText?[this.fontVersion]:[]),...(layer.textMeshPro?[layer.width,layer.height,tmpFont?.revision,tmpPreset?.revision]:[])]);
-    if(node._signature!==signature) {
+    const signature=JSON.stringify([layer.role,renderText,layer.sourceTextPaint,layer.fill,layer.fillGradient,layer.image,layer.image?resourceURL(layer.image.guid):null,imageMode(layer),layer.shape,layer.stroke,layer.strokeWidth,layer.shapeSides,layer.starInnerRadius,layer.shapeFlipX,layer.shapeFlipY,...(layer.shape?[layer.width,layer.height]:[]),layer.textCurve,...(layer.textCurve?[layer.width,layer.height]:[]),layer.text,layer.textRuns,layer.textColor,layer.fontSize,layer.fontGuid,layer.textAlign,layer.bold,layer.textMeshPro,layer.standaloneText,layer.tmpFont,layer.tmpSettings,layer.tmpMaterial,layer.textStyle,styleRevision,...(renderText?[this.fontVersion]:[]),...(layer.textMeshPro?[layer.width,layer.height,tmpFont?.revision,tmpPreset?.revision]:[])]);
+    const paintSignature=signature+'|'+JSON.stringify(layer.imageComposite)+'|'+(renderImage&&layer.image?(layer.imageComposite||imageMode(layer)==='nine_slice'?this.originalImageURL(layer.image):media(layer.image)):'');
+    if(node._signature!==paintSignature) {
       // Unity uses fill as the sprite tint; a white tint must not add an opaque rectangle behind PNG alpha.
-      node._signature=signature;if(!(renderText&&layer.textStyle&&content.querySelector('.ui-styled-text-preview'))&&!(renderText&&!layer.textStyle&&layer.textMeshPro&&content.querySelector('.ui-tmp-web-preview')))content.replaceChildren();if(!layer.textStyle)this.styledPreview?.cancel(content);content.style.background=renderImage&&!layer.image&&!layer.shape?layer.fill||'transparent':'transparent';
+      node._signature=paintSignature;if(!(renderText&&layer.textStyle&&content.querySelector('.ui-styled-text-preview'))&&!(renderText&&!layer.textStyle&&layer.textMeshPro&&content.querySelector('.ui-tmp-web-preview')))content.replaceChildren();if(!layer.textStyle)this.styledPreview?.cancel(content);content.style.background=renderImage&&!layer.image&&!layer.shape?layer.fill||'transparent':'transparent';
       if(renderImage&&!layer.image&&!layer.shape&&layer.fillGradient){content.style.backgroundColor='transparent';content.style.backgroundImage=`url("${paintURL(layer.fill,layer.fillGradient)}")`;content.style.backgroundSize='100% 100%';}
       if(layer.shape)content.append(paintShape(layer));
       if(renderImage&&layer.image){
-        if(imageMode(layer)==='nine_slice'){
+        if(layer.imageComposite){this.paintComposite(content,layer,this.originalImageURL(layer.image),indexes.get(layer.id)??this.doc.layers.length);}
+        else if(imageMode(layer)==='nine_slice'){
           const sliced=el('div',{class:'ui-sliced-image'}),source=el('img',{src:sliceMedia(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async'});
           source.onload=async()=>{
             const current=this.doc.layers.find(item=>item.id===layer.id);if(!current||this.elements.get(layer.id)?.querySelector('.ui-sliced-image')!==sliced)return;
@@ -540,10 +564,10 @@ class Studio {
           };
           sliced.append(source);content.append(sliced);
         }else content.append(el('img',{src:media(layer.image),alt:'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:imageMode(layer)==='none'?'fill':'contain'}}));
-        imagePaintFilter(content,content.querySelector('.ui-sliced-image')||content.querySelector('img'),layer);
+        if(!layer.imageComposite)imagePaintFilter(content,content.querySelector('.ui-sliced-image')||content.querySelector('img'),layer);
       }
       if(sourcePaint){
-        this.styledPreview?.cancel(content);content.replaceChildren(el('img',{class:'ui-psd-text-paint',src:media(sourcePaint.image),alt:layer.text||'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:'fill',...(sourcePaint.bounds?{position:'absolute',left:sourcePaint.bounds.x+'px',top:sourcePaint.bounds.y+'px',width:sourcePaint.bounds.width+'px',height:sourcePaint.bounds.height+'px',maxWidth:'none',maxHeight:'none'}:{})}}));
+        this.styledPreview?.cancel(content);content.replaceChildren(el('img',{class:'ui-psd-text-paint',src:sourceTextMedia(sourcePaint.image),alt:layer.text||'',draggable:'false',loading:'eager',decoding:'async',style:{objectFit:'fill',...(sourcePaint.bounds?{position:'absolute',left:sourcePaint.bounds.x+'px',top:sourcePaint.bounds.y+'px',width:sourcePaint.bounds.width+'px',height:sourcePaint.bounds.height+'px',maxWidth:'none',maxHeight:'none'}:{})}}));
       }
       else if(renderText&&layer.textStyle){
         this.styledPreview??=styledTextPreview({request:(...args)=>this.api(...args),saved:layer=>{const entry=this.preview?.styledText?.[layer.id],url=previewURL({text:entry?.result?.dataUrl},'text','');return url&&entry.input&&entry.result?{...entry,result:{...entry.result,dataUrl:url}}:null;},onError:text=>this.message(text,true)});
@@ -555,6 +579,17 @@ class Studio {
       if(renderText&&!layer.textStyle)paintTextCurve(content,layer);
     }
     const sliced=content.querySelector('.ui-sliced-image');if(sliced)this.paintSlice(sliced,layer);
+  }
+  originalImageURL(image){
+    return sourceTextMedia(image);
+  }
+  paintComposite(content,layer,url,index=0){
+    const c=layer.imageComposite;
+    for(const p of c.paints){
+      const paint=el('div',{class:'ui-composite-paint',style:{position:'absolute',inset:'0',overflow:'hidden',mixBlendMode:p.blendMode,opacity:String(layer.opacity??1),zIndex:String(index)}});
+      const source=el('img',{src:url,alt:'',draggable:'false',loading:'eager',decoding:'async',style:{position:'absolute',maxWidth:'none',maxHeight:'none',width:(100*c.atlasWidth/p.width)+'%',height:(100*c.atlasHeight/p.height)+'%',left:(-100*p.x/p.width)+'%',top:(-100*p.y/p.height)+'%'}});
+      paint.append(source);imagePaintFilter(paint,source,layer);content.append(paint);
+    }
   }
   async whenCanvasReady(){
     const doc=this.doc;
@@ -949,7 +984,7 @@ class Studio {
   }
   styledTextInspector(layer,section){
     const paint=section('Text Style'),values=resolvedTextStyle(layer,this.config.textStyles||[]);
-    const set=(key,value)=>{layer.textStyle={...layer.textStyle,[key]:['strokeWidth','outlineWidth','innerOutlineWidth','extrusionX','extrusionY'].includes(key)?value/(layer.textStyle.scale??1):value};};
+    const set=(key,value)=>{layer.textStyle={...layer.textStyle,[key]:['strokeWidth','outlineWidth','innerOutlineWidth','extrusionX','extrusionY','shadowWidth','shadowX','shadowY'].includes(key)?value/(layer.textStyle.scale??1):value};};
     const number=(label,key,min,max)=>{const field=this.field(label,values[key],v=>set(key,Math.max(min,Math.min(max,v))),'number');Object.assign(field.lastElementChild,{min,max,step:.1});return field;};
     const toggleGroup=(label,key,enabled,change)=>{
       const group=el('section',{class:'ui-style-effect','data-inspector-key':'text-effect:'+key}),toggle=this.field(label,enabled,change,'checkbox');
@@ -990,6 +1025,10 @@ class Studio {
     if(layer.standaloneText)edge(effect('Inner Outline','inner'),'innerOutline','Inner outline');
     edge(effect('Text Stroke','stroke'),'stroke','Stroke');
     edge(effect('Outer Outline','outline'),'outline','Outline');
+    const shadow=effect('Drop Shadow','shadow');if(shadow){
+      edge(shadow,'shadow','Shadow');
+      for(const axis of ['X','Y'])shadow.append(number('Shadow '+axis,'shadow'+axis,-128,128));
+    }
     const depth=effect('3D Extrusion','extrusion');if(depth){
       const offsets=el('div',{class:'ui-property-grid ui-inline-properties','data-inspector-key':'extrusion-offsets'});
       for(const axis of ['X','Y']){const field=number('Extrusion '+axis,'extrusion'+axis,-128,128);field.firstElementChild.textContent=axis;offsets.append(field);}
@@ -1198,15 +1237,20 @@ class Studio {
           if(layer.textStyle)this.styledTextInspector(layer,designSection);
         }
         if(layer.role!=='text'){const image=designSection('Image');if(!['group','empty'].includes(layer.role))image.append(this.button(layer.image?'Replace image from files':'Choose image from files',()=>this.chooseImage(layer.id)),this.button('Browse imported images',()=>this.assets(layer.id)));if(layer.image){
-          image.append(this.field('Image mode',imageMode(layer),v=>setImageMode(layer,v),'text',imageModes));
+          if(!layer.imageComposite)image.append(this.field('Image mode',imageMode(layer),v=>setImageMode(layer,v),'text',imageModes));
           if(imageMode(layer)==='nine_slice'){
             image.append(el('div',{class:'ui-slice-guide','aria-label':'Automatic 9-slice bands',title:'Repeated pixel bands; color tolerance 3/255, margin 2 px, center 2 px. Save includes each shared image once in the document package.'}));
             const slice=this.elements.get(layer.id)?.querySelector('.ui-sliced-image');if(slice?._sourceSize)queueMicrotask(()=>this.paintSliceGuide(layer,slice._sourceSize,slice._borders));
           }
         }
-        if(layer.image){image.append(el('p',{class:'ui-hint ui-image-component'},`Shared image component: ${imageInstances(this.doc,layer).length} instances. Source, tint and image mode update together; position and size stay independent.`));image.append(el('img',{class:'ui-inspector-image',src:media(layer.image),alt:layer.image.name||'Layer image'}),el('p',{class:'ui-hint'},layer.image.path||''),this.button('Reset to image size',async()=>{const reference=layer.image;const asset=await this.api('ui-resolve-image',{path:reference.path});if(layer.image!==reference||!this.doc.layers.includes(layer))return;if(asset.image.guid!==reference.guid||String(asset.image.localId||'')!==String(reference.localId||''))throw Error('Choose this sprite from Project Assets to restore its original size.');this.edit(()=>{layer.width=asset.width;layer.height=asset.height;});}),this.button('Remove image',()=>this.edit(()=>delete layer.image)));this.imageResizeControl(layer,image);}
+        if(layer.image){
+          let thumbnail;
+          if(layer.imageComposite){thumbnail=el('div',{class:'ui-inspector-image',style:{position:'relative',height:'120px',isolation:'isolate'}});this.paintComposite(thumbnail,layer,this.originalImageURL(layer.image));}
+          else thumbnail=el('img',{class:'ui-inspector-image',src:media(layer.image),alt:layer.image.name||'Layer image'});
+          image.append(thumbnail,el('p',{class:'ui-hint'},layer.image.path||''),this.button('Reset to image size',async()=>{if(layer.imageComposite){this.edit(()=>{layer.width=layer.imageComposite.width;layer.height=layer.imageComposite.height;});return;}const reference=layer.image;const asset=await this.api('ui-resolve-image',{path:reference.path});if(layer.image!==reference||!this.doc.layers.includes(layer))return;if(asset.image.guid!==reference.guid||String(asset.image.localId||'')!==String(reference.localId||''))throw Error('Choose this sprite from Project Assets to restore its original size.');this.edit(()=>{layer.width=asset.width;layer.height=asset.height;});}),this.button('Remove image',()=>this.edit(()=>{delete layer.image;delete layer.imageComposite;})));if(!layer.imageComposite)this.imageResizeControl(layer,image);else image.append(el('p',{class:'ui-hint'},'PSD effects are fused into this image.'));
+        }
         const fusion=this.button('Fusion images',()=>this.fusionImages(layer.id));fusion.disabled=this.busy||this.pngExporting||this.psdExporting||this.imageFusing;
-        fusion.title='Merge visible child images into this object. Text stays editable. Undo restores the original layers.';image.append(fusion);}
+        fusion.title='Combine compatible image layers. Backdrop blend layers keep their paint order and colors. Text stays editable. Undo restores the original layers.';image.append(fusion);}
 
         if(['horizontal','vertical','grid'].includes(layer.groupType)){
           const group=designSection(groupTypes.find(([id])=>id===layer.groupType)?.[1]||'Layer type');
@@ -1237,7 +1281,7 @@ class Studio {
     this.inspectorScope=scope;
     const scroller=this.right.querySelector('.ui-inspector-content');scroller.scrollTop=sameSelection?scrollTop:0;
   }
-  setRoles(selected,role){role=canonicalRole(role);for(const layer of selected){const previousRole=layer.role;layer.role=role;if(!['image','button'].includes(role)){delete layer.shape;delete layer.fillGradient;}if(role!=='text'){layer.textMeshPro=false;delete layer.textRenderer;delete layer.sourceTextPaint;delete layer.textCurve;delete layer.textStyle;delete layer.standaloneText;this.liveTextBindings?.delete(layer.id);}if(role==='text'){if(previousRole!=='text')setTextRenderer(layer,'vinaGenText');delete layer.canvasRoot;if(layer.groupType==='canvas')layer.canvasGroup=true;delete layer.groupType;delete layer.layout;}}}
+  setRoles(selected,role){role=canonicalRole(role);for(const layer of selected){const previousRole=layer.role;layer.role=role;if(!['image','button'].includes(role)){delete layer.imageComposite;delete layer.shape;delete layer.fillGradient;}if(role!=='text'){layer.textMeshPro=false;delete layer.textRenderer;delete layer.sourceTextPaint;delete layer.textCurve;delete layer.textStyle;delete layer.standaloneText;this.liveTextBindings?.delete(layer.id);}if(role==='text'){if(previousRole!=='text')setTextRenderer(layer,'vinaGenText');delete layer.canvasRoot;if(layer.groupType==='canvas')layer.canvasGroup=true;delete layer.groupType;delete layer.layout;}}}
   label(role){this.edit(()=>this.setRoles(this.doc.layers.filter(l=>this.selected.has(l.id)),role));}
   remove(){this.edit(()=>{const ids=descendants(this.doc,this.selected);this.doc.layers=this.doc.layers.filter(l=>!ids.has(l.id));this.selected.clear();});}
   align(mode){this.edit(()=>alignLayers(this.doc,this.selected,mode));}
@@ -1263,7 +1307,7 @@ class Studio {
       }catch{mask={unavailable:true};}
       this.hitMasks.set(source,mask);
     }
-    return mask.unavailable||mask.alpha[Math.floor(pixel.y)*mask.width+Math.floor(pixel.x)]>0;
+    return mask.unavailable||(layer.imageComposite?layer.imageComposite.paints.some(p=>mask.alpha[Math.floor(p.y+pixel.y)*mask.width+Math.floor(p.x+pixel.x)]>0):mask.alpha[Math.floor(pixel.y)*mask.width+Math.floor(pixel.x)]>0);
   }
   pickLayer(point,e) {
     const hits=layerHitStack(this.doc,point,(layer,local)=>this.imageHitTest(layer,local)),ids=JSON.stringify(hits.map(l=>l.id)),previous=this.lastPick;
@@ -1450,7 +1494,7 @@ class Studio {
     const resizedNote=resized?`Updated ${resized} source image${resized>1?'s':''}. `:'';
     let path=this.path;
     // Inserting private PSD artwork into a bundled sample must save a private copy.
-
+    if(this.doc.psdImportFolder&&path.startsWith('Assets/VinaGen AI Toolkit/')&&!path.startsWith(this.doc.psdImportFolder+'/'))path='';
     if(!path){path=await this.input('Save UI document','Workspace-relative path',`${this.config.documentFolder}/${this.doc.name.replace(/[^\p{L}\p{N}_ -]/gu,'_')}.svgpro`);if(!path)return false;}
     const version=this.version,document=copy(this.doc),revision=path===this.path?this.revision:'';this.busy=true;this.message('Saving UI document…');
     try{const result=await saveUIDocumentDraft((...args)=>this.api(...args),(...args)=>this.input(...args),{path,revision,document,...(this.guid&&path===this.path?{guid:this.guid}:{})},doc=>this.recoverSaveStyles(doc));if(!result){this.persist();this.message('Save cancelled. Your draft is retained.');return false;}this.catalogVersion=(this.catalogVersion||0)+1;this.missingDocuments?.delete(result.path);this.path=result.path;this.revision=result.revision;this.guid=result.guid||'';this.preview=null;this.dirty=version!==this.version;if(result.document&&!this.dirty){const sourcesChanged=document.layers.some(l=>l.image&&result.document.layers.some(n=>n.image?.guid===l.image.guid&&n.image.slice?.version!==l.image.slice?.version));this.doc=validateDocument(result.document);if(sourcesChanged){this.undo=[];this.redo=[];}this.version++;this.renderVersion=-1;this.paintAll();}const entry={path:result.path,name:result.path.split('/').pop().replace(/\.(asset|svgpro)$/i,'')};this.config.documents=[...(this.config.documents||[]).filter(d=>d.path!==result.path),entry];this.refreshFiles();this.persist();this.message(resizedNote+(result.packageWarning||'Saved '+this.path+' and its UI document.'),!!result.packageWarning);return true;}
@@ -1504,11 +1548,30 @@ class Studio {
       this.message(`Exported ${format.toUpperCase()} (${result.width} × ${result.height}).`);return true;
     }catch(error){this.message(error,true);return false;}finally{this.pngExporting=false;this.paintInspector();}
   }
+  async prepareFusionPreview(image,blob){
+    blob??=await fetchWebResource(resourceURL(image.guid),{unavailable:'Fusion image could not be loaded. Your layers are retained.'});
+    const url=URL.createObjectURL(blob),preview=new Image();
+    try{preview.src=url;await preview.decode();return {key:`${image.guid}:${image.localId||''}`,url,owned:true,revision:image.revision||'',bytes:blob.size};}
+    catch(error){URL.revokeObjectURL(url);throw error;}
+  }
+  applyFusionPreview(document,preview){
+    const cache=this.psdPaints??={document,images:new Map(),bytes:0};
+    // A Fusion replaces the JSON object, but its remaining PSD paints still
+    // belong to this document. Keep their decoded previews alive across commit.
+    cache.document=document;
+    const previous=cache.images.get(preview.key);
+    if(previous?.owned)URL.revokeObjectURL(previous.url);
+    cache.images.delete(preview.key);cache.bytes=Math.max(0,cache.bytes-(previous?.bytes||0));
+    for(const [key,entry]of cache.images){if(cache.bytes+preview.bytes<=PSD_PAINT_BYTES)break;if(entry.owned)URL.revokeObjectURL(entry.url);cache.images.delete(key);cache.bytes=Math.max(0,cache.bytes-(entry.bytes||0));}
+    cache.images.set(preview.key,preview);cache.bytes+=preview.bytes;
+  }
   async fusionImages(layerId){
+    if(this.doc.layers.find(layer=>layer.id===layerId)?.imageComposite&&!this.doc.layers.some(layer=>layer.parentId===layerId&&['image','button'].includes(layer.role))){this.message('PSD effects are already fused into this image.');return;}
     if(this.busy||this.imageFusing||this.pngExporting||this.psdExporting)return;
     document.activeElement?.blur();
     const doc=this.doc,version=this.version,before=this.snapshot();
     const current=()=>{if(this.doc!==doc||this.version!==version||this.snapshot()!==before||this.busy)throw Error('UI changed during Fusion images. Your layers are retained; try again.');};
+    let preview;
     this.imageFusing=true;this.paintInspector();this.message('Checking Fusion cache…');
     const progressDialog=el('dialog',{id:'ui-fusion-progress-dialog',class:'ui-dialog ui-psd-progress'});this.root.append(progressDialog);
     const {body}=dialogShell(progressDialog,{title:'Fusion images',kind:'progress'}),status=el('div',{class:'vg-import-status',role:'status'}),progress=el('progress',{class:'ui-psd-progress-bar','aria-label':'Fusion images progress'});
@@ -1520,13 +1583,15 @@ class Studio {
     try{
       await new Promise(resolve=>requestAnimationFrame(resolve));
       const state=await imageFusionState(doc,layerId),documentKey=doc.fusionCacheId||await fusionHash({name:doc.name,roots:doc.layers.filter(layer=>!layer.parentId).map(layer=>layer.id).sort()});
-      const fusionKey=await fusionHash([documentKey,layerId]),request={fusionKey,fusionSignature:state.signature,fusionName:state.root.name,sources:state.sources,fusionImage:state.root.image,path:this.path||undefined,
+      const fusionKey=await fusionHash([documentKey,layerId,...(state.preserveBlend?['preserve-blends-v2']:[])]),request={fusionKey,fusionSignature:state.signature,fusionName:state.root.name,sources:state.sources,fusionImage:state.image,path:this.path||undefined,psdImportFolder:state.root.psdImportFolder||doc.psdImportFolder||undefined,
         allowExisting:!state.hasChildren&&imageMode(state.root)==='none'&&/^#ffffff(ff)?$/i.test(state.root.fill||'')&&!state.root.fillGradient&&!state.root.strokeWidth,
         fusionSize:{width:state.root.width,height:state.root.height}};
       const cached=await this.api('ui-fusion-cache',request);current();
       if(cached.hit&&cached.resultSignature===state.signature){
-        const draft=copy(doc);draft.fusionCacheId=documentKey;draft.layers.find(layer=>layer.id===layerId).image=copy(cached.image);
-        if(JSON.stringify(draft)!==JSON.stringify(doc)){this.doc=draft;this.remember(before,false,true);}
+        preview=await this.prepareFusionPreview(cached.image);current();
+        const draft=copy(doc);draft.fusionCacheId=documentKey;fusionImageLayer(draft,layerId).image=copy(cached.image);
+        if(JSON.stringify(draft)!==JSON.stringify(doc)){this.doc=draft;this.applyFusionPreview(draft,preview);preview=null;this.remember(before,false,true);}
+        else{this.applyFusionPreview(doc,preview);preview=null;this.renderVersion=-1;this.paint();}
         this.message('Loaded cached Fusion image. No image changes.');return;
       }
       if(!state.hasChildren&&!cached.image?.guid)throw Error('Add visible child images before Fusion images.');
@@ -1534,20 +1599,21 @@ class Studio {
 
       const {captureLayerPNG}=await import('./ui-screen-capture.mjs');
       report(cached.hit?'Loading cached Fusion image…':'Combining child images…');
-      const result=cached.hit?cached.bounds:await captureLayerPNG(this,layerId,{imagesOnly:true,bakeRootAppearance:false,onProgress:report});current();
+      const result=cached.hit?cached.bounds:await captureLayerPNG(this,layerId,{imagesOnly:true,bakeRootAppearance:false,artworkIds:state.artworkIds,onProgress:report});current();
       if(result.blob?.size>5*1024*1024)throw Error('Fusion PNG exceeds the 5 MB image import limit. Reduce the image sizes.');
       const draft=copy(doc);applyImageFusion(draft,layerId,{image:{guid:'fusion-pending'}},result,{allowSingle:!state.hasChildren});draft.fusionCacheId=documentKey;
       const name=(state.root.name||'Object').replace(/[<>:"/\\|?*\x00-\x1f]/g,'_');
       report(cached.hit?'Applying cached image…':'Preparing Fusion image…');
       const asset=cached.hit?cached:await this.upload(new File([result.blob],name+'.png',{type:'image/png'}),{...request,fusionBounds:{x:result.x,y:result.y,width:result.width,height:result.height}});current();
       if(!asset?.image?.guid)throw Error('Fusion image could not be imported. Your layers are retained.');
-      draft.layers.find(layer=>layer.id===layerId).image=asset.image;validateDocument(draft);
+      preview=await this.prepareFusionPreview(asset.image,result.blob);current();
+      fusionImageLayer(draft,layerId).image=asset.image;validateDocument(draft);
       const output=await imageFusionState(draft,layerId);current();
       report('Updating Fusion cache…');
       await this.api('ui-fusion-cache',{...request,resultSignature:output.signature,imageGuid:asset.image.guid});current();
-      this.doc=draft;this.selected=new Set([layerId]);this.remember(before,false,true);
-      this.message((cached.hit?'Loaded cached Fusion image for ':'Fused images into ')+state.root.name+'. Text stays editable. Undo restores the original layers.');
-    }catch(error){this.message(error,true);}finally{progressDialog.close();progressDialog.remove();this.imageFusing=false;this.paintInspector();}
+      this.doc=draft;this.applyFusionPreview(draft,preview);preview=null;this.selected=new Set([layerId]);this.remember(before,false,true);
+      this.message((cached.hit?'Loaded cached Fusion image for ':'Fused images into ')+state.root.name+'. '+(state.preserveBlend?'Backdrop blend layers stay separate to preserve the colors. ':'')+'Text stays editable. Undo restores the original layers.');
+    }catch(error){this.message(error,true);}finally{if(preview)URL.revokeObjectURL(preview.url);progressDialog.close();progressDialog.remove();this.imageFusing=false;this.paintInspector();}
   }
   // The package is written by Unity beside the saved document; download that file.
   async exportSvgPro(){
@@ -1610,7 +1676,7 @@ class Studio {
     if(!layer){if(this.doc.layers.length>=1000)throw Error('Layer limit reached.');const selectedParent=parentId===undefined?this.creationParent():this.indexes().get(parentId);let center=point?this.creationPoint(point,selectedParent):undefined;
       if(!center&&!selectedParent){const rect=this.viewport.getBoundingClientRect(),visible=this.point(rect.left+rect.width/2,rect.top+(rect.height-48)/2);center={x:Math.min(this.doc.width-asset.width/2,Math.max(asset.width/2,visible.x)),y:Math.min(this.doc.height-asset.height/2,Math.max(asset.height/2,visible.y))};if(asset.width>this.doc.width)center.x=this.doc.width/2;if(asset.height>this.doc.height)center.y=this.doc.height/2;}
       layer={...newLayer('image'),...imagePlacement(this.doc,asset.width,asset.height,center,selectedParent?.id)};layer.name=asset.image.name||'Image';this.doc.layers.push(layer);}
-    delete layer.shape;layer.image=asset.image;layer.fill='#ffffff';this.selected=new Set([layer.id]);
+    delete layer.shape;delete layer.imageComposite;layer.image=asset.image;layer.fill='#ffffff';this.selected=new Set([layer.id]);
   }
   async addAssetPath(path,point){const asset=await this.api('ui-resolve-image',{path});this.edit(()=>this.attach(asset,null,point));}
   async drop(e){e.preventDefault();this.viewport.classList.remove('ui-drop-active');if(this.busy)return;const point=this.point(e.clientX,e.clientY),asset=e.dataTransfer.getData('application/x-vinagen-image'),text=e.dataTransfer.getData('text/plain');try{if(asset){this.edit(()=>this.attach(JSON.parse(asset),null,point));return;}await this.importFiles([...e.dataTransfer.files],point);}catch(error){this.message(error,true);}}
@@ -1646,6 +1712,7 @@ class Studio {
   }
   async importPSD(file) {
     const {validatePSDSourceSize}=await import('./psd-reader.mjs');
+    const {psdImportJobs}=await import('./psd-jobs.mjs');
     const {resolvePSDFont}=await import('./psd-text.mjs');
     validatePSDSourceSize(file.size);
     this.closeTextBubble();document.activeElement?.blur();this.cancelGesture();this.persist();
@@ -1662,13 +1729,14 @@ class Studio {
     try {
       const destination=await this.api('ui-psd-begin',{psdName:draft.name});draft.psdImportFolder=destination.psdImportFolder;
       if(!draft.psdImportFolder)throw Error('A PSD import destination could not be prepared.');
+      const uploadPSD=(png,layer)=>this.upload(new File([png],layer.name+'.png',{type:'image/png'}),{psdName:draft.name,layerName:layer.name,...(destination.reuseFolder?{layerId:layer.id}:{}),psdImportFolder:draft.psdImportFolder,path:undefined});
       await new Promise((resolve,reject)=>{
-        let timeout,totalLayers=0,importedLayers=0,active=0,nextJob=0,finished=0,finishing=false,fontsReady=Promise.resolve();
-        const jobs=[],notes=new Set(),paints=new Map();
+        let timeout,totalLayers=0,importedLayers=0,active=0,streaming=false,nextJob=0,finished=0,finishing=false,fontsReady=Promise.resolve();
+        const jobs=[],idleWorkers=[],notes=new Set(),paints=new Map();
         // Reserve the final 5% for rendering. Worker 'done' alone does not mean
         // its outstanding uploads, font requests or browser images have finished.
         const updateProgress=()=>{progress.max=100;progress.value=totalLayers?95*importedLayers/totalLayers:0;};
-        const fail=error=>{if(cancelled)return;cancelled=true;stopWorkers();clearTimeout(timeout);reject(error);};
+        const fail=error=>{if(cancelled)return;cancelled=true;uploadPSD.cancel?.(error);stopWorkers();clearTimeout(timeout);reject(error);};
         const heartbeat=()=>{clearTimeout(timeout);timeout=setTimeout(()=>fail(Error('PSD import timed out.')),120000);};heartbeat();
         const commitTree=()=>{draft.layers=jobs.flatMap(job=>job.layers);this.version++;};
         const repaint=()=>{if(layerPaintTimer)return;layerPaintTimer=setTimeout(()=>{layerPaintTimer=null;if(!cancelled&&this.doc===draft){commitTree();this.paint();this.paintLayers();}},80);};
@@ -1701,14 +1769,20 @@ class Studio {
         };
         let sourceDocument,sourceFileKey;
         const launch=()=>{
-          while(!cancelled&&active<(sourceDocument.records.some(r=>r.width>8192||r.height>8192||r.width*r.height>16777216||r.mask&&(r.mask.width>8192||r.mask.height>8192||r.mask.width*r.mask.height>16777216))?1:3)&&nextJob<jobs.length){
-            const job=jobs[nextJob++],w=new Worker(new URL('./psd-worker.mjs',import.meta.url),{type:'module'});workers.add(w);job.worker=w;active++;
-            w.onerror=e=>fail(Error(e.message));
-            const settle=()=>{if(cancelled||!job.done||job.pending||job.finished)return;job.finished=true;finished++;active--;w.terminate();workers.delete(w);launch();finish();};
+          while(!cancelled&&!streaming&&active<3&&nextJob<jobs.length){
+            // Isolate only the branch that streams a large raster. Ordinary
+            // branches before and after it retain the three-worker pool.
+            if(jobs[nextJob].streamed&&active)break;
+            const job=jobs[nextJob++],w=idleWorkers.pop()||new Worker(new URL('./psd-worker.mjs',import.meta.url),{type:'module'});workers.add(w);job.worker=w;active++;
+            streaming=job.streamed;
+            w.onerror=e=>fail(Error(e.message||'PSD decoder could not load. Check the local editor connection and reload.'));
+            const slots=this.config.psdImageBatches?8:2;
+            const refill=()=>{while(!cancelled&&!job.done&&job.pending+job.credits<slots){job.credits++;w.postMessage({type:'next'});}};
+            const settle=()=>{if(cancelled||!job.done||job.pending||job.finished)return;job.finished=true;finished++;active--;if(job.streamed)streaming=false;idleWorkers.push(w);launch();finish();};
             const importLayer=async data=>{
-              const sequence=job.received++;job.pending++;
+              const sequence=job.received++;job.credits--;job.pending++;
               const layer={...newLayer(data.layer.role,data.layer.x,data.layer.y),...(data.layer.role==='text'?{textStyle:undefined,standaloneText:undefined}:{}),...data.layer,psdImportFolder:draft.psdImportFolder};
-              let upload;if(data.png){upload=paints.get(data.paintKey);if(!upload){upload=this.upload(new File([data.png],layer.name+'.png',{type:'image/png'}),{psdName:draft.name,layerName:layer.name,psdImportFolder:draft.psdImportFolder,path:undefined});if(data.paintKey)paints.set(data.paintKey,upload);}}
+              let upload;if(data.png){const uploadLayer=data.resource?{...layer,id:data.resource.id,name:data.resource.name}:layer,uploadKey=destination.reuseFolder?uploadLayer.id:data.paintKey;upload=paints.get(uploadKey);if(!upload){upload=uploadPSD(data.png,uploadLayer);if(uploadKey)paints.set(uploadKey,upload);}}
               await Promise.all([upload,layer.role==='text'?fontsReady:undefined]);if(cancelled)return;resolvePSDFont(layer,this.config,fontWarnings,draft.psdFallbackFont);
               if(upload){const asset=await upload;layer.image=structuredClone(asset.image);
                 this.psdPaints??={document:draft,images:new Map(),bytes:0};
@@ -1717,8 +1791,8 @@ class Studio {
                   // Share worker PNGs across image and text layers. Approximate
                   // matches and over-budget paints stream the canonical source
                   // file, bypassing Unity GPU readback and a second PNG encode.
-                  const local=!asset.visualMatch&&cache.bytes+data.png.size<=32*1024*1024;
-                  cache.images.set(key,{url:local?URL.createObjectURL(data.png):sliceMedia(layer.image),owned:local,revision:layer.image.revision||''});
+                  const local=!asset.visualMatch&&cache.bytes+data.png.size<=PSD_PAINT_BYTES;
+                  cache.images.set(key,{url:local?URL.createObjectURL(data.png):asset.sourceURL||sliceMedia(layer.image),owned:local,revision:layer.image.revision||'',bytes:local?data.png.size:0});
                   if(local)cache.bytes+=data.png.size;
                 }
                 if(layer.role==='text')layer.sourceTextPaint={...layer.sourceTextPaint,signature:textPaintSignature(layer)};
@@ -1726,7 +1800,8 @@ class Studio {
               }
               if(cancelled)return;heartbeat();job.pending--;job.ready.set(sequence,layer);
               // Commit each branch in order; other branches never wait for it.
-              while(job.ready.has(job.committed)){job.layers.push(job.ready.get(job.committed));importedLayers++;job.ready.delete(job.committed++);if(!job.done)w.postMessage({type:'next'});}
+              while(job.ready.has(job.committed)){job.layers.push(job.ready.get(job.committed));importedLayers++;job.ready.delete(job.committed++);}
+              refill();
               updateProgress();repaint();
               status.lastElementChild.textContent=`${importedLayers} / ${totalLayers} layers imported · ${active} branches`;
               this.message(`PSD: ${importedLayers} / ${totalLayers} layers imported…`);settle();
@@ -1736,19 +1811,20 @@ class Studio {
               else if(data.type==='layer')importLayer(data).catch(fail);
               else if(data.type==='done'){job.done=true;totalLayers+=job.received-job.total;job.total=job.received;for(const note of data.warnings)notes.add(note);updateProgress();settle();}
             };
-            w.postMessage({type:'branch',file,fileKey:sourceFileKey,document:{width:sourceDocument.width,height:sourceDocument.height,sourceWidth:sourceDocument.sourceWidth,sourceHeight:sourceDocument.sourceHeight,records:job.records,warnings:[]}});
-            // Two bounded upload slots per branch: at most six uploads in flight.
-            w.postMessage({type:'next'});w.postMessage({type:'next'});
+            w.postMessage({type:'branch',file,fileKey:sourceFileKey,document:{width:sourceDocument.width,height:sourceDocument.height,sourceWidth:sourceDocument.sourceWidth,sourceHeight:sourceDocument.sourceHeight,records:job.records,parents:job.parents,warnings:[]}});
+            // Batch-capable hosts keep a bounded decode-ahead window so their
+            // CPU workers and asset batches stay busy between browser paints.
+            refill();
           }
         };
-        worker.onerror=e=>fail(Error(e.message));
+        worker.onerror=e=>fail(Error(e.message||'PSD decoder could not load. Check the local editor connection and reload.'));
         worker.onmessage=e=>{if(cancelled)return;heartbeat();const data=e.data;if(data.error){fail(Error(data.error));return;}
           if(data.type==='progress'){status.lastElementChild.textContent=data.stage==='hash'?`Checking PSD file… ${Math.round(data.readBytes/data.sourceBytes*100)}%`:'Reading PSD layer metadata…';return;}
           if(data.type!=='plan')return;
           (async()=>{
             sourceDocument=data.document;sourceFileKey=data.fileKey;worker.terminate();workers.delete(worker);for(const note of sourceDocument.warnings)notes.add(note);
             if(mode==='insert'&&before.layers.length+sourceDocument.records.length>1000)throw Error('UI documents support up to 1000 layers.');
-            const byId=new Map();for(const record of sourceDocument.records){let job=byId.get(record.parentId);if(!job){job={records:[],layers:[],received:0,committed:0,pending:0,ready:new Map(),total:0};jobs.push(job);}job.records.push(record);job.total++;byId.set(record.id,job);}
+            for(const job of psdImportJobs(sourceDocument.records))jobs.push({...job,layers:[],received:0,committed:0,pending:0,credits:0,ready:new Map(),total:job.records.length});
             totalLayers=sourceDocument.records.length;updateProgress();draft.width=sourceDocument.width;draft.height=sourceDocument.height;this.doc=draft;this.preview=null;this.selected=new Set();this.version++;this.paintAll();this.fit();
             // Toolkit PSDs carry explicit font IDs. Preparing unrelated starter
             // fonts is unnecessary when those IDs are already registered.

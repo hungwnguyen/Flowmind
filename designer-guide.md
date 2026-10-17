@@ -116,9 +116,13 @@ Use **Group**, **Horizontal**, **Vertical** or **Grid** to organize elements. Se
 
 Text layers and hidden content are retained. Unlock the object and its children before Fusion. Undo restores the layer structure. The resulting PNG is limited to **5 MB**. Storage and source-image updates depend on the Online/Offline version.
 
+In pass-through groups, Fusion keeps artwork that must blend with the backdrop and merges a continuous run of normal artwork. PSD images whose effects are already fused keep their paint frames; flattening them onto transparency would change their colors.
+
 ## Text and effects
 
-In **Typography**, edit content, font, size, alignment, spacing, wrapping and auto size. **Text on path** bends text along a curve. Text effects include gradients, strokes, outlines and extrusion; check the selected font and text type before editing.
+In **Typography**, edit content, font, size, alignment, spacing, wrapping and auto size. **Text on path** bends text along a curve. Text effects include gradients, strokes, outlines, independent **Drop Shadow** and extrusion; check the selected font and text type before editing. Drop Shadow has its own width, X/Y offsets and color; it draws an offset silhouette. Soft shadow blur is not implemented.
+
+PSD text metadata imports as editable Styled Text/VinaGenText with supported effects and color runs, without cached glyph PNGs. Editing content invalidates the old color ranges. Mixed fonts/sizes and unsupported Photoshop effects still need visual review.
 
 Font import/registration, Text type and TMP materials differ between versions â€” see Online or Offline.
 
@@ -129,10 +133,12 @@ Font import/registration, Text type and TMP materials differ between versions â€
 Click **Import** or drop a PSD onto the canvas. Empty documents import directly; when objects already exist, choose **Replace** to replace the document or **Insert** to add the PSD beside it. Import can be cancelled.
 
 - Supports **8-bit RGB PSD**: layers, folders, names, stacking order, visibility, opacity and common blend modes.
-- Text becomes editable when text metadata is available; smart objects and pixel-only content remain images. Some effects are baked or approximated.
+- Text becomes editable when text metadata is available; smart objects and pixel-only content remain images. Supported raster effects are baked into the same Image and PNG as their source. Backdrop-dependent effects retain ordered paint frames in one atlas, preserving their blend modes without extra document layers. Large fused images must fit **8,192 px per side, 16 MP and 5 MB**; oversized streamed tiles keep source pixels and report unbaked effects.
 - PSD stores font names, not font files. Missing fonts use a fallback and show a warning; font setup is explained in each version's guide.
 - **PSB, CMYK, 16/32-bit** are unsupported. Inspect masks, effects and text before sharing.
 - Large files depend on available device memory and storage; the export limits below are not source PSD dimension limits. Documents support **1,000 objects**, including large-image tiles.
+
+Ordinary PSD branches decode with up to three reusable workers; a branch requiring streamed large rasters runs alone. Plan/paint caches are disposable. Reimport old PSDs to receive the new text/effect representation; existing assets are retained because other documents may reference them. Bevel, glow and soft effects remain Photoshop approximations.
 
 ## Export PSD, SVGPRO, SVG and PNG
 
@@ -177,6 +183,8 @@ Choose **Comment** and click the canvas to pin a note. Notes are saved with the 
 | Ctrl/Cmd+Z / Ctrl/Cmd+Shift+Z | Undo / Redo |
 | Ctrl/Cmd+D / Ctrl/Cmd+G | Duplicate / Group |
 | Ctrl/Cmd-click / Shift-click | Add to selection / select a range |
+| Arrow keys / Shift+Arrow | Move 1 px / 10 px; in Layers, a single selection navigates the tree. |
+| Backquote (\`) | Toggle selection visibility; ignored while typing. |
 | Delete / Backspace | Delete selection |
 
 **R differs in the default configurations**: Online selects Rectangle, Unity selects Image. Version-specific keys are below; current tooltips and settings take precedence.

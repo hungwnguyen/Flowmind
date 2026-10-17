@@ -4,7 +4,7 @@ Yêu cầu trợ lý tạo màn hình UI, graph hoặc hiệu ứng trong dự �
 
 ## Cách dùng
 
-1. Import toolkit, đợi Unity biên dịch. Skill chat của dự án được đăng ký tự động.
+1. Import toolkit, đợi Unity biên dịch. Skill chat và kết nối MCP HTTP `vinagen` của dự án được đăng ký tự động.
 2. Mở **Tools → VinaGen AI Toolkit → Open → MCP Bridge → Start**.
 3. Mở Claude Code hoặc Codex trong dự án Unity này.
 4. Viết yêu cầu với `/vina` (Claude Code) hoặc `$vina` (Codex).
@@ -16,6 +16,10 @@ $vina tạo hiệu ứng lửa xanh lặp lại bằng texture offline
 ```
 
 Nói rõ bạn muốn gì, phong cách và tên. Có thể kèm đường dẫn lưu, ví dụ `Assets/VinaGen AI Toolkit/Content/UI/Documents/Shop.asset`.
+
+Skill bắt đầu bằng `vinagen_find`: yêu cầu của bạn quyết định tool/action, schema riêng và một guide cần đọc. Có thể yêu cầu thao tác scene, GameObject, component, prefab, biên dịch C#/chạy test, hoặc tạo game chơi được có scene/prefab chỉnh sửa được. Sau khi sửa code, agent biên dịch và kiểm tra lỗi compiler/Console; gameplay vẫn cần kiểm thử.
+
+Với sửa UI, agent đọc revision hiện tại, xem trước patch có mục tiêu, rồi ghi và chụp đúng các màn hình cần kiểm tra. Asset đã lưu và draft chưa lưu trên trình duyệt là hai nguồn riêng. Xem [MCP Bridge](mcp-bridge.md) về tìm công cụ, chọn draft và vòng biên dịch/test.
 
 ## Yêu cầu agent kiểm thử particle
 
@@ -32,10 +36,12 @@ Agent dùng [Web Particle](webgl-preview.md) để xem hiệu ứng, rồi lưu 
 
 Trong tab **MCP Bridge**, bấm **Install chat skills** rồi mở lại chat. Skill bạn tự tạo không bị ảnh hưởng.
 
-| Trợ lý | File đăng ký trong dự án |
-| --- | --- |
-| Claude Code | `.claude/skills/vina/SKILL.md` |
-| Codex | `.agents/skills/vina/SKILL.md` |
+| Trợ lý | File đăng ký trong dự án | Kết nối MCP |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/vina/SKILL.md` | `.mcp.json` → `mcpServers.vinagen` |
+| Codex | `.agents/skills/vina/SKILL.md` | `.codex/config.toml` → `[mcp_servers.vinagen]` |
+
+URL MCP mặc định là `http://127.0.0.1:8888/mcp`. Cài đặt giữ nguyên server khác và kết nối `vinagen` tùy chỉnh; mục HTTP loopback hiện có cập nhật theo URL bridge. Kiểm tra kết quả cài đặt nếu một mục bị bỏ qua.
 
 Chi phí trợ lý tính theo tài khoản Claude Code / Codex của bạn.
 

@@ -1,6 +1,7 @@
-export const textStyleDefaults = () => ({faceColor:'#ffffffff',gradient:true,gradientMode:'vertical',gradientBlend:'blend',gradientAngle:90,topLeft:'#ffffffff',topRight:'#ffffffff',bottomLeft:'#fff0c5ff',bottomRight:'#fff0c5ff',stops:[{offset:0,color:'#ffffffff'},{offset:1,color:'#fff0c5ff'}],strokeWidth:2,strokeColor:'#521257ff',outlineWidth:4,outlineColor:'#521257ff',innerOutlineWidth:0,innerOutlineColor:'#ffffffff',extrusionX:0,extrusionY:5,extrusionColor:'#3d0943ff'});
+export const textStyleDefaults = () => ({shadowWidth:0,shadowX:0,shadowY:0,shadowColor:'#000000ff',faceColor:'#ffffffff',gradient:true,gradientMode:'vertical',gradientBlend:'blend',gradientAngle:90,topLeft:'#ffffffff',topRight:'#ffffffff',bottomLeft:'#fff0c5ff',bottomRight:'#fff0c5ff',stops:[{offset:0,color:'#ffffffff'},{offset:1,color:'#fff0c5ff'}],strokeWidth:2,strokeColor:'#521257ff',outlineWidth:4,outlineColor:'#521257ff',innerOutlineWidth:0,innerOutlineColor:'#ffffffff',extrusionX:0,extrusionY:5,extrusionColor:'#3d0943ff'});
 export const plainTextStyleDefaults = () => ({gradient:false,strokeWidth:0,outlineWidth:0,extrusionX:0,extrusionY:0});
 export function textEffectEnabled(style,effect){
+  if(effect==='shadow')return !!(style.shadowWidth||style.shadowX||style.shadowY);
   if(effect==='gradient')return !!style.gradient;
   if(effect==='stroke')return style.strokeWidth>0;
   if(effect==='outline')return style.outlineWidth>0;
@@ -14,9 +15,9 @@ export function setTextEffect(layer,effect,enabled,presets=[]){
   const style={...layer.textStyle},scale=style.scale??1;
   if(effect==='gradient')style.gradient=enabled;
   else{
-    const keys=effect==='stroke'?['strokeWidth']:effect==='outline'?['outlineWidth']:effect==='inner'?['innerOutlineWidth']:['extrusionX','extrusionY'];
+    const keys=effect==='shadow'?['shadowWidth','shadowX','shadowY']:effect==='stroke'?['strokeWidth']:effect==='outline'?['outlineWidth']:effect==='inner'?['innerOutlineWidth']:['extrusionX','extrusionY'];
     // Inner outline is off by default; enabling it starts from a visible width.
-    const defaults={...textStyleDefaults(),innerOutlineWidth:2},saved={...style.disabledEffects};
+    const defaults={...textStyleDefaults(),innerOutlineWidth:2,shadowWidth:4,shadowX:0,shadowY:2},saved={...style.disabledEffects};
     for(const key of keys){
       if(!enabled)saved[key]=values[key]/scale;
       const [min,max]=widthKeys.includes(key)?[0,64]:[-128,128];
@@ -27,9 +28,15 @@ export function setTextEffect(layer,effect,enabled,presets=[]){
   layer.textStyle=style;
 }
 // Pixel widths scaled by textStyle.scale. Inner outline never grows the glyph.
-export const widthKeys=['strokeWidth','outlineWidth','innerOutlineWidth'];
-const scaledKeys=[...widthKeys,'extrusionX','extrusionY'];
+export const widthKeys=['strokeWidth','outlineWidth','innerOutlineWidth','shadowWidth'];
+const scaledKeys=[...widthKeys,'extrusionX','extrusionY','shadowX','shadowY'];
 export function validateTextStyle(layer) {
+  if(layer.textRuns!==undefined){
+    const data=layer.textRuns;
+    if(layer.role!=='text'||!data||typeof data.text!=='string'||data.text.length>512||!Array.isArray(data.colors)||!data.colors.length||data.colors.length>512)throw Error('Invalid text color runs.');
+    let end=0;for(const run of data.colors){if(!run||!Number.isInteger(run.start)||run.start!==end||!Number.isInteger(run.length)||run.length<1||run.start+run.length>data.text.length||typeof run.color!=='string'||!/^#[0-9a-f]{8}$/i.test(run.color))throw Error('Invalid text color run.');end+=run.length;}
+    if(end!==data.text.length)throw Error('Incomplete text color runs.');
+  }
   if(layer.sourceTextPaint!==undefined){
     const paint=layer.sourceTextPaint;
     if(layer.role!=='text'||!paint||typeof paint!=='object'||!layer.image||typeof layer.image.guid!=='string'||!layer.image.guid||typeof paint.signature!=='string'||paint.signature.length>32768)throw Error('Invalid imported text paint.');
@@ -44,17 +51,17 @@ export function validateTextStyle(layer) {
   if((layer.text||'').length>512)throw Error('Styled text supports up to 512 characters per label.');
   if(layer.tmpSettings?.richText&&/<sprite(?:[=\s>])/i.test(layer.text||''))throw Error('Styled text uses font glyphs; TMP inline sprites require ordinary TMP text.');
   if(s.preset!==undefined&&typeof s.preset!=='string')throw Error('Invalid text style preset.');
-  for(const [key,min,max]of [['strokeWidth',0,64],['outlineWidth',0,64],['innerOutlineWidth',0,64],['extrusionX',-128,128],['extrusionY',-128,128],['gradientAngle',-3600,3600],['scale',.001,512]])
+  for(const [key,min,max]of [['strokeWidth',0,64],['outlineWidth',0,64],['innerOutlineWidth',0,64],['shadowWidth',0,64],['shadowX',-128,128],['shadowY',-128,128],['extrusionX',-128,128],['extrusionY',-128,128],['gradientAngle',-3600,3600],['scale',.001,512]])
     if(s[key]!==undefined&&(!Number.isFinite(s[key])||s[key]<min||s[key]>max))throw Error('Invalid text style '+key+'.');
   if(s.disabledEffects!==undefined){
     if(!object(s.disabledEffects))throw Error('Invalid disabled text effects.');
     for(const [key,value]of Object.entries(s.disabledEffects)){
-      const limit=widthKeys.includes(key)?[0,64]:key==='extrusionX'||key==='extrusionY'?[-128,128]:null;
+      const limit=widthKeys.includes(key)?[0,64]:['extrusionX','extrusionY','shadowX','shadowY'].includes(key)?[-128,128]:null;
       if(!limit||!Number.isFinite(value)||value<limit[0]||value>limit[1])throw Error('Invalid disabled text effect '+key+'.');
     }
   }
   const color=value=>typeof value==='string'&&/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(value);
-  for(const key of ['faceColor','strokeColor','outlineColor','innerOutlineColor','extrusionColor','topLeft','topRight','bottomLeft','bottomRight'])if(s[key]!==undefined&&!color(s[key]))throw Error('Invalid text style color.');
+  for(const key of ['faceColor','strokeColor','outlineColor','innerOutlineColor','extrusionColor','shadowColor','topLeft','topRight','bottomLeft','bottomRight'])if(s[key]!==undefined&&!color(s[key]))throw Error('Invalid text style color.');
   if(s.gradient!==undefined&&typeof s.gradient!=='boolean')throw Error('Invalid text gradient flag.');
   if(s.gradientMode!==undefined&&!['single','horizontal','vertical','four-corners','angle'].includes(s.gradientMode))throw Error('Invalid text gradient mode.');
   if(s.gradientBlend!==undefined&&!['blend','fixed'].includes(s.gradientBlend))throw Error('Invalid text gradient blend.');
@@ -68,6 +75,7 @@ export function validateTextStyle(layer) {
   }
   if(layer.tmpMaterial&&Object.keys(layer.tmpMaterial).length)throw Error('Styled text uses textStyle instead of tmpMaterial overrides.');
   if(s.innerOutlineWidth>0&&!layer.standaloneText)throw Error('Inner Outline requires VinaGen standalone text; TMP styled text cannot render it.');
+  if((s.shadowWidth||0)*(s.scale??1)>64||Math.abs((s.shadowX||0)*(s.scale??1))>128||Math.abs((s.shadowY||0)*(s.scale??1))>128)throw Error('Scaled text shadow exceeds its pixel limits.');
   if((s.innerOutlineWidth||0)*(s.scale??1)>64)throw Error('Scaled text style exceeds its pixel limits.');
 }
 export function resolvedTextStyle(layer,presets=[]) {
@@ -80,6 +88,7 @@ export function resolvedTextStyle(layer,presets=[]) {
 export function styledTextInput(layer) {
   const input={id:'preview',name:'Text preview',role:'text',x:0,y:0,parentId:'',rotation:0,opacity:1,visible:true,clip:false};
   for(const key of ['width','height','text','fontSize','textColor','fontGuid','textAlign','bold','textMeshPro','standaloneText','textRenderer','tmpFont','tmpSettings','tmpMaterial','textStyle','textCurve','psdImportFolder'])if(layer[key]!=null)input[key]=layer[key];
+  if(layer.textRuns?.text===layer.text&&!layer.tmpSettings?.richText)input.textRuns=layer.textRuns;
   return JSON.parse(JSON.stringify(input));
 }
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,stable(value[key])])):value;

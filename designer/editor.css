@@ -1904,7 +1904,9 @@ dialog.document-dialog {
 }
 .document-outline {
   padding: 22px 12px;
-  overflow: auto;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .document-outline h3 {
   margin: 0 8px 12px;
@@ -1944,10 +1946,19 @@ dialog.document-dialog {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+}
+.document-outline-tab > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .document-outline-tab .document-command-icon {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
 }
 .document-outline-tab:hover,
 .document-outline-heading:hover,

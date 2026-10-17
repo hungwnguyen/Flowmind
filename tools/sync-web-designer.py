@@ -6,14 +6,24 @@ remain owned by Flowmind and are never overwritten by this script.
 from pathlib import Path
 import argparse
 import re
-import shutil
+from urllib.request import urlopen
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--source',required=True)
+parser.add_argument('--check',action='store_true',help='Verify extraction without writing files')
+parser.add_argument('--live-url',help='Also compare source modules with the running Unity graph-editor URL')
 args=parser.parse_args()
 source=Path(args.source).resolve()
 target=Path(__file__).resolve().parents[1]/'designer'
 target.mkdir(exist_ok=True)
+differences=[]
+
+def output(file,data):
+    if args.check:
+        if not file.is_file() or file.read_bytes().replace(b'\r\n',b'\n')!=data.replace(b'\r\n',b'\n'):
+            differences.append(str(file.relative_to(target)))
+    else:
+        file.write_bytes(data)
 
 def method(text,name,body=''):
     found=re.search(r'^  (?:async )?'+name+r'\(',text,re.M)
@@ -30,6 +40,7 @@ def studio(text):
     text=re.sub(r"const sliceMedia=image=>[^\n]+;","const sliceMedia=image=>resourceURL(image.guid);",text)
     text=text.replace("'api/ui-font?guid='+encodeURIComponent(guid)","resourceURL(guid,'font')")
     text=text.replace('layer.fillGradient,layer.image,imageMode(layer)','layer.fillGradient,layer.image,layer.image?resourceURL(layer.image.guid):null,imageMode(layer)')
+    text=text.replace('layer.text,layer.textColor,layer.fontSize','layer.text,layer.textRuns,layer.textColor,layer.fontSize')
     text=method(text,'api',"  async api(action,payload){return workspace.api(action,payload);}\n")
     text=method(text,'activateShell',"""  activateShell(){
     document.getElementById('reload').title='Reload saved document';
@@ -45,6 +56,14 @@ def studio(text):
   }
 """)
     text=method(text,'startWebDemoBridge')
+    # The standalone workspace already persists source PNGs and resolves them
+    # locally; native upload batches and Unity source-cache endpoints do not run.
+    text=text.replace('cacheKey,projectCache,restoreProjectDraft,psdImageUploader,PSD_PAINT_BYTES,rememberPSDImage,rememberPSDSource,restorePSDImages', 'cacheKey,projectCache,restoreProjectDraft,PSD_PAINT_BYTES')
+    text=method(text,'restorePSDPaints')
+    text=text.replace('await this.restorePSDPaints();','')
+    text=re.sub(r"this.config.psdImageBatches\?psdImageUploader\([^\n]+\):\n\s*",'',text)
+    text=re.sub(r"^\s*const project=this.shell.projectId\|\|this.shell.project\|\|'local';\n\s*if\(!asset.visualMatch\)rememberPSDImage[^\n]+\n\s*else if\(asset.sourceURL\)rememberPSDSource[^\n]+\n",'',text,flags=re.M)
+    text=re.sub(r'`api/ui-source-image\?guid=\$\{encodeURIComponent\(image.guid\)\}[^`]*`', 'resourceURL(image.guid)',text)
     text=text.replace('  app.startWebDemoBridge();','')
     text=method(text,'importUnity')
     text=method(text,'showInEditor')
@@ -106,7 +125,8 @@ def studio(text):
       'Add font assets in UI Designer Settings.':'Import a TTF/OTF/WOFF font using Import.',
       'Game screen':'Design canvas','Component':'Layer type',
     }
-    for old,new in replacements.items():text=text.replace(old,new)
+    for old,new in replacements.items():
+        text=re.sub(r'\bComponent\b',new,text) if old=='Component' else text.replace(old,new)
     text=text.replace("case 'import_unity':this.importUnity();break;",'')
     text+="\nexport function getUIStudio(){return app;}\n"
     return text
@@ -143,6 +163,9 @@ def transform(name,text):
         text=text.replace("'api/ui-font?guid='+encodeURIComponent(match[1])","resourceURL(match[1],'font')")
         text=re.sub(r'source.src=`api/ui-source-image[^`]+`;','source.src=resourceURL(image.guid);',text)
         text=text.replace('Unity text preview','Text preview')
+        # rotate(0deg) still isolates pass-through paint in a stacking context.
+        text=text.replace('transform:`rotate(${layer.rotation||0}deg)`', "transform:layer.rotation?`rotate(${layer.rotation}deg)`:'none'")
+        text=text.replace('transform:`rotate(${root.rotation||0}deg)`', "transform:root.rotation?`rotate(${root.rotation}deg)`:'none'")
     if name=='web-errors.mjs':
         text=text.replace('Unity Editor','workspace').replace('Unity is','Workspace is').replace('bridge connection','local workspace').replace('Editor bridge','workspace').replace('Unity','Workspace')
         text=re.sub(r"const connectionMessage = '[^']*';","const connectionMessage = 'A local resource could not load. Reconnect the folder or reimport the source file; your draft is retained.';",text)
@@ -165,8 +188,14 @@ while queue:
     seen.add(name)
     file=source/name
     if not file.is_file():raise RuntimeError('Missing source module '+name)
-    text=transform(name,file.read_text(encoding='utf-8'))
-    (target/name).write_text('\n'.join(line.rstrip() for line in text.splitlines())+'\n',encoding='utf-8')
+    original=file.read_text(encoding='utf-8')
+    if args.live_url:
+        with urlopen(args.live_url.rstrip('/')+'/'+name,timeout=15) as response:
+            live=response.read().decode('utf-8').replace('\r\n','\n')
+        if live!=original.replace('\r\n','\n'):
+            raise RuntimeError('Running Unity module differs from source: '+name)
+    text=transform(name,original)
+    output(target/name,('\n'.join(line.rstrip() for line in text.splitlines())+'\n').encode('utf-8'))
     for dependency in re.findall(r"(?:from\s*|import\s*\(|new URL\(|@import\s*url\()['\"]\./([^'\"]+)['\"]",text):
         if dependency.endswith(('.mjs','.css','.js')):queue.append(dependency)
     if name=='ui-studio.mjs':queue+=['ui-studio.css','ui-psd-export.mjs','ui-screen-capture.mjs','psd-worker.mjs']
@@ -175,7 +204,8 @@ fonts=source.parents[1]/'VinaTextPro'/'Fonts'/'GoogleFonts'
 (target/'fonts').mkdir(exist_ok=True)
 for original,name in [('Inter[opsz,wght].ttf','Inter.ttf'),('inter-OFL.txt','Inter-OFL.txt'),('Montserrat-Black.ttf','Montserrat-Black.ttf'),('montserrat-OFL.txt','Montserrat-OFL.txt')]:
     if name.endswith('.txt'):
-        (target/'fonts'/name).write_text('\n'.join(line.rstrip() for line in (fonts/original).read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')
-    else:shutil.copyfile(fonts/original,target/'fonts'/name)
-shutil.copyfile(source.parents[1]/'Images'/'robot.png',target/'robot.png')
-print('Copied',len(seen),'browser modules/styles into',target)
+        output(target/'fonts'/name,('\n'.join(line.rstrip() for line in (fonts/original).read_text(encoding='utf-8').splitlines())+'\n').encode('utf-8'))
+    else:output(target/'fonts'/name,(fonts/original).read_bytes())
+output(target/'robot.png',(source.parents[1]/'Images'/'robot.png').read_bytes())
+if differences:raise SystemExit('Designer extraction differs: '+', '.join(differences))
+print('Verified' if args.check else 'Copied',len(seen),'browser modules/styles', 'against live Unity and source' if args.live_url else 'in '+str(target))

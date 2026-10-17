@@ -1,6 +1,7 @@
 // Image artwork is shared; each instance keeps its own rectangle and hierarchy.
 const fields = [
   "image",
+  "imageComposite",
   "fill",
   "fillGradient",
   "imageMode",

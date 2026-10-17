@@ -25,6 +25,7 @@ export function imageFusionPlan(doc, id, {allowSingle=false}={}) {
   validateDocument(doc);
   const byId=layerIndex(doc),root=byId.get(id),included=descendants(doc,[id]);
   if(!root||root.role==='text')throw Error('Fusion images requires an Image, Button or group. Text cannot be fused.');
+  if(root.imageComposite)throw Error('PSD effects are already fused into this image. Keep its paints to preserve backdrop colors.');
   for(const layer of doc.layers)if(included.has(layer.id)){
     if(layer.locked)throw Error('Unlock the object and its children before Fusion images.');
   }
@@ -42,11 +43,35 @@ export function imageFusionPlan(doc, id, {allowSingle=false}={}) {
     for(const childId of descendants(doc,[layer.id]))keep(childId);keep(layer.id);
   }
   for(const thread of doc.comments||[])if(included.has(thread.layerId))keep(thread.layerId);
-  return {root,included,images,retained};
+  // A pass-through folder exposes child blend modes to the artwork behind it.
+  // Those operations cannot be represented by one normal RGBA PNG on arbitrary
+  // backdrops. Fuse one uninterrupted normal paint run and retain the others.
+  const pass=layer=>['empty','group'].includes(layer.role)&&layer.blendMode==='pass-through'&&(layer.opacity??1)===1&&!(layer.rotation||0);
+  let fusedImages=images,preserveBlend=false;
+  if(pass(root)){
+    const children=new Map();for(const layer of doc.layers){const list=children.get(layer.parentId)||[];list.push(layer);children.set(layer.parentId,list);}
+    const units=[];
+    const visit=layer=>{
+      if(layer.id===id||pass(layer)){for(const child of children.get(layer.id)||[])visit(child);return;}
+      const paint=[...descendants(doc,[layer.id])].filter(childId=>images.has(childId));if(!paint.length)return;
+      units.push({paint,external:!['normal','pass-through'].includes(layer.blendMode||'normal')||layer.imageComposite?.paints.some(p=>p.blendMode!=='normal')});
+    };visit(root);
+    if(units.some(unit=>unit.external)){
+      preserveBlend=true;let run=[],best=[];
+      for(const unit of [...units,{external:true}]){if(unit.external){if(run.length>best.length)best=run;run=[];}else run.push(...unit.paint);}
+      if(!best.length)throw Error('These images blend with the backdrop. Keep their blend layers to preserve the colors.');
+      fusedImages=new Set(best);
+      for(const imageId of images)if(!fusedImages.has(imageId))keep(imageId);
+    }
+  }
+  return {root,included,images,retained,fusedImages,preserveBlend};
 }
 
+export function fusionImageLayer(doc,id){const root=doc.layers.find(layer=>layer.id===id);return doc.layers.find(layer=>layer.id===root?.fusionPaintLayerId&&layer.parentId===id&&['image','button'].includes(layer.role))||root;}
+
 export function applyImageFusion(doc,id,asset,bounds,{allowSingle=false}={}){
-  const {root,included,images,retained}=imageFusionPlan(doc,id,{allowSingle});
+  const {root,included,retained,fusedImages,preserveBlend}=imageFusionPlan(doc,id,{allowSingle});
+  const lastPaint=doc.layers.reduce((last,layer,index)=>fusedImages.has(layer.id)?index:last,0);
   const offset=rotatePoint({x:bounds.x+bounds.width/2-root.width/2,y:bounds.y+bounds.height/2-root.height/2},root.rotation||0);
   root.x+=root.width/2+offset.x-bounds.width/2;root.y+=root.height/2+offset.y-bounds.height/2;
   root.width=bounds.width;root.height=bounds.height;
@@ -55,14 +80,24 @@ export function applyImageFusion(doc,id,asset,bounds,{allowSingle=false}={}){
     if(!retained.has(layer.id)||layer.role==='text')continue;
     // Freeze auto layout before removing siblings, preserving authored text poses.
     if(['horizontal','vertical','grid'].includes(layer.groupType)){layer.groupType='rect';delete layer.layout;}
-    if(images.has(layer.id)||layer.id===id){
-      for(const key of ['image','shape','fillGradient','stroke','strokeWidth','shapeSides','starInnerRadius','shapeFlipX','shapeFlipY','imageFit','sliced'])delete layer[key];
+    if(fusedImages.has(layer.id)||layer.id===id&&!preserveBlend){
+      for(const key of ['image','imageComposite','shape','fillGradient','stroke','strokeWidth','shapeSides','starInnerRadius','shapeFlipX','shapeFlipY','imageFit','sliced'])delete layer[key];
       layer.role=layer.id===id?(layer.role==='button'?'button':'image'):'empty';layer.fill='#ffffff00';
     }
   }
-  root.image=copy(asset.image);root.imageMode='none';root.fill='#ffffffff';
+  if(!preserveBlend){
+    root.image=copy(asset.image);root.imageMode='none';root.fill='#ffffffff';delete root.fusionPaintLayerId;
+    if(root.blendMode==='pass-through')root.blendMode='normal';
+  }
   for(const thread of doc.comments||[])if(thread.layerId===id){thread.x-=bounds.x;thread.y-=bounds.y;}
-  doc.layers=doc.layers.filter(layer=>!included.has(layer.id)||retained.has(layer.id));
+  const keep=layer=>!included.has(layer.id)||retained.has(layer.id),insertAt=doc.layers.slice(0,lastPaint+1).filter(keep).length;
+  doc.layers=doc.layers.filter(keep);
+  if(preserveBlend){
+    const stem=id.slice(0,110)+'-fusion';let paintId=stem,index=1;while(doc.layers.some(layer=>layer.id===paintId))paintId=stem+'-'+index++;
+    root.fusionPaintLayerId=paintId;
+    doc.layers.splice(insertAt,0,{id:paintId,name:root.name+' · Fusion',role:'image',parentId:id,x:0,y:0,width:bounds.width,height:bounds.height,
+      image:copy(asset.image),imageMode:'none',fill:'#ffffffff',opacity:1,rotation:0,visible:true,locked:false,...(root.psdImportFolder?{psdImportFolder:root.psdImportFolder}:{})});
+  }
   validateDocument(doc);
 }
 
@@ -77,12 +112,13 @@ export async function imageFusionState(doc,id){
     const root=layer.id===id,paint=plan.images.has(layer.id),value={id:layer.id,parentId:root?'':layer.parentId,width:layer.width,height:layer.height,clip:!!layer.clip};
     if(!root)Object.assign(value,{x:layer.x,y:layer.y,rotation:layer.rotation||0,opacity:layer.opacity??1,blendMode:layer.blendMode||'normal'});
     if(paint){
-      for(const key of ['fill','fillGradient','imageMode','imageFit','sliced','shape','stroke','strokeWidth','shapeSides','starInnerRadius','shapeFlipX','shapeFlipY'])if(layer[key]!==undefined)value[key]=layer[key];
+      for(const key of ['fill','fillGradient','imageMode','imageComposite','imageFit','sliced','shape','stroke','strokeWidth','shapeSides','starInnerRadius','shapeFlipX','shapeFlipY'])if(layer[key]!==undefined)value[key]=layer[key];
       if(layer.image){value.image={guid:layer.image.guid,localId:layer.image.localId||'',...(layer.imageMode==='nine_slice'?{slice:layer.image.slice}: {})};sources.add(layer.image.guid);}
     }
     return value;
   });
-  return {signature:await fusionHash({version:1,layers}),sources:[...sources].sort(),hasChildren:[...plan.images].some(imageId=>imageId!==id),root:plan.root};
+  return {signature:await fusionHash({version:2,artworkIds:plan.preserveBlend?[...plan.fusedImages]:null,layers}),sources:[...sources].sort(),hasChildren:[...plan.images].some(imageId=>imageId!==id),root:plan.root,
+    image:fusionImageLayer(doc,id)?.image,artworkIds:plan.preserveBlend?[...plan.fusedImages]:null,preserveBlend:plan.preserveBlend};
 }
 
 // Clipboard roots use world geometry, so pasting into another document retains their appearance.

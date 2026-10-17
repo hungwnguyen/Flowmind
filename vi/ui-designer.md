@@ -43,7 +43,7 @@ Mỗi lần nhập PSD dùng thư mục riêng `Assets/VinaGen PSD Imports/<tên
 | **Canvas Group** | `CanvasGroup` (opacity, interactable, raycast). |
 | **Horizontal / Vertical / Grid** | LayoutGroup tương ứng. |
 
-9-slice trở thành Sliced Sprite, hình vẽ trở thành `VinaGenUIShape`, Clip trở thành `RectMask2D`. Canvas dùng standard alpha blending; blend mode và hiệu ứng có thể khác preview trên trình duyệt.
+9-slice trở thành Sliced Sprite, hình vẽ trở thành `VinaGenUIShape`, Clip trở thành `RectMask2D`. Canvas hỗ trợ alpha chuẩn cùng Multiply/Screen trên Image/Button. Paint PSD gộp giữ các vùng ảnh nguồn trên một Canvas Image; mode khác và blend nhóm isolated vẫn cần kiểm tra hình ảnh.
 
 ## Chuyển vào Unity Canvas
 
@@ -81,13 +81,15 @@ Nếu màu khác so với trình duyệt ở dự án dùng Linear color, dùng 
 
 Dùng `ShowScreen(layerId)`, `FindLayer(layerId)` và `ButtonClicked` để nối với game. Một số hiệu ứng chữ, hình và component tùy chỉnh chưa hỗ trợ đầy đủ — đọc cảnh báo và so sánh kết quả.
 
+Import UI Toolkit từ chối hiệu ứng PSD gộp phụ thuộc nền vì renderer không thể tái tạo đúng. Dùng Canvas cho tài liệu đó, hoặc chuẩn bị artwork có nền cố định rồi kiểm tra kết quả.
+
 ## Lưu và cài đặt
 
 **Save** (`Ctrl/Cmd+S`) lưu `VinaGenUIDocument`. **Show in Editor** chọn asset trong cửa sổ Project.
 
 **Settings → UI Designer Settings** chứa thư mục, font, Button prefab, độ phân giải mặc định, anchor và phím tắt.
 
-Trợ lý AI có thể chụp từng màn hình qua [MCP Bridge](mcp-bridge.md).
+Trợ lý AI bắt đầu bằng `vinagen_find`, đọc tài liệu đã lưu hoặc ngữ cảnh trình duyệt, rồi dùng `patch_ui_document` hay `refactor_ui_layers` có kiểm tra revision (chạy thử trước). Refactor đề xuất tên theo nội dung, vai trò Button và nhãn con. Asset đã lưu và draft trình duyệt vẫn riêng biệt. Chọn ảnh chụp bằng `path` + `revision` hoặc `tabId` + `draftVersion`, rồi poll `inspect_ui_web_demo`. Xem [MCP Bridge](mcp-bridge.md).
 
 **Export SVGPRO** lưu tài liệu trước rồi tải gói kèm tài nguyên. Có thể kéo gói vào dự án Unity khác để import.
 

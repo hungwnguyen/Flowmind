@@ -112,7 +112,7 @@ export async function exportPSD(studio,{onProgress=()=>{},selectedIds=null}={}) 
   for(const root of [...(children.get('')||[])].reverse())await add(root);
   assertCurrent();onProgress(doc.layers.length,doc.layers.length,'composite');
   const board=document.createElement('div');Object.assign(board.style,{position:'relative',width:width+'px',height:height+'px'});
-  for(const root of children.get('')||[]){const source=studio.elements.get(root.id),node=await clone(source);Object.assign(node.style,{left:(root.x-left)+'px',top:(root.y-top)+'px',transform:`rotate(${root.rotation||0}deg)`});board.append(node);}
+  for(const root of children.get('')||[]){const source=studio.elements.get(root.id),node=await clone(source);Object.assign(node.style,{left:(root.x-left)+'px',top:(root.y-top)+'px',transform:root.rotation?`rotate(${root.rotation}deg)`:'none'});board.append(node);}
   const merged=await raster(board,width,height),pixels=merged.getContext('2d').getImageData(0,0,width,height).data;assertCurrent();
   const blob=writer.finish(pixels);merged.width=merged.height=1;
   return {blob,width,height,layerCount:writer.layerCount,sourceLayerCount:doc.layers.length};

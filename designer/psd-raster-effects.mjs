@@ -1,4 +1,4 @@
-import {psdEdgeDistance} from './psd-distance.mjs';
+import {psdEdgeDistance,psdSignedEdgeDistance} from './psd-distance.mjs';
 import {paintPSDText,blurPSDAlpha} from './psd-text.mjs';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const value=(v,f=0)=>Number.isFinite(v?.value)?v.value:Number.isFinite(v)?v:f;
@@ -17,6 +17,19 @@ function mergePaint(below,above){
     for(let k=0;k<3;k++)pixels[to+k]=(paint.pixels[from+k]*a+pixels[to+k]*b*(1-a))/out;pixels[to+3]=out*255;
   }
   return {pixels,width,height,bounds:{x,y,width,height}};
+}
+function softBevelHeight(alpha,width,height,size){
+  // Continue the height outside the silhouette before filtering normals. Zero
+  // outside an unsigned distance ramp introduces a second, bright outer rim.
+  // Eight pixels cover the three radius-one box passes and central differences,
+  // including artwork that touches its decoded bitmap's bounds.
+  const padding=8,w=width+padding*2,h=height+padding*2,mask=new Uint8Array(w*h);
+  for(let y=0;y<height;y++)mask.set(alpha.subarray(y*width,(y+1)*width),(y+padding)*w+padding);
+  const distance=psdSignedEdgeDistance(mask,w,h,size);
+  // Soft Bevel has a curved shoulder that reaches a flat face continuously.
+  // A linear clipped ramp gives a constant normal and an abrupt inner crease.
+  for(let i=0;i<distance.length;i++)distance[i]=size*Math.sin(distance[i]/size*Math.PI/2);
+  return {field:blurPSDAlpha(distance,w,h,.75),width:w,padding};
 }
 // Raster channels exclude Photoshop's live layer styles. Preserve those styles
 // during extraction; the source alpha remains the mask for inner lighting.
@@ -52,9 +65,9 @@ export function paintPSDRaster(pixels,width,height,effects,warnings=[],context={
     if(bevel.bvlS?.value&&bevel.bvlS.value!=='InrB'){warnings.push('Photoshop outer bevel needs visual review.');return paint;}
     const size=clamp(value(bevel.blur)*scale,0,64);if(!size)return paint;
     // Euclidean edge distance avoids grid-direction facets at rounded corners.
-    const distance=psdEdgeDistance(alpha,width,height,size);
-    const field=bevel.bvlT?.value==='SfBL'?blurPSDAlpha(distance,width,height,.75):distance,soften=clamp(value(bevel.Sftn)*scale,0,32),angle=value(bevel.lagl,120)*Math.PI/180,alt=value(bevel.Lald,30)*Math.PI/180,depth=clamp(value(bevel.srgR,100)/100,.01,10)*(bevel.bvlD?.value==='Out '?-1:1),light=[Math.cos(angle)*Math.cos(alt),-Math.sin(angle)*Math.cos(alt),Math.sin(alt)],highlight=color(bevel.hglC),shadow=color(bevel.sdwC);
-    const sample=(x,y)=>x<0||y<0||x>=width||y>=height?0:field[y*width+x];
+    const surface=bevel.bvlT?.value==='SfBL'?softBevelHeight(alpha,width,height,size):{field:psdEdgeDistance(alpha,width,height,size),width,padding:0};
+    const soften=clamp(value(bevel.Sftn)*scale,0,32),angle=value(bevel.lagl,120)*Math.PI/180,alt=value(bevel.Lald,30)*Math.PI/180,depth=clamp(value(bevel.srgR,100)/100,.01,10)*(bevel.bvlD?.value==='Out '?-1:1),light=[Math.cos(angle)*Math.cos(alt),-Math.sin(angle)*Math.cos(alt),Math.sin(alt)],highlight=color(bevel.hglC),shadow=color(bevel.sdwC);
+    const sample=(x,y)=>{const px=x+surface.padding,py=y+surface.padding;return px<0||py<0||px>=surface.width||py>=height+surface.padding*2?0:surface.field[py*surface.width+px];};
     const highlights=new Float32Array(alpha.length),shadows=new Float32Array(alpha.length);
     for(let y=0;y<height;y++)for(let x=0;x<width;x++){
       const i=y*width+x;if(!alpha[i])continue;const nx=-(sample(x+1,y)-sample(x-1,y))*depth/4,ny=-(sample(x,y+1)-sample(x,y-1))*depth/4,length=Math.hypot(nx,ny,1),lit=(nx*light[0]+ny*light[1]+light[2])/length-light[2];
