@@ -75,9 +75,14 @@ const options = {
   sourcemap: false,
   sourcesContent: false,
   legalComments: 'none',
+  // Never ship a stray debugger statement; it has no effect on program logic.
+  drop: ['debugger'],
   platform: 'browser',
   target: 'es2022',
   format: 'esm',
+  // Module scripts and module workers are always decoded as UTF-8, so raw
+  // characters are smaller than \u escapes with identical string values.
+  charset: 'utf8',
   outdir: designer,
   outExtension: { '.js': '.mjs' },
   entryNames: 'e-[hash]',
@@ -92,9 +97,25 @@ function entryFile(result, entry) {
   if (!file) throw new Error(`Missing built entry: ${entry}`);
   return path.basename(file);
 }
+// The classic preferences script follows the document charset: keep it ASCII.
+// It and the CSS do not depend on the worker, so build them concurrently.
+const preferencesBuild = build({
+  ...options,
+  entryPoints: [sourceRelative + '/preferences.js'],
+  format: 'iife',
+  charset: 'ascii',
+  outExtension: { '.js': '.js' },
+});
+// Keep CSS paths/order and runtime stylesheet loading unchanged.
+const stylesBuild = Promise.all((await readdir(source)).filter(name => name.endsWith('.css')).map(async name => {
+  const result = await transform(await readFile(path.join(source, name), 'utf8'), {
+    loader: 'css', minify: true, legalComments: 'none', sourcemap: false,
+  });
+  await writeFile(path.join(designer, name), result.code);
+}));
 const worker = await build({ ...options, entryPoints: [sourceRelative + '/psd-worker.mjs'] });
 const workerFile = entryFile(worker, sourceRelative + '/psd-worker.mjs');
-const app = await build({
+const appBuild = build({
   ...options,
   entryPoints: [sourceRelative + '/app.mjs'],
   splitting: true,
@@ -114,20 +135,7 @@ const app = await build({
     },
   }],
 });
-const preferences = await build({
-  ...options,
-  entryPoints: [sourceRelative + '/preferences.js'],
-  format: 'iife',
-  outExtension: { '.js': '.js' },
-});
-// Keep CSS paths/order and runtime stylesheet loading unchanged.
-for (const name of await readdir(source)) {
-  if (!name.endsWith('.css')) continue;
-  const result = await transform(await readFile(path.join(source, name), 'utf8'), {
-    loader: 'css', minify: true, legalComments: 'none', sourcemap: false,
-  });
-  await writeFile(path.join(designer, name), result.code);
-}
+const [app, preferences] = await Promise.all([appBuild, preferencesBuild, stylesBuild]);
 let html = await readFile(path.join(source, 'index.html'), 'utf8');
 for (const [original, built] of [
   ['app.mjs', entryFile(app, sourceRelative + '/app.mjs')],
@@ -148,7 +156,7 @@ for (const name of await readdir(designer)) {
   if (/\.(m?js|map)$/.test(name) && !builtFiles.has(name)) throw new Error(`Unexpected public code: ${name}`);
   if (builtFiles.has(name)) {
     const code = await readFile(path.join(designer, name), 'utf8');
-    if (/\/\/[#@]\s*source(?:Mapping)?URL\s*=|\/\*[#@]\s*source(?:Mapping)?URL\s*=|\.\/psd-worker\.mjs/.test(code)) throw new Error(`Source reference leaked: ${name}`);
+    if (/\/\/[#@]\s*source(?:Mapping)?URL\s*=|\/\*[#@]\s*source(?:Mapping)?URL\s*=|\.\/psd-worker\.mjs|designer-source/.test(code)) throw new Error(`Source reference leaked: ${name}`);
   }
 }
 const bytes = result => Object.values(result.metafile.outputs).reduce((sum, file) => sum + file.bytes, 0);
