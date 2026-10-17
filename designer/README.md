@@ -40,6 +40,18 @@ PSD text import, exact atlas blend pixels, portable resources and Fusion/cache.
 The extraction also keeps zero-rotation roots at `transform:none` during export
 so pass-through atlas paints retain their backdrop and stacking order.
 
+Standalone text previews map the native
+`Editor/UIStudio/Text/VinaGenUIStudioStyledText.cs` rendered-bounds contract to
+Canvas: font metrics determine vertical alignment, glyph advances retain kerning
+and tracking, and the preview returns `left`/`top` relative to the authored text
+rectangle. Bounds include rotated/curved glyphs and effects outside that rectangle;
+explicit Masking, Truncate and Ellipsis modes still clip. Shared PSD workers and
+parent-local coordinate conversion remain extracted from `Editor/WebGraph/`.
+Run `node tests/designer-text-bounds.cjs` with the local server on port 8769, plus
+`node tests/designer-import-coordinates.cjs <private.psd>` for the optional large
+PSD coordinate/cache/reload check. Captures remain in ignored
+`Builds/DesignerImportFix/` and are not distributed.
+
 `icons.mjs` reuses the local editor's SVG paths. Refresh them with the author-only
 `tools/sync-designer-icons.py --source <toolkit Editor/WebGraph>` command. Keep
 `workspace-controls.css` linked for the split tool buttons, popovers and asset grid.

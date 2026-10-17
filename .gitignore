@@ -11,3 +11,6 @@ dist/
 
 # Editable Designer source stays on this machine; commit generated designer/ only.
 /tools/designer-source/
+
+# Local verification captures can contain private PSD artwork.
+/Builds/DesignerImportFix/
